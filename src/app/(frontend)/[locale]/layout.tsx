@@ -2,13 +2,29 @@ import React from 'react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
-import type { Header, Footer } from '@/payload-types'
+import type { Header, Footer, Page, Post } from '@/payload-types'
 import { type Locale } from '@/config/locales'
+
+type NavLink = NonNullable<Header['navItems']>[number]['link']
+
+function resolveHref(link: NavLink, locale: string): string {
+  if (link.type === 'custom') return link.url ?? '#'
+  const ref = link.reference?.value
+  if (!ref || typeof ref === 'number') return '#'
+  if ((ref as Page).slug !== undefined) {
+    const slug = (ref as Page).slug
+    return slug === 'home' ? `/${locale}` : `/${locale}/${slug}`
+  }
+  if ((ref as Post).slug !== undefined) {
+    return `/${locale}/posts/${(ref as Post).slug}`
+  }
+  return '#'
+}
 
 async function getHeader(locale: Locale): Promise<Header | null> {
   try {
     const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'header', locale })
+    return payload.findGlobal({ slug: 'header', locale, depth: 1 })
   } catch {
     return null
   }
@@ -49,7 +65,7 @@ export default async function LocaleLayout({
             {header?.navItems?.map((item, i) => (
               <a
                 key={item.id ?? i}
-                href={item.link.url ?? '#'}
+                href={resolveHref(item.link, locale)}
                 style={{ marginRight: '1rem' }}
                 target={item.link.newTab ? '_blank' : undefined}
                 rel={item.link.newTab ? 'noopener noreferrer' : undefined}
