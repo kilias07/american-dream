@@ -1,10 +1,13 @@
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import configPromise from '@payload-config'
+import { unstable_cache } from 'next/cache'
 import type { Page } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
 
+// force-dynamic prevents a stale SSG 404 from being served when the 'home'
+// page doesn't exist at build time; unstable_cache still caches D1 queries
 export const dynamic = 'force-dynamic'
 
 async function getHomePage(locale: Locale): Promise<Page | null> {
@@ -30,7 +33,14 @@ export default async function LocaleIndexPage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  const page = await getHomePage(locale as Locale)
+
+  const cachedGetHomePage = unstable_cache(
+    () => getHomePage(locale as Locale),
+    [`page-home-${locale}`],
+    { tags: ['page-home', 'pages'] },
+  )
+
+  const page = await cachedGetHomePage()
 
   if (!page) {
     notFound()
