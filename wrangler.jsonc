@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
-  "name": "my-app",
+  "name": "american-dream",
   "account_id": "bd607571e7f04e97a5b814b406bd53d5",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": [
