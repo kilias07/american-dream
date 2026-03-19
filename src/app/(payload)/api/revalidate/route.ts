@@ -1,8 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { NextRequest } from 'next/server'
 
-export const runtime = 'edge'
-
 export async function POST(request: NextRequest) {
   const secret = request.headers.get('x-revalidate-secret')
 
