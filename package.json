@@ -6,9 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "deploy": "pnpm run deploy:database && pnpm run deploy:app && pnpm run deploy:cache-bust",
+    "deploy": "pnpm run deploy:database && pnpm run deploy:app",
     "deploy:app": "opennextjs-cloudflare build --env=$CLOUDFLARE_ENV && opennextjs-cloudflare deploy --env=$CLOUDFLARE_ENV",
-    "deploy:cache-bust": "wrangler d1 execute american-dream --remote --command \"INSERT INTO revalidations (tag, revalidatedAt) VALUES ('pages', strftime('%s','now') * 1000), ('page-home', strftime('%s','now') * 1000), ('posts', strftime('%s','now') * 1000), ('global-header', strftime('%s','now') * 1000), ('global-footer', strftime('%s','now') * 1000)\"",
     "deploy:database": "cross-env NODE_ENV=production PAYLOAD_SECRET=ignore payload migrate && wrangler d1 execute D1 --command 'PRAGMA optimize' --env=$CLOUDFLARE_ENV --remote",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "devsafe": "rm -rf .next && rm -rf .open-next && cross-env NODE_OPTIONS=--no-deprecation next dev",
