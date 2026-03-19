@@ -7,9 +7,18 @@ import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
+import { seoPlugin } from '@payloadcms/plugin-seo'
+import { redirectsPlugin } from '@payloadcms/plugin-redirects'
+import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Pages } from './collections/Pages'
+import { Posts } from './collections/Posts'
+import { Categories } from './collections/Categories'
+import { Header } from './globals/Header'
+import { Footer } from './globals/Footer'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -37,7 +46,7 @@ const cloudflareLogger = {
   error: createLog('error', console.error),
   fatal: createLog('fatal', console.error),
   silent: () => {},
-} as any // Use PayloadLogger type when it's exported
+} as any
 
 const cloudflare =
   isCLI || !isProduction || isBuild
@@ -51,7 +60,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Pages, Posts, Categories],
+  globals: [Header, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -59,15 +69,33 @@ export default buildConfig({
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
   logger: isProduction ? cloudflareLogger : undefined,
+  localization: {
+    locales: [
+      { label: 'English', code: 'en' },
+      { label: 'Polish', code: 'pl' },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },
     }),
+    seoPlugin({
+      collections: ['pages', 'posts'],
+      uploadsCollection: 'media',
+      generateTitle: ({ doc }) => `${doc.title ?? ''} | American Dream`,
+      generateDescription: ({ doc }) => (doc.excerpt as string) ?? '',
+    }),
+    redirectsPlugin({
+      collections: ['pages', 'posts'],
+    }),
+    formBuilderPlugin({}),
+    nestedDocsPlugin({ collections: ['categories'] }),
   ],
 })
 
-// Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
 function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
   return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
     ({ getPlatformProxy }) =>
