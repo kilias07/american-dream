@@ -3,11 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Header, Footer } from '@/payload-types'
-import { locales, type Locale } from '@/config/locales'
-
-export async function generateStaticParams() {
-  return locales.map((locale) => ({ locale }))
-}
+import { type Locale } from '@/config/locales'
 
 async function getHeader(locale: Locale): Promise<Header | null> {
   try {

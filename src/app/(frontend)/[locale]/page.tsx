@@ -6,9 +6,9 @@ import type { Page } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
 
-// force-dynamic prevents a stale SSG 404 from being served when the 'home'
-// page doesn't exist at build time; unstable_cache still caches D1 queries
-export const dynamic = 'force-dynamic'
+// ISR: cache the rendered HTML until revalidateTag('page-home') or 'pages' is called.
+// Using revalidate as a safety net in case tag invalidation fails.
+export const revalidate = 3600
 
 async function getHomePage(locale: Locale): Promise<Page | null> {
   try {
