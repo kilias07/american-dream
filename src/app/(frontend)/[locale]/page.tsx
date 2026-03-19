@@ -1,10 +1,11 @@
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import configPromise from '@payload-config'
-import { unstable_cache } from 'next/cache'
 import type { Page } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
+
+export const dynamic = 'force-dynamic'
 
 async function getHomePage(locale: Locale): Promise<Page | null> {
   try {
@@ -29,14 +30,7 @@ export default async function LocaleIndexPage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-
-  const cachedGetHomePage = unstable_cache(
-    () => getHomePage(locale as Locale),
-    [`page-home-${locale}`],
-    { tags: ['page-home', 'pages'] },
-  )
-
-  const page = await cachedGetHomePage()
+  const page = await getHomePage(locale as Locale)
 
   if (!page) {
     notFound()
