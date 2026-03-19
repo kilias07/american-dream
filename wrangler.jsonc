@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "my-app",
+  "account_id": "bd607571e7f04e97a5b814b406bd53d5",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": [
     // Enable Node.js API
@@ -18,7 +19,7 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_id": "DATABASE_ID",
+      "database_id": "10c5b0fc-be5e-4e4e-b4e5-43d900af7ee9",
       "database_name": "my-app",
       "remote": true,
     },
