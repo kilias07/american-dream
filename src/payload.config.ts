@@ -12,6 +12,7 @@ import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 
+import { localeDefinitions, defaultLocale } from './config/locales'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -70,11 +71,8 @@ export default buildConfig({
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
   logger: isProduction ? cloudflareLogger : undefined,
   localization: {
-    locales: [
-      { label: 'English', code: 'en' },
-      { label: 'Polish', code: 'pl' },
-    ],
-    defaultLocale: 'en',
+    locales: [...localeDefinitions],
+    defaultLocale,
     fallback: true,
   },
   plugins: [

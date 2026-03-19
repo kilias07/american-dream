@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-
-const LOCALES = ['en', 'pl']
-const DEFAULT_LOCALE = 'en'
+import { locales, defaultLocale } from '@/config/locales'
 
 function getLocale(request: NextRequest): string {
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value
-  if (cookieLocale && LOCALES.includes(cookieLocale)) {
+  if (cookieLocale && locales.includes(cookieLocale as 'en' | 'pl')) {
     return cookieLocale
   }
 
@@ -15,11 +13,11 @@ function getLocale(request: NextRequest): string {
     const preferred = acceptLanguage
       .split(',')
       .map((lang) => lang.split(';')[0].trim().toLowerCase().slice(0, 2))
-      .find((lang) => LOCALES.includes(lang))
+      .find((lang): lang is 'en' | 'pl' => locales.includes(lang as 'en' | 'pl'))
     if (preferred) return preferred
   }
 
-  return DEFAULT_LOCALE
+  return defaultLocale
 }
 
 export function middleware(request: NextRequest) {
@@ -34,7 +32,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const pathnameHasLocale = LOCALES.some(
+  const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
   )
 

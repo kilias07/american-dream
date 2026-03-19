@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { locales } from '@/config/locales'
 
 export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
   const pathname = usePathname()
@@ -16,18 +17,15 @@ export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
 
   return (
     <div style={{ display: 'flex', gap: '0.5rem' }}>
-      <button
-        onClick={() => switchLocale('en')}
-        style={{ fontWeight: currentLocale === 'en' ? 'bold' : 'normal', cursor: 'pointer' }}
-      >
-        EN
-      </button>
-      <button
-        onClick={() => switchLocale('pl')}
-        style={{ fontWeight: currentLocale === 'pl' ? 'bold' : 'normal', cursor: 'pointer' }}
-      >
-        PL
-      </button>
+      {locales.map((locale) => (
+        <button
+          key={locale}
+          onClick={() => switchLocale(locale)}
+          style={{ fontWeight: currentLocale === locale ? 'bold' : 'normal', cursor: 'pointer' }}
+        >
+          {locale.toUpperCase()}
+        </button>
+      ))}
     </div>
   )
 }

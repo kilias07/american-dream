@@ -3,19 +3,20 @@ import { notFound } from 'next/navigation'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Media, Page } from '@/payload-types'
+import { locales, defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
-async function getPage(slug: string, locale: string): Promise<Page | null> {
+async function getPage(slug: string, locale: Locale): Promise<Page | null> {
   const payload = await getPayload({ config: configPromise })
   const result = await payload.find({
     collection: 'pages',
     where: { slug: { equals: slug } },
-    locale: locale as 'en' | 'pl',
-    fallbackLocale: 'en',
+    locale,
+    fallbackLocale: defaultLocale,
     depth: 2,
     limit: 1,
   })
@@ -30,7 +31,7 @@ export default async function PageRoute({
   const { locale, slug } = await params
 
   const cachedGetPage = unstable_cache(
-    () => getPage(slug, locale),
+    () => getPage(slug, locale as Locale),
     [`page-${slug}-${locale}`],
     { tags: [`page-${slug}`, 'pages'] },
   )
@@ -54,8 +55,6 @@ export async function generateStaticParams() {
       depth: 0,
     })
 
-    const locales = ['en', 'pl']
-
     return pages.docs.flatMap((page) =>
       locales.map((locale) => ({ locale, slug: page.slug as string })),
     )
@@ -71,7 +70,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>
 }) {
   const { locale, slug } = await params
-  const page = await getPage(slug, locale)
+  const page = await getPage(slug, locale as Locale)
 
   if (!page) return {}
 

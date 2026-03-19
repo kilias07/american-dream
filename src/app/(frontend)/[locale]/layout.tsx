@@ -3,24 +3,25 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Header, Footer } from '@/payload-types'
+import { locales, type Locale } from '@/config/locales'
 
 export async function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'pl' }]
+  return locales.map((locale) => ({ locale }))
 }
 
-async function getHeader(locale: string): Promise<Header | null> {
+async function getHeader(locale: Locale): Promise<Header | null> {
   try {
     const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'header', locale: locale as 'en' | 'pl' })
+    return payload.findGlobal({ slug: 'header', locale })
   } catch {
     return null
   }
 }
 
-async function getFooter(locale: string): Promise<Footer | null> {
+async function getFooter(locale: Locale): Promise<Footer | null> {
   try {
     const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'footer', locale: locale as 'en' | 'pl' })
+    return payload.findGlobal({ slug: 'footer', locale })
   } catch {
     return null
   }
@@ -35,10 +36,10 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params
 
-  const cachedHeader = unstable_cache(() => getHeader(locale), [`header-${locale}`], {
+  const cachedHeader = unstable_cache(() => getHeader(locale as Locale), [`header-${locale}`], {
     tags: ['global-header'],
   })
-  const cachedFooter = unstable_cache(() => getFooter(locale), [`footer-${locale}`], {
+  const cachedFooter = unstable_cache(() => getFooter(locale as Locale), [`footer-${locale}`], {
     tags: ['global-footer'],
   })
 
