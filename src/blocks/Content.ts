@@ -24,12 +24,14 @@ const columnFields: Field[] = [
     name: 'enableLink',
     type: 'checkbox',
   },
-  {
-    ...link({ appearances: false }),
-    admin: {
-      condition: (_, { enableLink }) => Boolean(enableLink),
+  link({
+    appearances: false,
+    overrides: {
+      admin: {
+        condition: (_, { enableLink }) => Boolean(enableLink),
+      },
     },
-  },
+  }),
 ]
 
 export const Content: Block = {

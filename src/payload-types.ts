@@ -181,7 +181,11 @@ export interface Media {
 export interface Page {
   id: number;
   title: string;
-  slug?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
   layout?:
     | (
         | {
@@ -419,7 +423,11 @@ export interface Page {
 export interface Post {
   id: number;
   title: string;
-  slug?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
   heroImage?: (number | null) | Media;
   content?: {
     root: {
@@ -828,6 +836,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
+  generateSlug?: T;
   slug?: T;
   layout?:
     | T
@@ -970,6 +979,7 @@ export interface PagesSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  generateSlug?: T;
   slug?: T;
   heroImage?: T;
   content?: T;

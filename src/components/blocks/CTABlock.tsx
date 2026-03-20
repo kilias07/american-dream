@@ -1,10 +1,11 @@
 import React from 'react'
 import type { Page } from '@/payload-types'
+import { CMSLink } from '@/components/Link'
 import { RichTextRenderer } from '../RichTextRenderer'
 
 type CTAData = Extract<NonNullable<Page['layout']>[number], { blockType: 'cta' }>
 
-export function CTABlock({ block }: { block: CTAData }) {
+export function CTABlock({ block, locale }: { block: CTAData; locale?: string }) {
   const { richText, links } = block
 
   return (
@@ -28,25 +29,16 @@ export function CTABlock({ block }: { block: CTAData }) {
             }}
           >
             {links.map((item, i) => (
-              <a
+              <CMSLink
                 key={item.id ?? i}
-                href={item.link.url ?? '#'}
-                target={item.link.newTab ? '_blank' : undefined}
-                rel={item.link.newTab ? 'noopener noreferrer' : undefined}
-                style={{
-                  padding: '0.75rem 2rem',
-                  border:
-                    item.link.appearance === 'outline' ? '2px solid #333' : 'none',
-                  backgroundColor:
-                    item.link.appearance === 'outline' ? 'transparent' : '#333',
-                  color: item.link.appearance === 'outline' ? '#333' : '#fff',
-                  textDecoration: 'none',
-                  borderRadius: '4px',
-                  fontWeight: 'bold',
-                }}
-              >
-                {item.link.label}
-              </a>
+                type={item.link.type}
+                url={item.link.url}
+                reference={item.link.reference as any}
+                newTab={item.link.newTab}
+                label={item.link.label}
+                locale={locale}
+                appearance={item.link.appearance ?? 'default'}
+              />
             ))}
           </div>
         )}

@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
@@ -12,6 +11,7 @@ import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 
+import { defaultLexical } from './fields/defaultLexical'
 import { localeDefinitions, defaultLocale } from './config/locales'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -63,7 +63,7 @@ export default buildConfig({
   },
   collections: [Users, Media, Pages, Posts, Categories],
   globals: [Header, Footer],
-  editor: lexicalEditor(),
+  editor: defaultLexical,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

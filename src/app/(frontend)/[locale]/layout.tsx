@@ -1,43 +1,7 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { unstable_cache } from 'next/cache'
-import type { Header, Footer, Page, Post } from '@/payload-types'
-import { type Locale } from '@/config/locales'
-
-type NavLink = NonNullable<Header['navItems']>[number]['link']
-
-function resolveHref(link: NavLink, locale: string): string {
-  if (link.type === 'custom') return link.url ?? '#'
-  const ref = link.reference?.value
-  if (!ref || typeof ref === 'number') return '#'
-  if ((ref as Page).slug !== undefined) {
-    const slug = (ref as Page).slug
-    return slug === 'home' ? `/${locale}` : `/${locale}/${slug}`
-  }
-  if ((ref as Post).slug !== undefined) {
-    return `/${locale}/posts/${(ref as Post).slug}`
-  }
-  return '#'
-}
-
-async function getHeader(locale: Locale): Promise<Header | null> {
-  try {
-    const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'header', locale, depth: 1 })
-  } catch {
-    return null
-  }
-}
-
-async function getFooter(locale: Locale): Promise<Footer | null> {
-  try {
-    const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'footer', locale })
-  } catch {
-    return null
-  }
-}
+import type { Locale } from '@/config/locales'
+import { Header } from '@/Header/Component'
+import { Footer } from '@/Footer/Component'
 
 export default async function LocaleLayout({
   children,
@@ -48,38 +12,11 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params
 
-  const cachedHeader = unstable_cache(() => getHeader(locale as Locale), [`header-${locale}`], {
-    tags: ['global-header'],
-  })
-  const cachedFooter = unstable_cache(() => getFooter(locale as Locale), [`footer-${locale}`], {
-    tags: ['global-footer'],
-  })
-
-  const [header, footer] = await Promise.all([cachedHeader(), cachedFooter()])
-
   return (
-    <html lang={locale}>
-      <body>
-        <header style={{ padding: '1rem', borderBottom: '1px solid #eee' }}>
-          <nav>
-            {header?.navItems?.map((item, i) => (
-              <a
-                key={item.id ?? i}
-                href={resolveHref(item.link, locale)}
-                style={{ marginRight: '1rem' }}
-                target={item.link.newTab ? '_blank' : undefined}
-                rel={item.link.newTab ? 'noopener noreferrer' : undefined}
-              >
-                {item.link.label}
-              </a>
-            ))}
-          </nav>
-        </header>
-        <main>{children}</main>
-        <footer style={{ padding: '1rem', borderTop: '1px solid #eee', marginTop: '2rem' }}>
-          {footer?.copyright && <p>{footer.copyright}</p>}
-        </footer>
-      </body>
-    </html>
+    <>
+      <Header locale={locale as Locale} />
+      <main className="flex-grow">{children}</main>
+      <Footer locale={locale as Locale} />
+    </>
   )
 }

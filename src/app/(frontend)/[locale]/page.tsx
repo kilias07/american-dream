@@ -46,5 +46,5 @@ export default async function LocaleIndexPage({
     notFound()
   }
 
-  return <BlockRenderer blocks={page.layout} />
+  return <BlockRenderer blocks={page.layout} locale={locale} />
 }

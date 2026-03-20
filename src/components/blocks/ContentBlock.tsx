@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Page } from '@/payload-types'
+import { CMSLink } from '@/components/Link'
 import { RichTextRenderer } from '../RichTextRenderer'
 
 type ContentData = Extract<NonNullable<Page['layout']>[number], { blockType: 'content' }>
@@ -12,7 +13,7 @@ const sizeMap: Record<NonNullable<Column['size']>, string> = {
   full: '100%',
 }
 
-export function ContentBlock({ block }: { block: ContentData }) {
+export function ContentBlock({ block, locale }: { block: ContentData; locale?: string }) {
   const { columns } = block
 
   if (!columns || columns.length === 0) return null
@@ -26,13 +27,14 @@ export function ContentBlock({ block }: { block: ContentData }) {
             <div key={col.id ?? i} style={{ flex: `0 0 ${width}`, maxWidth: width }}>
               <RichTextRenderer content={col.richText} />
               {col.enableLink && col.link?.label && (
-                <a
-                  href={col.link.url ?? '#'}
-                  target={col.link.newTab ? '_blank' : undefined}
-                  rel={col.link.newTab ? 'noopener noreferrer' : undefined}
-                >
-                  {col.link.label}
-                </a>
+                <CMSLink
+                  type={col.link.type}
+                  url={col.link.url}
+                  reference={col.link.reference as any}
+                  newTab={col.link.newTab}
+                  label={col.link.label}
+                  locale={locale}
+                />
               )}
             </div>
           )

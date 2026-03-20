@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from 'payload'
 import { revalidateTag } from 'next/cache'
 import {
   HeroBanner,
@@ -38,27 +39,7 @@ export const Pages: CollectionConfig = {
       localized: true,
       required: true,
     },
-    {
-      name: 'slug',
-      type: 'text',
-      unique: true,
-      admin: {
-        position: 'sidebar',
-      },
-      hooks: {
-        beforeValidate: [
-          ({ data, value }) => {
-            if (!value && data?.title) {
-              return (data.title as string)
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w-]+/g, '')
-            }
-            return value
-          },
-        ],
-      },
-    },
+    slugField(),
     {
       name: 'layout',
       type: 'blocks',
@@ -81,7 +62,7 @@ export const Pages: CollectionConfig = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100,
+        interval: 2000,
       },
     },
     maxPerDoc: 50,

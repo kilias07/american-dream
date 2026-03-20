@@ -1,6 +1,13 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from 'payload'
 import { revalidateTag } from 'next/cache'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import {
+  FixedToolbarFeature,
+  HeadingFeature,
+  HorizontalRuleFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -24,27 +31,7 @@ export const Posts: CollectionConfig = {
       localized: true,
       required: true,
     },
-    {
-      name: 'slug',
-      type: 'text',
-      unique: true,
-      admin: {
-        position: 'sidebar',
-      },
-      hooks: {
-        beforeValidate: [
-          ({ data, value }) => {
-            if (!value && data?.title) {
-              return (data.title as string)
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w-]+/g, '')
-            }
-            return value
-          },
-        ],
-      },
-    },
+    slugField(),
     {
       name: 'heroImage',
       type: 'upload',
@@ -53,7 +40,15 @@ export const Posts: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
-      editor: lexicalEditor(),
+      editor: lexicalEditor({
+        features: ({ rootFeatures }) => [
+          ...rootFeatures,
+          HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+          FixedToolbarFeature(),
+          InlineToolbarFeature(),
+          HorizontalRuleFeature(),
+        ],
+      }),
       localized: true,
     },
     {
@@ -103,7 +98,7 @@ export const Posts: CollectionConfig = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100,
+        interval: 2000,
       },
     },
     maxPerDoc: 50,

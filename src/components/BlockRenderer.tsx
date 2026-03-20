@@ -4,15 +4,21 @@ import { HeroBannerBlock } from './blocks/HeroBannerBlock'
 import { RichTextBlock } from './blocks/RichTextBlock'
 import { ImageGalleryBlock } from './blocks/ImageGalleryBlock'
 import { LiveStreamBlock } from './blocks/LiveStreamBlock'
-import { ContentBlock } from './blocks/ContentBlock'
-import { CTABlock } from './blocks/CTABlock'
-import { MediaBlockComponent } from './blocks/MediaBlock'
 import { ArchiveBlock } from './blocks/ArchiveBlock'
-import { BannerBlock } from './blocks/BannerBlock'
+import { ContentBlock } from '@/blocks/Content/Component'
+import { CallToActionBlock } from '@/blocks/CallToAction/Component'
+import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { BannerBlock } from '@/blocks/Banner/Component'
 
 type PageBlock = NonNullable<Page['layout']>[number]
 
-export function BlockRenderer({ blocks }: { blocks: PageBlock[] | null | undefined }) {
+export function BlockRenderer({
+  blocks,
+  locale,
+}: {
+  blocks: PageBlock[] | null | undefined
+  locale?: string
+}) {
   if (!blocks || blocks.length === 0) return null
 
   return (
@@ -20,7 +26,7 @@ export function BlockRenderer({ blocks }: { blocks: PageBlock[] | null | undefin
       {blocks.map((block, i) => {
         switch (block.blockType) {
           case 'heroBanner':
-            return <HeroBannerBlock key={i} block={block} />
+            return <HeroBannerBlock key={i} block={block} locale={locale} />
           case 'richText':
             return <RichTextBlock key={i} block={block} />
           case 'imageGallery':
@@ -28,15 +34,15 @@ export function BlockRenderer({ blocks }: { blocks: PageBlock[] | null | undefin
           case 'liveStream':
             return <LiveStreamBlock key={i} block={block} />
           case 'content':
-            return <ContentBlock key={i} block={block} />
+            return <ContentBlock key={i} {...block} />
           case 'cta':
-            return <CTABlock key={i} block={block} />
+            return <CallToActionBlock key={i} {...block} />
           case 'mediaBlock':
-            return <MediaBlockComponent key={i} block={block} />
+            return <MediaBlock key={i} {...block} />
           case 'archive':
             return <ArchiveBlock key={i} block={block} />
           case 'banner':
-            return <BannerBlock key={i} block={block} />
+            return <BannerBlock key={i} {...block} />
           default:
             return null
         }

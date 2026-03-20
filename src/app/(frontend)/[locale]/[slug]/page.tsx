@@ -42,7 +42,7 @@ export default async function PageRoute({
     notFound()
   }
 
-  return <BlockRenderer blocks={page.layout} />
+  return <BlockRenderer blocks={page.layout} locale={locale} />
 }
 
 export async function generateStaticParams() {
@@ -51,13 +51,17 @@ export async function generateStaticParams() {
 
     const pages = await payload.find({
       collection: 'pages',
-      limit: 1000,
-      depth: 0,
+      draft: false,
+      overrideAccess: false,
+      pagination: false,
+      select: { slug: true },
     })
 
-    return pages.docs.flatMap((page) =>
-      locales.map((locale) => ({ locale, slug: page.slug as string })),
-    )
+    return pages.docs
+      .filter((page) => page.slug && page.slug !== 'home')
+      .flatMap((page) =>
+        locales.map((locale) => ({ locale, slug: page.slug as string })),
+      )
   } catch {
     // DB not ready yet (e.g. migration not applied) — pages will be rendered on demand
     return []
