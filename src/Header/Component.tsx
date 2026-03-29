@@ -1,14 +1,14 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 
-import type { Header, Media } from '@/payload-types'
+import type { Header } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { CMSLink } from '@/components/Link'
 import { MobileMenu } from './MobileMenu'
+import { Logo } from './Logo'
 
 const SocialIcon = ({ platform }: { platform: string }) => {
   const cls = 'w-4 h-4 fill-current'
@@ -63,20 +63,17 @@ export async function Header({ locale }: { locale: Locale }) {
     topBarText,
     phone,
     address,
-    logo,
     socialLinks,
     navItemsLeft,
     navItemsRight,
     ctaButton,
   } = header || {}
 
-  const logoMedia = logo && typeof logo === 'object' ? (logo as Media) : null
-
   return (
     <header className="w-full sticky top-0 z-50">
       {/* ── Top bar ── */}
       <div className="bg-brand-gold">
-        <div className="container flex items-center justify-between py-2 text-[13px] font-medium text-brand-navy">
+        <div className="container flex items-center justify-between py-2 text-[14px] font-medium text-brand-navy">
           {/* Announcement — hidden on small screens */}
           {topBarText && (
             <span className="hidden md:block leading-tight">{topBarText}</span>
@@ -116,10 +113,10 @@ export async function Header({ locale }: { locale: Locale }) {
 
       {/* ── Main nav ── */}
       <div className="bg-brand-navy">
-        <div className="container relative flex items-center justify-between py-4">
+        <div className="container flex items-center justify-between h-[120px] lg:grid lg:grid-cols-[1fr_auto_1fr]">
 
           {/* ── LEFT: social icons + left nav (desktop only) ── */}
-          <div className="hidden lg:flex items-center gap-6 flex-1">
+          <div className="hidden lg:flex items-center gap-6 justify-start">
             {/* Social links */}
             {socialLinks && socialLinks.length > 0 && (
               <div className="flex items-center gap-3">
@@ -146,7 +143,7 @@ export async function Header({ locale }: { locale: Locale }) {
                     key={i}
                     {...link}
                     locale={locale}
-                    className="text-white uppercase tracking-[0.12em] text-[11px] font-semibold hover:text-brand-gold transition-colors whitespace-nowrap"
+                    className="text-white uppercase tracking-[0.12em] text-[14px] font-semibold hover:text-brand-gold transition-colors whitespace-nowrap"
                   />
                 ))}
               </nav>
@@ -154,60 +151,21 @@ export async function Header({ locale }: { locale: Locale }) {
           </div>
 
           {/* ── CENTER: logo ── */}
-          <div className="absolute left-1/2 -translate-x-1/2 hidden lg:block">
+          <div className="hidden lg:flex justify-center flex-shrink-0 px-6">
             <Link href={`/${locale}`} className="block">
-              {logoMedia?.url ? (
-                <Image
-                  src={logoMedia.url}
-                  alt={logoMedia.alt || 'American Dream Club'}
-                  width={220}
-                  height={100}
-                  className="h-20 w-auto"
-                  priority
-                />
-              ) : (
-                <div className="text-center leading-tight">
-                  <div className="text-brand-gold font-bold text-[15px] tracking-[0.25em] uppercase">
-                    American Dream
-                  </div>
-                  <div className="text-brand-gold text-[8px] tracking-[0.35em] uppercase border-t border-b border-[#C8941A] py-0.5 my-0.5">
-                    ★ Club ★
-                  </div>
-                  <div className="text-white/60 text-[7px] tracking-[0.2em] uppercase">
-                    Jazz &amp; Restaurant
-                  </div>
-                </div>
-              )}
+              <Logo className="h-20 w-auto" />
             </Link>
           </div>
 
-          {/* Mobile: logo (visible on small screens) */}
+          {/* Mobile: logo */}
           <div className="lg:hidden">
             <Link href={`/${locale}`} className="block">
-              {logoMedia?.url ? (
-                <Image
-                  src={logoMedia.url}
-                  alt={logoMedia.alt || 'American Dream Club'}
-                  width={280}
-                  height={120}
-                  className="h-28 w-auto"
-                  priority
-                />
-              ) : (
-                <div className="text-center leading-tight">
-                  <div className="text-brand-gold font-bold text-[13px] tracking-[0.2em] uppercase">
-                    American Dream
-                  </div>
-                  <div className="text-white/60 text-[7px] tracking-[0.15em] uppercase">
-                    Jazz &amp; Restaurant
-                  </div>
-                </div>
-              )}
+              <Logo className="h-16 w-auto" />
             </Link>
           </div>
 
           {/* ── RIGHT: right nav + language switcher + CTA (desktop only) ── */}
-          <div className="hidden lg:flex items-center gap-6 flex-1 justify-end">
+          <div className="hidden lg:flex items-center gap-6 justify-end">
             {/* Right nav items */}
             {navItemsRight && navItemsRight.length > 0 && (
               <nav className="flex items-center gap-6">
@@ -216,7 +174,7 @@ export async function Header({ locale }: { locale: Locale }) {
                     key={i}
                     {...link}
                     locale={locale}
-                    className="text-white uppercase tracking-[0.12em] text-[11px] font-semibold hover:text-brand-gold transition-colors whitespace-nowrap"
+                    className="text-white uppercase tracking-[0.12em] text-[14px] font-semibold hover:text-brand-gold transition-colors whitespace-nowrap"
                   />
                 ))}
               </nav>
@@ -247,13 +205,15 @@ export async function Header({ locale }: { locale: Locale }) {
               </Link>
             </div>
 
-            {/* CTA button */}
+            {/* CTA button — hidden below xl (1280px) */}
             {ctaButton && (
-              <CMSLink
-                {...ctaButton}
-                locale={locale}
-                className="bg-brand-gold text-white px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-brand-gold-dark transition-colors flex items-center gap-2 whitespace-nowrap"
-              />
+              <div className="hidden xl:block">
+                <CMSLink
+                  {...ctaButton}
+                  locale={locale}
+                  className="bg-brand-gold text-white px-5 py-2 rounded-full text-[14px] font-bold uppercase tracking-[0.12em] hover:bg-brand-gold-dark transition-colors flex items-center gap-2 whitespace-nowrap"
+                />
+              </div>
             )}
           </div>
 
