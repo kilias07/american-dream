@@ -36,6 +36,8 @@
 @source "../Header/Component.tsx";
 @source "../Header/MobileMenu.tsx";
 @source "../components/blocks/HeroBannerBlock.tsx";
+@source "../components/blocks/EventsTeaserBlock.tsx";
+@source "../components/blocks/EventsFullCalendar.tsx";
 
 @layer utilities {
   .container {

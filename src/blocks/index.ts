@@ -1,4 +1,5 @@
 export { HeroBanner } from './HeroBanner'
+export { EventsCalendar } from './EventsCalendar'
 export { RichTextBlock } from './RichText'
 export { ImageGallery } from './ImageGallery'
 export { LiveStream } from './LiveStream'

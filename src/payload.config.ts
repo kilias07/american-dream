@@ -18,6 +18,7 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
+import { Events } from './collections/Events'
 import { Header } from './globals/Header'
 import { Footer } from './globals/Footer'
 
@@ -61,7 +62,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Pages, Posts, Categories],
+  collections: [Users, Media, Pages, Posts, Categories, Events],
   globals: [Header, Footer],
   editor: defaultLexical,
   secret: process.env.PAYLOAD_SECRET || '',
