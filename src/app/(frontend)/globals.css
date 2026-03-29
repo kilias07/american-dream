@@ -35,6 +35,7 @@
 
 @source "../Header/Component.tsx";
 @source "../Header/MobileMenu.tsx";
+@source "../components/blocks/HeroBannerBlock.tsx";
 
 @layer utilities {
   .container {
