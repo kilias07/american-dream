@@ -1228,7 +1228,39 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: number;
-  navItems?:
+  /**
+   * Announcement text shown in the top bar
+   */
+  topBarText?: string | null;
+  /**
+   * Phone number shown in the top bar
+   */
+  phone?: string | null;
+  /**
+   * Physical address shown in the top bar
+   */
+  address?: string | null;
+  /**
+   * Site logo image
+   */
+  logo?: (number | null) | Media;
+  /**
+   * Social media icons shown on the left side of the nav
+   */
+  socialLinks?:
+    | {
+        platform: 'google' | 'facebook' | 'instagram' | 'youtube';
+        /**
+         * Full URL (e.g. https://facebook.com/...)
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Navigation links shown to the left of the logo
+   */
+  navItemsLeft?:
     | {
         link: {
           type?: ('reference' | 'custom') | null;
@@ -1248,6 +1280,47 @@ export interface Header {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Navigation links shown to the right of the logo
+   */
+  navItemsRight?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Call-to-action button (e.g., Reservation / Rezerwacja)
+   */
+  ctaButton: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null);
+    url?: string | null;
+    label: string;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1286,7 +1359,18 @@ export interface Footer {
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
-  navItems?:
+  topBarText?: T;
+  phone?: T;
+  address?: T;
+  logo?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  navItemsLeft?:
     | T
     | {
         link?:
@@ -1299,6 +1383,29 @@ export interface HeaderSelect<T extends boolean = true> {
               label?: T;
             };
         id?: T;
+      };
+  navItemsRight?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  ctaButton?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
       };
   updatedAt?: T;
   createdAt?: T;

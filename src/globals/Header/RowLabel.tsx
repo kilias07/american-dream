@@ -1,10 +1,10 @@
 'use client'
-import type { Header } from '@/payload-types'
 import type { RowLabelProps } from '@payloadcms/ui'
 import { useRowLabel } from '@payloadcms/ui'
+import React from 'react'
 
 export const RowLabel: React.FC<RowLabelProps> = () => {
-  const data = useRowLabel<NonNullable<Header['navItems']>[number]>()
+  const data = useRowLabel<{ link?: { label?: string | null } }>()
 
   const label = data?.data?.link?.label
     ? `Nav item ${data.rowNumber !== undefined ? data.rowNumber + 1 : ''}: ${data?.data?.link?.label}`
