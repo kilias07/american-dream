@@ -50,7 +50,7 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
   const image = isMedia(backgroundImage) ? backgroundImage : null
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center text-center text-white overflow-hidden">
+    <section className="relative min-h-[70vh] flex flex-col items-center justify-center text-center text-white overflow-hidden">
       {/* Background image */}
       {image?.url ? (
         <Image
@@ -75,7 +75,7 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
         </Link>
 
         {/* Heading */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide leading-tight">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-wide leading-tight">
           {heading}
         </h1>
 

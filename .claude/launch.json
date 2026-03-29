@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/Users/kamilkiliasinski/Library/pnpm/pnpm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": false,
+      "env": {
+        "PORT": "3000"
+      }
+    }
+  ]
+}

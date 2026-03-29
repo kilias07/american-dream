@@ -40,6 +40,7 @@ export async function EventsCalendarBlock({
   const heading = b.heading as string | undefined
   const ctaLabel = b.ctaLabel as string | undefined
   const ctaUrl = b.ctaUrl as string | undefined
+  const colorScheme = (b.colorScheme as 'gold' | 'white') ?? 'gold'
   const eventsSource = (b.eventsSource as 'auto' | 'manual') ?? 'auto'
   const autoCount = (b.autoCount as number) ?? 6
   const manualEventIds = ((b.manualEvents as Array<any>) ?? []).map((e: any) =>
@@ -78,7 +79,7 @@ export async function EventsCalendarBlock({
     events = allEvents.filter((e) => manualEventIds.includes(String(e.id)))
   }
 
-  const occurrences = expandEvents(events, now, futureEnd).slice(0, autoCount)
+  const occurrences = expandEvents(events, now, futureEnd).slice(0, Math.max(autoCount, 20))
 
   return (
     <EventsTeaserBlock
@@ -87,6 +88,7 @@ export async function EventsCalendarBlock({
       ctaLabel={ctaLabel}
       ctaUrl={ctaUrl}
       locale={loc}
+      colorScheme={colorScheme}
     />
   )
 }

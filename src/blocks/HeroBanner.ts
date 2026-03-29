@@ -12,7 +12,6 @@ export const HeroBanner: Block = {
       name: 'heading',
       type: 'text',
       localized: true,
-      required: true,
     },
     {
       name: 'subtext',

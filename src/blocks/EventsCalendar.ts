@@ -11,7 +11,6 @@ export const EventsCalendar: Block = {
     {
       name: 'variant',
       type: 'select',
-      required: true,
       defaultValue: 'teaser',
       options: [
         { label: 'Teaser — horizontal carousel with gold background', value: 'teaser' },
@@ -19,6 +18,21 @@ export const EventsCalendar: Block = {
       ],
       admin: {
         description: 'Choose how the calendar is displayed',
+      },
+    },
+
+    // ── Color scheme (teaser only) ───────────────────────────────────────
+    {
+      name: 'colorScheme',
+      type: 'select',
+      defaultValue: 'gold',
+      options: [
+        { label: 'Gold background', value: 'gold' },
+        { label: 'White background with lines', value: 'white' },
+      ],
+      admin: {
+        condition: (_data, siblingData) => siblingData?.variant === 'teaser',
+        description: 'Background style for the teaser carousel',
       },
     },
 
@@ -67,7 +81,7 @@ export const EventsCalendar: Block = {
         { label: 'Manual — pick specific featured events', value: 'manual' },
       ],
       admin: {
-        condition: (data) => data?.variant === 'teaser',
+        condition: (_data, siblingData) => siblingData?.variant === 'teaser',
         description: 'How to populate the teaser carousel',
       },
     },
@@ -78,7 +92,7 @@ export const EventsCalendar: Block = {
       min: 1,
       max: 12,
       admin: {
-        condition: (data) => data?.variant === 'teaser' && data?.eventsSource !== 'manual',
+        condition: (_data, siblingData) => siblingData?.variant === 'teaser' && siblingData?.eventsSource !== 'manual',
         description: 'How many upcoming events to show',
       },
     },
@@ -88,7 +102,7 @@ export const EventsCalendar: Block = {
       relationTo: 'events' as any,
       hasMany: true,
       admin: {
-        condition: (data) => data?.variant === 'teaser' && data?.eventsSource === 'manual',
+        condition: (_data, siblingData) => siblingData?.variant === 'teaser' && siblingData?.eventsSource === 'manual',
         description: 'Select specific events to show in the teaser (only events marked as Featured appear here)',
       },
     },

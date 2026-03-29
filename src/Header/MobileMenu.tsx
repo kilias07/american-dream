@@ -37,6 +37,7 @@ type Props = {
   navItemsRight: NavItem[]
   socialLinks: SocialLink[]
   ctaButton: CtaButton | null | undefined
+  ctaEnabled: boolean | null | undefined
   locale: string
 }
 
@@ -77,6 +78,7 @@ export const MobileMenu: React.FC<Props> = ({
   navItemsRight,
   socialLinks,
   ctaButton,
+  ctaEnabled,
   locale,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -106,13 +108,13 @@ export const MobileMenu: React.FC<Props> = ({
         className={`fixed top-0 right-0 z-[100] h-full w-full bg-brand-navy flex flex-col shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Close button */}
-        <div className="flex justify-end p-5">
+        <div className="flex justify-end mt-6 mr-6">
           <button
             className="text-white hover:text-brand-gold transition-colors"
             onClick={() => setIsOpen(false)}
             aria-label="Close menu"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -134,7 +136,7 @@ export const MobileMenu: React.FC<Props> = ({
         {/* Bottom section */}
         <div className="px-6 pb-8 pt-4 flex flex-col gap-5">
           {/* CTA button */}
-          {ctaButton && (
+          {ctaEnabled && ctaButton && (
             <div onClick={() => setIsOpen(false)}>
               <CMSLink
                 {...(ctaButton as Parameters<typeof CMSLink>[0])}

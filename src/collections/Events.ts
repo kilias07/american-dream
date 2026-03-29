@@ -20,7 +20,6 @@ export const Events: CollectionConfig = {
       name: 'title',
       type: 'text',
       localized: true,
-      required: true,
       admin: { placeholder: 'Chicago – Szalone Lata Dwudzieste' },
     },
     {
@@ -43,7 +42,6 @@ export const Events: CollectionConfig = {
         {
           name: 'date',
           type: 'date',
-          required: true,
           admin: {
             width: '50%',
             description: 'Start date (and time) of the event. For recurring events this is the first occurrence.',

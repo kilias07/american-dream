@@ -67,6 +67,7 @@ export async function Header({ locale }: { locale: Locale }) {
     navItemsLeft,
     navItemsRight,
     ctaButton,
+    ctaEnabled,
   } = header || {}
 
   return (
@@ -143,7 +144,7 @@ export async function Header({ locale }: { locale: Locale }) {
                     key={i}
                     {...link}
                     locale={locale}
-                    className="text-white uppercase tracking-[0.12em] text-[14px] font-semibold hover:text-brand-gold transition-colors whitespace-nowrap"
+                    className="text-white uppercase tracking-[0.12em] text-[14px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
                   />
                 ))}
               </nav>
@@ -174,7 +175,7 @@ export async function Header({ locale }: { locale: Locale }) {
                     key={i}
                     {...link}
                     locale={locale}
-                    className="text-white uppercase tracking-[0.12em] text-[14px] font-semibold hover:text-brand-gold transition-colors whitespace-nowrap"
+                    className="text-white uppercase tracking-[0.12em] text-[14px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
                   />
                 ))}
               </nav>
@@ -206,7 +207,7 @@ export async function Header({ locale }: { locale: Locale }) {
             </div>
 
             {/* CTA button — hidden below xl (1280px) */}
-            {ctaButton && (
+            {ctaEnabled && ctaButton && (
               <div className="hidden xl:block">
                 <CMSLink
                   {...ctaButton}
@@ -223,6 +224,7 @@ export async function Header({ locale }: { locale: Locale }) {
             navItemsRight={(navItemsRight as Parameters<typeof MobileMenu>[0]['navItemsRight']) || []}
             socialLinks={(socialLinks as Parameters<typeof MobileMenu>[0]['socialLinks']) || []}
             ctaButton={ctaButton as Parameters<typeof MobileMenu>[0]['ctaButton']}
+            ctaEnabled={ctaEnabled}
             locale={locale}
           />
         </div>

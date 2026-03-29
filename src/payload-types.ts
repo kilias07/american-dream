@@ -72,6 +72,7 @@ export interface Config {
     pages: Page;
     posts: Post;
     categories: Category;
+    events: Event;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -87,6 +88,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -189,10 +191,31 @@ export interface Page {
   layout?:
     | (
         | {
-            heading: string;
+            heading?: string | null;
             subtext?: string | null;
             backgroundImage?: (number | null) | Media;
-            link: {
+            secondaryLinks?:
+              | {
+                  link?: {
+                    type?: ('reference' | 'custom') | null;
+                    newTab?: boolean | null;
+                    reference?:
+                      | ({
+                          relationTo: 'pages';
+                          value: number | Page;
+                        } | null)
+                      | ({
+                          relationTo: 'posts';
+                          value: number | Post;
+                        } | null);
+                    url?: string | null;
+                    label?: string | null;
+                  };
+                  icon?: ('none' | 'fork' | 'music' | 'ticket' | 'calendar') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            ctaLink?: {
               type?: ('reference' | 'custom') | null;
               newTab?: boolean | null;
               reference?:
@@ -205,16 +228,14 @@ export interface Page {
                     value: number | Post;
                   } | null);
               url?: string | null;
-              label: string;
-              /**
-               * Choose how the link should be rendered.
-               */
-              appearance?: ('default' | 'outline') | null;
+              label?: string | null;
             };
+            ctaIcon?: ('none' | 'fork' | 'music' | 'ticket' | 'calendar') | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'heroBanner';
           }
+        | EventsCalendarBlock
         | {
             content: {
               root: {
@@ -286,7 +307,7 @@ export interface Page {
                           value: number | Post;
                         } | null);
                     url?: string | null;
-                    label: string;
+                    label?: string | null;
                   };
                   id?: string | null;
                 }[]
@@ -313,7 +334,7 @@ export interface Page {
             } | null;
             links?:
               | {
-                  link: {
+                  link?: {
                     type?: ('reference' | 'custom') | null;
                     newTab?: boolean | null;
                     reference?:
@@ -326,7 +347,7 @@ export interface Page {
                           value: number | Post;
                         } | null);
                     url?: string | null;
-                    label: string;
+                    label?: string | null;
                     /**
                      * Choose how the link should be rendered.
                      */
@@ -477,6 +498,100 @@ export interface Category {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsCalendarBlock".
+ */
+export interface EventsCalendarBlock {
+  /**
+   * Choose how the calendar is displayed
+   */
+  variant?: ('teaser' | 'full') | null;
+  /**
+   * Background style for the teaser carousel
+   */
+  colorScheme?: ('gold' | 'white') | null;
+  heading?: string | null;
+  /**
+   * CTA button label
+   */
+  ctaLabel?: string | null;
+  /**
+   * CTA button URL
+   */
+  ctaUrl?: string | null;
+  /**
+   * How to populate the teaser carousel
+   */
+  eventsSource?: ('auto' | 'manual') | null;
+  /**
+   * How many upcoming events to show
+   */
+  autoCount?: number | null;
+  /**
+   * Select specific events to show in the teaser (only events marked as Featured appear here)
+   */
+  manualEvents?: (number | Event)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'eventsCalendar';
+}
+/**
+ * Manage events and performances. Use recurring events to avoid creating entries manually each week.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title?: string | null;
+  /**
+   * Short description shown on event cards
+   */
+  description?: string | null;
+  /**
+   * Photo shown as card background
+   */
+  image?: (number | null) | Media;
+  /**
+   * Start date (and time) of the event. For recurring events this is the first occurrence.
+   */
+  date?: string | null;
+  /**
+   * End time in HH:MM format
+   */
+  endTime?: string | null;
+  /**
+   * Ticket price in PLN (leave empty if free)
+   */
+  price?: number | null;
+  /**
+   * External URL to buy tickets
+   */
+  ticketUrl?: string | null;
+  /**
+   * Mark this event to make it available for manual teaser selection
+   */
+  featured?: boolean | null;
+  /**
+   * Enable if this event repeats on a regular schedule
+   */
+  isRecurring?: boolean | null;
+  /**
+   * How often the event repeats
+   */
+  repeatType?: ('weekly' | 'monthly') | null;
+  /**
+   * Which days of the week this event occurs on
+   */
+  repeatDays?: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[] | null;
+  /**
+   * Last date of the recurrence (leave empty to repeat indefinitely)
+   */
+  repeatUntil?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -739,6 +854,10 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -847,7 +966,22 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               subtext?: T;
               backgroundImage?: T;
-              link?:
+              secondaryLinks?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    icon?: T;
+                    id?: T;
+                  };
+              ctaLink?:
                 | T
                 | {
                     type?: T;
@@ -855,11 +989,12 @@ export interface PagesSelect<T extends boolean = true> {
                     reference?: T;
                     url?: T;
                     label?: T;
-                    appearance?: T;
                   };
+              ctaIcon?: T;
               id?: T;
               blockName?: T;
             };
+        eventsCalendar?: T | EventsCalendarBlockSelect<T>;
         richText?:
           | T
           | {
@@ -975,6 +1110,22 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsCalendarBlock_select".
+ */
+export interface EventsCalendarBlockSelect<T extends boolean = true> {
+  variant?: T;
+  colorScheme?: T;
+  heading?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  eventsSource?: T;
+  autoCount?: T;
+  manualEvents?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -1014,6 +1165,26 @@ export interface CategoriesSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  image?: T;
+  date?: T;
+  endTime?: T;
+  price?: T;
+  ticketUrl?: T;
+  featured?: T;
+  isRecurring?: T;
+  repeatType?: T;
+  repeatDays?: T;
+  repeatUntil?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1241,10 +1412,6 @@ export interface Header {
    */
   address?: string | null;
   /**
-   * Site logo image
-   */
-  logo?: (number | null) | Media;
-  /**
    * Social media icons shown on the left side of the nav
    */
   socialLinks?:
@@ -1262,7 +1429,7 @@ export interface Header {
    */
   navItemsLeft?:
     | {
-        link: {
+        link?: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
@@ -1275,7 +1442,7 @@ export interface Header {
                 value: number | Post;
               } | null);
           url?: string | null;
-          label: string;
+          label?: string | null;
         };
         id?: string | null;
       }[]
@@ -1285,7 +1452,7 @@ export interface Header {
    */
   navItemsRight?:
     | {
-        link: {
+        link?: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
@@ -1298,15 +1465,16 @@ export interface Header {
                 value: number | Post;
               } | null);
           url?: string | null;
-          label: string;
+          label?: string | null;
         };
         id?: string | null;
       }[]
     | null;
+  ctaEnabled?: boolean | null;
   /**
    * Call-to-action button (e.g., Reservation / Rezerwacja)
    */
-  ctaButton: {
+  ctaButton?: {
     type?: ('reference' | 'custom') | null;
     newTab?: boolean | null;
     reference?:
@@ -1319,7 +1487,7 @@ export interface Header {
           value: number | Post;
         } | null);
     url?: string | null;
-    label: string;
+    label?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1332,7 +1500,7 @@ export interface Footer {
   id: number;
   navItems?:
     | {
-        link: {
+        link?: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
@@ -1345,7 +1513,7 @@ export interface Footer {
                 value: number | Post;
               } | null);
           url?: string | null;
-          label: string;
+          label?: string | null;
         };
         id?: string | null;
       }[]
@@ -1362,7 +1530,6 @@ export interface HeaderSelect<T extends boolean = true> {
   topBarText?: T;
   phone?: T;
   address?: T;
-  logo?: T;
   socialLinks?:
     | T
     | {
@@ -1398,6 +1565,7 @@ export interface HeaderSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  ctaEnabled?: T;
   ctaButton?:
     | T
     | {
