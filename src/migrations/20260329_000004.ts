@@ -41,15 +41,15 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   // HasMany select — repeatDays
   await db.run(sql`
     CREATE TABLE \`events_repeat_days\` (
-      \`_order\` integer NOT NULL,
-      \`_parent_id\` integer NOT NULL,
+      \`order\` integer NOT NULL,
+      \`parent_id\` integer NOT NULL,
       \`id\` text PRIMARY KEY NOT NULL,
       \`value\` text,
-      FOREIGN KEY (\`_parent_id\`) REFERENCES \`events\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
+      FOREIGN KEY (\`parent_id\`) REFERENCES \`events\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
     );
   `)
-  await db.run(sql`CREATE INDEX \`events_repeat_days_order_idx\` ON \`events_repeat_days\` (\`_order\`);`)
-  await db.run(sql`CREATE INDEX \`events_repeat_days_parent_idx\` ON \`events_repeat_days\` (\`_parent_id\`);`)
+  await db.run(sql`CREATE INDEX \`events_repeat_days_order_idx\` ON \`events_repeat_days\` (\`order\`);`)
+  await db.run(sql`CREATE INDEX \`events_repeat_days_parent_idx\` ON \`events_repeat_days\` (\`parent_id\`);`)
 
   // payload_locked_documents_rels — register events collection
   await db.run(sql`ALTER TABLE \`payload_locked_documents_rels\` ADD \`events_id\` integer REFERENCES \`events\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION;`)
@@ -57,7 +57,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
   // ── EventsCalendar block ───────────────────────────────────────────────
 
-  // Block table for pages layout
+  // Block table for pages layout (localized fields stored directly on row; one row per locale)
   await db.run(sql`
     CREATE TABLE \`pages_blocks_events_calendar\` (
       \`_order\` integer NOT NULL,
@@ -66,6 +66,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       \`_locale\` text NOT NULL,
       \`id\` text PRIMARY KEY NOT NULL,
       \`variant\` text DEFAULT 'teaser',
+      \`color_scheme\` text DEFAULT 'gold',
+      \`heading\` text,
+      \`cta_label\` text,
       \`cta_url\` text,
       \`events_source\` text DEFAULT 'auto',
       \`auto_count\` numeric DEFAULT 6,
@@ -78,24 +81,11 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.run(sql`CREATE INDEX \`pages_blocks_events_calendar_path_idx\` ON \`pages_blocks_events_calendar\` (\`_path\`);`)
   await db.run(sql`CREATE INDEX \`pages_blocks_events_calendar_locale_idx\` ON \`pages_blocks_events_calendar\` (\`_locale\`);`)
 
-  // Localized fields for the block (heading, ctaLabel)
-  await db.run(sql`
-    CREATE TABLE \`pages_blocks_events_calendar_locales\` (
-      \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-      \`heading\` text,
-      \`cta_label\` text,
-      \`_locale\` text NOT NULL,
-      \`_parent_id\` text NOT NULL,
-      FOREIGN KEY (\`_parent_id\`) REFERENCES \`pages_blocks_events_calendar\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
-    );
-  `)
-  await db.run(sql`CREATE UNIQUE INDEX \`pages_blocks_events_calendar_locales_locale_parent_id_unique\` ON \`pages_blocks_events_calendar_locales\` (\`_locale\`, \`_parent_id\`);`)
-
   // Add events_id to pages_rels for manualEvents relationship
   await db.run(sql`ALTER TABLE \`pages_rels\` ADD \`events_id\` integer REFERENCES \`events\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION;`)
   await db.run(sql`CREATE INDEX \`pages_rels_events_id_idx\` ON \`pages_rels\` (\`events_id\`);`)
 
-  // Versioned block table
+  // Versioned block table (localized fields stored directly on row)
   await db.run(sql`
     CREATE TABLE \`_pages_v_blocks_events_calendar\` (
       \`_order\` integer NOT NULL,
@@ -104,6 +94,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       \`_locale\` text NOT NULL,
       \`id\` integer PRIMARY KEY NOT NULL,
       \`variant\` text DEFAULT 'teaser',
+      \`color_scheme\` text DEFAULT 'gold',
+      \`heading\` text,
+      \`cta_label\` text,
       \`cta_url\` text,
       \`events_source\` text DEFAULT 'auto',
       \`auto_count\` numeric DEFAULT 6,
@@ -117,28 +110,13 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.run(sql`CREATE INDEX \`_pages_v_blocks_events_calendar_path_idx\` ON \`_pages_v_blocks_events_calendar\` (\`_path\`);`)
   await db.run(sql`CREATE INDEX \`_pages_v_blocks_events_calendar_locale_idx\` ON \`_pages_v_blocks_events_calendar\` (\`_locale\`);`)
 
-  // Versioned locales
-  await db.run(sql`
-    CREATE TABLE \`_pages_v_blocks_events_calendar_locales\` (
-      \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-      \`heading\` text,
-      \`cta_label\` text,
-      \`_locale\` text NOT NULL,
-      \`_parent_id\` integer NOT NULL,
-      FOREIGN KEY (\`_parent_id\`) REFERENCES \`_pages_v_blocks_events_calendar\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
-    );
-  `)
-  await db.run(sql`CREATE UNIQUE INDEX \`_pages_v_blocks_events_calendar_locales_locale_parent_id_unique\` ON \`_pages_v_blocks_events_calendar_locales\` (\`_locale\`, \`_parent_id\`);`)
-
   // Add events_id to _pages_v_rels
   await db.run(sql`ALTER TABLE \`_pages_v_rels\` ADD \`events_id\` integer REFERENCES \`events\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION;`)
   await db.run(sql`CREATE INDEX \`_pages_v_rels_events_id_idx\` ON \`_pages_v_rels\` (\`events_id\`);`)
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
-  await db.run(sql`DROP TABLE IF EXISTS \`_pages_v_blocks_events_calendar_locales\``)
   await db.run(sql`DROP TABLE IF EXISTS \`_pages_v_blocks_events_calendar\``)
-  await db.run(sql`DROP TABLE IF EXISTS \`pages_blocks_events_calendar_locales\``)
   await db.run(sql`DROP TABLE IF EXISTS \`pages_blocks_events_calendar\``)
   await db.run(sql`DROP TABLE IF EXISTS \`events_repeat_days\``)
   await db.run(sql`DROP TABLE IF EXISTS \`events_locales\``)

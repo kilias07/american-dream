@@ -12,6 +12,7 @@ import {
   Archive,
   Banner,
   EventsCalendar,
+  BentoSection,
 } from '../blocks'
 
 export const Pages: CollectionConfig = {
@@ -44,7 +45,7 @@ export const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [HeroBanner, EventsCalendar, RichTextBlock, ImageGallery, LiveStream, Content, CallToAction, MediaBlock, Archive, Banner],
+      blocks: [HeroBanner, EventsCalendar, BentoSection, RichTextBlock, ImageGallery, LiveStream, Content, CallToAction, MediaBlock, Archive, Banner],
       localized: true,
     },
   ],

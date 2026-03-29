@@ -236,6 +236,7 @@ export interface Page {
             blockType: 'heroBanner';
           }
         | EventsCalendarBlock
+        | BentoSectionBlock
         | {
             content: {
               root: {
@@ -594,6 +595,38 @@ export interface Event {
   repeatUntil?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BentoSectionBlock".
+ */
+export interface BentoSectionBlock {
+  subheading?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  /**
+   * Each item is a bento card. Set colSpan to control layout.
+   */
+  items?:
+    | {
+        image: number | Media;
+        /**
+         * Controls how wide this card is in the grid
+         */
+        colSpan: 'half' | 'full';
+        /**
+         * Small description text above title
+         */
+        label?: string | null;
+        title: string;
+        ctaLabel?: string | null;
+        ctaUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'bentoSection';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -995,6 +1028,7 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
         eventsCalendar?: T | EventsCalendarBlockSelect<T>;
+        bentoSection?: T | BentoSectionBlockSelect<T>;
         richText?:
           | T
           | {
@@ -1121,6 +1155,28 @@ export interface EventsCalendarBlockSelect<T extends boolean = true> {
   eventsSource?: T;
   autoCount?: T;
   manualEvents?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BentoSectionBlock_select".
+ */
+export interface BentoSectionBlockSelect<T extends boolean = true> {
+  subheading?: T;
+  heading?: T;
+  description?: T;
+  items?:
+    | T
+    | {
+        image?: T;
+        colSpan?: T;
+        label?: T;
+        title?: T;
+        ctaLabel?: T;
+        ctaUrl?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }

@@ -10,6 +10,7 @@ import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { EventsCalendarBlock } from './blocks/EventsCalendarBlock'
+import { BentoSectionBlock } from './blocks/BentoSectionBlock'
 
 type PageBlock = NonNullable<Page['layout']>[number]
 
@@ -36,6 +37,16 @@ function renderBlock(block: any, i: number, locale?: string): React.ReactNode {
       return <BannerBlock key={i} {...block} />
     case 'eventsCalendar':
       return <EventsCalendarBlock key={i} block={block} locale={locale} />
+    case 'bentoSection':
+      return (
+        <BentoSectionBlock
+          key={i}
+          subheading={block.subheading}
+          heading={block.heading}
+          description={block.description}
+          items={block.items ?? []}
+        />
+      )
     default:
       return null
   }

@@ -71,7 +71,7 @@ export async function Header({ locale }: { locale: Locale }) {
   } = header || {}
 
   return (
-    <header className="w-full sticky top-0 z-50">
+    <header className="w-full">
       {/* ── Top bar ── */}
       <div className="bg-brand-gold">
         <div className="container flex items-center justify-between py-2 text-[14px] font-medium text-brand-navy">

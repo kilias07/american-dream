@@ -1,5 +1,6 @@
 export { HeroBanner } from './HeroBanner'
 export { EventsCalendar } from './EventsCalendar'
+export { BentoSection } from './BentoSection'
 export { RichTextBlock } from './RichText'
 export { ImageGallery } from './ImageGallery'
 export { LiveStream } from './LiveStream'
