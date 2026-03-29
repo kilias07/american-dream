@@ -31,15 +31,6 @@ export const Header: GlobalConfig = {
         description: 'Physical address shown in the top bar',
       },
     },
-    // Logo
-    {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'media',
-      admin: {
-        description: 'Site logo image',
-      },
-    },
     // Social media links
     {
       name: 'socialLinks',
@@ -98,13 +89,20 @@ export const Header: GlobalConfig = {
       },
       fields: [link({ appearances: false })],
     },
-    // CTA button
+    // CTA button (optional) — enable toggle
+    {
+      name: 'ctaEnabled',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Show CTA Button',
+    },
     link({
       appearances: false,
       overrides: {
         name: 'ctaButton',
         admin: {
           description: 'Call-to-action button (e.g., Reservation / Rezerwacja)',
+          condition: (data) => Boolean(data?.ctaEnabled),
         },
       },
     }),
