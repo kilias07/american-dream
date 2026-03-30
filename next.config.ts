@@ -6,18 +6,11 @@ const nextConfig = {
   // Read more: https://opennext.js.org/cloudflare/howtos/workerd
   serverExternalPackages: ['jose', 'pg-cloudflare'],
 
-  // Allow Next.js Image optimization for media served from the same origin
+  // Use Cloudflare's native image resizing (cdn-cgi/image) instead of sharp,
+  // which is not available in the Workers runtime.
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https' as const,
-        hostname: '**',
-      },
-      {
-        protocol: 'http' as const,
-        hostname: 'localhost',
-      },
-    ],
+    loader: 'custom' as const,
+    loaderFile: './src/cloudflare-image-loader.ts',
   },
 
   // Your Next.js config here
