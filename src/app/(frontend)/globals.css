@@ -39,6 +39,8 @@
 @source "../components/blocks/EventsTeaserBlock.tsx";
 @source "../components/blocks/BentoSectionBlock.tsx";
 @source "../components/blocks/EventsFullCalendar.tsx";
+@source "../Footer/Component.tsx";
+@source "../Footer/NewsletterForm.tsx";
 
 @layer utilities {
   .container {
