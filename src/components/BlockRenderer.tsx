@@ -11,6 +11,7 @@ import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { EventsCalendarBlock } from './blocks/EventsCalendarBlock'
 import { BentoSectionBlock } from './blocks/BentoSectionBlock'
+import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 
 type PageBlock = NonNullable<Page['layout']>[number]
 
@@ -37,6 +38,8 @@ function renderBlock(block: any, i: number, locale?: string): React.ReactNode {
       return <BannerBlock key={i} {...block} />
     case 'eventsCalendar':
       return <EventsCalendarBlock key={i} block={block} locale={locale} />
+    case 'testimonials':
+      return <TestimonialsBlock key={i} block={block} />
     case 'bentoSection':
       return (
         <BentoSectionBlock

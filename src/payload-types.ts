@@ -237,6 +237,7 @@ export interface Page {
           }
         | EventsCalendarBlock
         | BentoSectionBlock
+        | TestimonialsBlock
         | {
             content: {
               root: {
@@ -627,6 +628,25 @@ export interface BentoSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'bentoSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  heading?: string | null;
+  reviewSummary?: string | null;
+  items?:
+    | {
+        name: string;
+        stars: number;
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1029,6 +1049,7 @@ export interface PagesSelect<T extends boolean = true> {
             };
         eventsCalendar?: T | EventsCalendarBlockSelect<T>;
         bentoSection?: T | BentoSectionBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
         richText?:
           | T
           | {
@@ -1175,6 +1196,24 @@ export interface BentoSectionBlockSelect<T extends boolean = true> {
         title?: T;
         ctaLabel?: T;
         ctaUrl?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  reviewSummary?: T;
+  items?:
+    | T
+    | {
+        name?: T;
+        stars?: T;
+        text?: T;
         id?: T;
       };
   id?: T;
