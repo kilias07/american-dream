@@ -97,6 +97,82 @@ export const Events: CollectionConfig = {
       },
     },
 
+    // ── Event template & detail content ──────────────────────────────────────
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'eventType',
+          type: 'select',
+          defaultValue: 'standard',
+          options: [
+            { label: 'Standard', value: 'standard' },
+            { label: 'Special (WYDARZENIE SPECJALNE)', value: 'special' },
+          ],
+          admin: { width: '50%', description: 'Controls badge/styling on the program + detail pages' },
+        },
+        {
+          name: 'leadTitle',
+          type: 'text',
+          localized: true,
+          admin: { width: '50%', description: 'Eyebrow above the title (e.g. "Muzyka na żywo", "Recital")' },
+        },
+      ],
+    },
+    {
+      name: 'genres',
+      type: 'relationship',
+      relationTo: 'categories',
+      hasMany: true,
+      admin: { description: 'Genre/category chips (JAZZ, SWING, MUZYKA KLASYCZNA…)' },
+    },
+    {
+      name: 'posterImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Poster artwork (used in the special-events carousel)' },
+    },
+    {
+      name: 'descriptionHeading',
+      type: 'text',
+      localized: true,
+      admin: { description: 'Heading above the long description on the event detail page' },
+    },
+    {
+      name: 'body',
+      type: 'richText',
+      localized: true,
+      admin: { description: 'Full description shown on the event detail page' },
+    },
+    {
+      name: 'performers',
+      type: 'array',
+      admin: { description: 'Musicians performing at this event', initCollapsed: true },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'musician', type: 'relationship', relationTo: 'musicians', admin: { width: '50%' } },
+            { name: 'instrument', type: 'text', localized: true, admin: { width: '50%', placeholder: 'saksofon' } },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        { name: 'room', type: 'relationship', relationTo: 'rooms', admin: { width: '50%', description: 'Which room/strefa' } },
+        { name: 'recurringSeries', type: 'relationship', relationTo: 'recurring-series', admin: { width: '50%', description: 'Part of a recurring series (cykliczne)' } },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        { name: 'reservationUrl', type: 'text', admin: { width: '50%', description: 'Overrides the global reservation link', placeholder: 'https://...' } },
+        { name: 'shareEnabled', type: 'checkbox', defaultValue: true, admin: { width: '50%', description: 'Show social share buttons' } },
+      ],
+    },
+
     // ── Recurrence ─────────────────────────────────────────────────────────
     {
       name: 'isRecurring',
@@ -153,7 +229,7 @@ export const Events: CollectionConfig = {
     afterChange: [
       () => {
         try {
-          revalidateTag('events')
+          revalidateTag('events', 'max')
         } catch {
           // Outside Next.js context
         }
@@ -162,7 +238,7 @@ export const Events: CollectionConfig = {
     afterDelete: [
       () => {
         try {
-          revalidateTag('events')
+          revalidateTag('events', 'max')
         } catch {}
       },
     ],

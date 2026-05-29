@@ -8,6 +8,12 @@ export const Header: GlobalConfig = {
     read: () => true,
   },
   fields: [
+    {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Site logo shown in the header' },
+    },
     // Top bar
     {
       name: 'topBarText',
@@ -111,7 +117,7 @@ export const Header: GlobalConfig = {
     afterChange: [
       () => {
         try {
-          revalidateTag('global_header')
+          revalidateTag('global_header', 'max')
         } catch {
           // Outside Next.js context
         }

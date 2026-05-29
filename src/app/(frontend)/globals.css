@@ -27,10 +27,66 @@
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 86rem;
 
-  /* American Dream brand colors */
-  --color-brand-gold: #FF9E0D;
+  /* American Dream brand colors (from official logo SVG) */
+  --color-brand-gold: #F8AB00;
   --color-brand-gold-dark: #E08800;
-  --color-brand-navy: #0A1128;
+  --color-brand-navy: #110D35;
+  --color-brand-navy-royal: #171A5C;
+
+  /* Typography: geometric sans (Metropolis) + Didone serif (Playfair) for display */
+  --font-sans: 'Metropolis', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+/* Local Metropolis font (woff2 served from /public/fonts) */
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-RegularItalic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
 }
 
 @source "../Header/Component.tsx";
@@ -41,6 +97,8 @@
 @source "../components/blocks/EventsFullCalendar.tsx";
 @source "../Footer/Component.tsx";
 @source "../Footer/NewsletterForm.tsx";
+/* Scan the entire src tree so all block renderers + components get their utilities. */
+@source "../../";
 
 @layer utilities {
   .container {
@@ -156,14 +214,14 @@
   }
   body {
     @apply bg-background text-foreground min-h-[100vh] flex flex-col;
+    font-family: var(--font-sans);
+  }
+  .font-serif {
+    font-family: var(--font-serif);
   }
 }
 
-html {
-  opacity: 0;
-}
-
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: initial;
-}
+/* NOTE: removed the `html { opacity: 0 }` anti-FOUC hack. It hid the ENTIRE page
+   until the theme-init script set data-theme; if that script is delayed/blocked
+   (as on the deployed Worker) the page renders completely blank. The public site
+   uses fixed brand colors, so a theme flash isn't a concern. */

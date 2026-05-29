@@ -38,6 +38,12 @@ export const Posts: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'excerpt',
+      type: 'textarea',
+      localized: true,
+      admin: { description: 'Short summary shown on news cards' },
+    },
+    {
       name: 'content',
       type: 'richText',
       editor: lexicalEditor({
@@ -87,8 +93,8 @@ export const Posts: CollectionConfig = {
     afterChange: [
       ({ doc }) => {
         try {
-          revalidateTag(`post-${doc.slug}`)
-          revalidateTag('posts')
+          revalidateTag(`post-${doc.slug}`, 'max')
+          revalidateTag('posts', 'max')
         } catch {
           // Outside Next.js context (e.g., CLI migrations)
         }

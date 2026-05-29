@@ -43,7 +43,8 @@ function BentoCard({ item }: { item: BentoItem }) {
           sizes={item.colSpan === 'full' ? '100vw' : '(max-width: 768px) 100vw, 50vw'}
         />
       ) : (
-        <div className="absolute inset-0 bg-brand-navy" />
+        /* Brand gradient fallback — replaced by a real photo via CMS */
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1040] via-brand-navy-royal to-brand-navy" />
       )}
 
       {/* Dark gradient overlay */}

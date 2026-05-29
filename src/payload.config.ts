@@ -19,8 +19,19 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
 import { Events } from './collections/Events'
+import { Musicians } from './collections/Musicians'
+import { RecurringSeries } from './collections/RecurringSeries'
+import { MenuCategories } from './collections/MenuCategories'
+import { MenuItems } from './collections/MenuItems'
+import { Rooms } from './collections/Rooms'
+import { TeamMembers } from './collections/TeamMembers'
+import { Testimonials } from './collections/Testimonials'
+import { ArtistApplications } from './collections/ArtistApplications'
 import { Header } from './globals/Header'
 import { Footer } from './globals/Footer'
+import { SiteSettings } from './globals/SiteSettings'
+import { OpeningHours } from './globals/OpeningHours'
+import { Legal } from './globals/Legal'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -62,8 +73,23 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Pages, Posts, Categories, Events],
-  globals: [Header, Footer],
+  collections: [
+    Users,
+    Media,
+    Pages,
+    Posts,
+    Categories,
+    Events,
+    Musicians,
+    RecurringSeries,
+    MenuCategories,
+    MenuItems,
+    Rooms,
+    TeamMembers,
+    Testimonials,
+    ArtistApplications,
+  ],
+  globals: [Header, Footer, SiteSettings, OpeningHours, Legal],
   editor: defaultLexical,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -101,6 +127,10 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
         remoteBindings: isProduction && !isBuild,
+        // During `next build`, Next 16 collects route config in parallel workers that
+        // each open the persisted local D1 sqlite -> SQLITE_BUSY. Use an ephemeral
+        // in-memory DB at build time (data isn't needed; static params try/catch to []).
+        ...(isBuild ? { persist: false } : {}),
       } satisfies GetPlatformProxyOptions),
   )
 }

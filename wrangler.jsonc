@@ -19,13 +19,13 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_id": "10c5b0fc-be5e-4e4e-b4e5-43d900af7ee9",
+      "database_id": "d84f50f1-2b6d-4cbf-a731-8fbf7a456947",
       "database_name": "american-dream",
       "remote": true,
     },
     {
       "binding": "NEXT_TAG_CACHE_D1",
-      "database_id": "10c5b0fc-be5e-4e4e-b4e5-43d900af7ee9",
+      "database_id": "d84f50f1-2b6d-4cbf-a731-8fbf7a456947",
       "database_name": "american-dream",
       "remote": true,
     },

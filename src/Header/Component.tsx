@@ -72,22 +72,40 @@ export async function Header({ locale }: { locale: Locale }) {
 
   return (
     <header className="w-full">
-      {/* ── Top bar ── */}
+      {/* ── Top bar (gold) — social icons LEFT, contact RIGHT ── */}
       <div className="bg-brand-gold">
-        <div className="container flex items-center justify-between py-2 text-[14px] font-medium text-brand-navy">
-          {/* Announcement — hidden on small screens */}
-          {topBarText && (
-            <span className="hidden md:block leading-tight">{topBarText}</span>
+        <div className="container flex items-center py-2 text-[13px] font-medium text-brand-navy">
+
+          {/* Social icons — per PDF design they live in the gold top bar */}
+          {socialLinks && socialLinks.length > 0 && (
+            <div className="flex items-center gap-3 mr-4">
+              {socialLinks.map((social, i) => (
+                <a
+                  key={i}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-70 transition-opacity"
+                  aria-label={social.platform}
+                >
+                  <SocialIcon platform={social.platform} />
+                </a>
+              ))}
+            </div>
           )}
 
-          {/* Phone + address */}
+          {/* Announcement text — hidden on small screens */}
+          {topBarText && (
+            <span className="hidden lg:block leading-tight">{topBarText}</span>
+          )}
+
+          {/* Phone + address — pushed to the right */}
           <div className="flex items-center gap-5 ml-auto">
             {phone && (
               <a
                 href={`tel:${phone.replace(/\s/g, '')}`}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
-                {/* Phone icon */}
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                 </svg>
@@ -101,7 +119,6 @@ export async function Header({ locale }: { locale: Locale }) {
                 rel="noopener noreferrer"
                 className="hidden sm:flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
-                {/* Location icon */}
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
@@ -112,70 +129,55 @@ export async function Header({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      {/* ── Main nav ── */}
+      {/* ── Main nav (navy) ── */}
       <div className="bg-brand-navy">
-        <div className="container flex items-center justify-between h-[120px] lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        {/*
+          Layout: relative flex so the logo can be absolutely centered
+          regardless of how wide the left/right nav items are.
+          Each side gets flex-1 so they share equal space and don't crowd the logo.
+        */}
+        <div className="container relative flex items-center justify-between h-[120px]">
 
-          {/* ── LEFT: social icons + left nav (desktop only) ── */}
-          <div className="hidden lg:flex items-center gap-6 justify-start">
-            {/* Social links */}
-            {socialLinks && socialLinks.length > 0 && (
-              <div className="flex items-center gap-3">
-                {socialLinks.map((social, i) => (
-                  <a
-                    key={i}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-brand-gold transition-colors"
-                    aria-label={social.platform}
-                  >
-                    <SocialIcon platform={social.platform} />
-                  </a>
-                ))}
-              </div>
-            )}
-
-            {/* Left nav items */}
+          {/* ── LEFT nav items (desktop only) ── */}
+          <div className="hidden lg:flex items-center gap-5 flex-1">
             {navItemsLeft && navItemsLeft.length > 0 && (
-              <nav className="flex items-center gap-6">
+              <nav className="flex items-center gap-5">
                 {navItemsLeft.map(({ link }, i) => (
                   <CMSLink
                     key={i}
                     {...link}
                     locale={locale}
-                    className="text-white uppercase tracking-[0.12em] text-[14px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
+                    className="text-white uppercase tracking-[0.09em] text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
                   />
                 ))}
               </nav>
             )}
           </div>
 
-          {/* ── CENTER: logo ── */}
-          <div className="hidden lg:flex justify-center flex-shrink-0 px-6">
-            <Link href={`/${locale}`} className="block">
-              <Logo className="h-20 w-auto" />
+          {/* ── CENTER: logo — absolutely positioned to guarantee perfect centering ── */}
+          <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 pointer-events-none">
+            <Link href={`/${locale}`} className="block pointer-events-auto">
+              <Logo className="h-[72px] w-auto" />
             </Link>
           </div>
 
-          {/* Mobile: logo */}
+          {/* Mobile logo */}
           <div className="lg:hidden">
             <Link href={`/${locale}`} className="block">
               <Logo className="h-16 w-auto" />
             </Link>
           </div>
 
-          {/* ── RIGHT: right nav + language switcher + CTA (desktop only) ── */}
-          <div className="hidden lg:flex items-center gap-6 justify-end">
-            {/* Right nav items */}
+          {/* ── RIGHT: nav items + language switcher + CTA (desktop only) ── */}
+          <div className="hidden lg:flex items-center gap-4 flex-1 justify-end">
             {navItemsRight && navItemsRight.length > 0 && (
-              <nav className="flex items-center gap-6">
+              <nav className="flex items-center gap-4">
                 {navItemsRight.map(({ link }, i) => (
                   <CMSLink
                     key={i}
                     {...link}
                     locale={locale}
-                    className="text-white uppercase tracking-[0.12em] text-[14px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
+                    className="text-white uppercase tracking-[0.09em] text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
                   />
                 ))}
               </nav>
@@ -206,15 +208,13 @@ export async function Header({ locale }: { locale: Locale }) {
               </Link>
             </div>
 
-            {/* CTA button — hidden below xl (1280px) */}
+            {/* CTA button */}
             {ctaEnabled && ctaButton && (
-              <div className="hidden xl:block">
-                <CMSLink
-                  {...ctaButton}
-                  locale={locale}
-                  className="bg-brand-gold text-white px-5 py-2 rounded-full text-[14px] font-bold uppercase tracking-[0.12em] hover:bg-brand-gold-dark transition-colors flex items-center gap-2 whitespace-nowrap"
-                />
-              </div>
+              <CMSLink
+                {...ctaButton}
+                locale={locale}
+                className="bg-brand-gold text-white px-4 py-2 rounded-full text-[12px] font-bold uppercase tracking-[0.09em] hover:bg-brand-gold-dark transition-colors flex items-center gap-2 whitespace-nowrap"
+              />
             )}
           </div>
 

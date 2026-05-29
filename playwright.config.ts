@@ -21,10 +21,9 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    /* Base URL — override with BASE_URL env var to test against live Cloudflare:
+     * BASE_URL=https://american-dream.kilias07.workers.dev pnpm test:e2e */
+    baseURL: process.env.BASE_URL ?? 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -33,9 +32,15 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], channel: 'chromium' },
     },
   ],
-  webServer: {
-    command: 'pnpm dev',
-    reuseExistingServer: true,
-    url: 'http://localhost:3000',
-  },
+  // webServer is only needed when running against localhost (no BASE_URL set).
+  // When BASE_URL points to a remote (e.g. Cloudflare Workers), skip starting a local server.
+  ...(process.env.BASE_URL
+    ? {}
+    : {
+        webServer: {
+          command: 'pnpm dev',
+          reuseExistingServer: true,
+          url: 'http://localhost:3000',
+        },
+      }),
 })

@@ -1,5 +1,6 @@
 import React from 'react'
-import type { Locale } from '@/config/locales'
+import { notFound } from 'next/navigation'
+import { locales, type Locale } from '@/config/locales'
 import { Header } from '@/Header/Component'
 import { Footer } from '@/Footer/Component'
 
@@ -11,6 +12,12 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+
+  // Only render for known locales; any other path segment (e.g. /wp-admin,
+  // /favicon.ico, bot probes) 404s instead of rendering a wrong-locale page.
+  if (!locales.includes(locale as Locale)) {
+    notFound()
+  }
 
   return (
     <>

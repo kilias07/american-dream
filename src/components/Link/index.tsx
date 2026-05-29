@@ -45,7 +45,13 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
       href = locale ? `/${locale}/${slug === 'home' ? '' : slug}` : `/${slug === 'home' ? '' : slug}`
     }
   } else if (url) {
-    href = url
+    // Prefix internal (relative) URLs with the locale so navigation never
+    // goes through a 307 redirect. External URLs (http/https) are left as-is.
+    if (locale && url.startsWith('/') && !url.startsWith(`/${locale}/`) && url !== `/${locale}`) {
+      href = `/${locale}${url}`
+    } else {
+      href = url
+    }
   }
 
   if (!href) return null

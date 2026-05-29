@@ -51,7 +51,7 @@ export const BentoSection: Block = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
-          required: true,
+          // Not required — shows brand gradient fallback until real photo is uploaded via CMS
         },
         {
           name: 'colSpan',

@@ -1,12 +1,58 @@
 import React from 'react'
+import type { Metadata } from 'next'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import './globals.css'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
+const SITE_NAME = 'American Dream Club'
+const SITE_DESCRIPTION =
+  'American Dream Club — restauracja i klub jazzowy w sercu Poznania. Koncerty na żywo, autorska kuchnia, bar i cigar room.'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    locale: 'pl_PL',
+    alternateLocale: ['en_GB'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // PL is the primary content language for this site, so the document defaults to
+  // `lang="pl"`. Per-page `generateMetadata` exports add canonical + hreflang
+  // alternates so EN pages are still discoverable/correctly associated by crawlers.
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pl" suppressHydrationWarning>
       <head>
         <InitTheme />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Preload the primary local font weight to cut FOUT on first paint. */}
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/fonts/metropolis/Metropolis-Regular.woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body>{children}</body>
     </html>

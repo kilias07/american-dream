@@ -4,11 +4,30 @@ import React, { useState } from 'react'
 export function NewsletterForm() {
   const [email, setEmail] = useState('')
   const [accepted, setAccepted] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !accepted) return
-    // TODO: connect to newsletter API
+    if (!email || !accepted || status === 'submitting') return
+
+    setStatus('submitting')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, consent: accepted, message: 'Newsletter signup' }),
+      })
+      const data = (await res.json().catch((): null => null)) as { ok?: boolean } | null
+      if (res.ok && data?.ok) {
+        setStatus('success')
+        setEmail('')
+        setAccepted(false)
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
   }
 
   return (
@@ -33,10 +52,21 @@ export function NewsletterForm() {
       </label>
       <button
         type="submit"
-        className="self-start px-8 py-2 bg-brand-navy text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-brand-navy/80 transition-colors"
+        disabled={status === 'submitting'}
+        className="self-start px-8 py-2 bg-brand-navy text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-brand-navy/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Dołącz
+        {status === 'submitting' ? 'Wysyłanie…' : 'Dołącz'}
       </button>
+      {status === 'success' && (
+        <p className="text-brand-navy text-xs font-semibold" role="status">
+          Dziękujemy! Wiadomość została wysłana.
+        </p>
+      )}
+      {status === 'error' && (
+        <p className="text-red-700 text-xs font-semibold" role="alert">
+          Wystąpił błąd. Spróbuj ponownie później.
+        </p>
+      )}
     </form>
   )
 }

@@ -13,6 +13,27 @@ import {
   Banner,
   EventsCalendar,
   BentoSection,
+  Testimonials,
+  PageHero,
+  AboutIntro,
+  MenuSection,
+  SetMenu,
+  PromoBand,
+  EventsTeaser,
+  SpecialEvents,
+  MusiciansGrid,
+  RecurringSeriesTeaser,
+  NewsCarousel,
+  RoomSelector,
+  OfferCards,
+  SalesContact,
+  EveningPhases,
+  ContactInfo,
+  MapEmbed,
+  ArtistCTA,
+  Notice21Plus,
+  NewsletterCTA,
+  ArtistForm,
 } from '../blocks'
 
 export const Pages: CollectionConfig = {
@@ -45,7 +66,40 @@ export const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [HeroBanner, EventsCalendar, BentoSection, RichTextBlock, ImageGallery, LiveStream, Content, CallToAction, MediaBlock, Archive, Banner],
+      blocks: [
+        PageHero,
+        HeroBanner,
+        AboutIntro,
+        BentoSection,
+        MenuSection,
+        SetMenu,
+        PromoBand,
+        EventsTeaser,
+        SpecialEvents,
+        EventsCalendar,
+        MusiciansGrid,
+        RecurringSeriesTeaser,
+        NewsCarousel,
+        RoomSelector,
+        OfferCards,
+        SalesContact,
+        EveningPhases,
+        ContactInfo,
+        MapEmbed,
+        ArtistCTA,
+        Notice21Plus,
+        NewsletterCTA,
+        ArtistForm,
+        Testimonials,
+        RichTextBlock,
+        ImageGallery,
+        LiveStream,
+        Content,
+        CallToAction,
+        MediaBlock,
+        Archive,
+        Banner,
+      ],
       localized: true,
     },
   ],
@@ -53,8 +107,8 @@ export const Pages: CollectionConfig = {
     afterChange: [
       ({ doc }) => {
         try {
-          revalidateTag(`page-${doc.slug}`)
-          revalidateTag('pages')
+          revalidateTag(`page-${doc.slug}`, 'max')
+          revalidateTag('pages', 'max')
         } catch {
           // Outside Next.js context (e.g., CLI migrations)
         }

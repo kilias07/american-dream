@@ -12,11 +12,11 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as { slug?: string; tag?: string }
 
     if (body.tag) {
-      revalidateTag(body.tag)
+      revalidateTag(body.tag, 'max')
     }
 
     if (body.slug) {
-      revalidateTag(`page-${body.slug}`)
+      revalidateTag(`page-${body.slug}`, 'max')
     }
 
     return Response.json({ revalidated: true, timestamp: Date.now() })

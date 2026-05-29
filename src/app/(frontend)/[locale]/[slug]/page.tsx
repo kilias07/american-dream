@@ -5,22 +5,28 @@ import { unstable_cache } from 'next/cache'
 import type { Media, Page } from '@/payload-types'
 import { locales, defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
+import { localizedAlternates } from '@/utilities/seo'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
 async function getPage(slug: string, locale: Locale): Promise<Page | null> {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'pages',
-    where: { slug: { equals: slug } },
-    locale,
-    fallbackLocale: defaultLocale,
-    depth: 2,
-    limit: 1,
-  })
-  return result.docs[0] ?? null
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'pages',
+      where: { slug: { equals: slug } },
+      locale,
+      fallbackLocale: defaultLocale,
+      depth: 2,
+      limit: 1,
+    })
+    return result.docs[0] ?? null
+  } catch {
+    // Transient D1 error / bad locale -> graceful 404 instead of a 500.
+    return null
+  }
 }
 
 export default async function PageRoute({
@@ -84,6 +90,11 @@ export async function generateMetadata({
   return {
     title: meta?.title ?? page.title,
     description: meta?.description,
-    openGraph: ogImage?.url ? { images: [{ url: ogImage.url }] } : undefined,
+    alternates: localizedAlternates(locale, slug),
+    openGraph: {
+      title: meta?.title ?? page.title ?? undefined,
+      description: meta?.description ?? undefined,
+      ...(ogImage?.url ? { images: [{ url: ogImage.url }] } : {}),
+    },
   }
 }

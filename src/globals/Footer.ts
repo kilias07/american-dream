@@ -8,6 +8,28 @@ export const Footer: GlobalConfig = {
   },
   fields: [
     {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Logo shown in the footer' },
+    },
+    {
+      name: 'newsletter',
+      type: 'group',
+      fields: [
+        { name: 'heading', type: 'text', localized: true },
+        { name: 'placeholder', type: 'text', localized: true },
+        { name: 'buttonLabel', type: 'text', localized: true },
+        { name: 'consentText', type: 'text', localized: true },
+      ],
+    },
+    {
+      name: 'ageBadge',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Show 21+ age badge',
+    },
+    {
       name: 'navColumns',
       type: 'array',
       label: 'Navigation Columns',
@@ -67,7 +89,7 @@ export const Footer: GlobalConfig = {
     afterChange: [
       () => {
         try {
-          revalidateTag('global_footer')
+          revalidateTag('global_footer', 'max')
         } catch {
           // Outside Next.js context
         }

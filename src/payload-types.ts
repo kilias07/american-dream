@@ -73,6 +73,14 @@ export interface Config {
     posts: Post;
     categories: Category;
     events: Event;
+    musicians: Musician;
+    'recurring-series': RecurringSery;
+    'menu-categories': MenuCategory;
+    'menu-items': MenuItem;
+    rooms: Room;
+    'team-members': TeamMember;
+    testimonials: Testimonial;
+    'artist-applications': ArtistApplication;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -89,6 +97,14 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    musicians: MusiciansSelect<false> | MusiciansSelect<true>;
+    'recurring-series': RecurringSeriesSelect<false> | RecurringSeriesSelect<true>;
+    'menu-categories': MenuCategoriesSelect<false> | MenuCategoriesSelect<true>;
+    'menu-items': MenuItemsSelect<false> | MenuItemsSelect<true>;
+    rooms: RoomsSelect<false> | RoomsSelect<true>;
+    'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    'artist-applications': ArtistApplicationsSelect<false> | ArtistApplicationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -104,12 +120,21 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'site-settings': SiteSetting;
+    'opening-hours': OpeningHour;
+    legal: Legal;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'opening-hours': OpeningHoursSelect<false> | OpeningHoursSelect<true>;
+    legal: LegalSelect<false> | LegalSelect<true>;
   };
   locale: 'en' | 'pl';
+  widgets: {
+    collections: CollectionsWidget;
+  };
   user: User;
   jobs: {
     tasks: unknown;
@@ -190,6 +215,7 @@ export interface Page {
   slug: string;
   layout?:
     | (
+        | PageHeroBlock
         | {
             heading?: string | null;
             subtext?: string | null;
@@ -235,8 +261,28 @@ export interface Page {
             blockName?: string | null;
             blockType: 'heroBanner';
           }
-        | EventsCalendarBlock
+        | AboutIntroBlock
         | BentoSectionBlock
+        | MenuSectionBlock
+        | SetMenuBlock
+        | PromoBandBlock
+        | EventsTeaserBlock
+        | SpecialEventsBlock
+        | EventsCalendarBlock
+        | MusiciansGridBlock
+        | RecurringSeriesTeaserBlock
+        | NewsCarouselBlock
+        | RoomSelectorBlock
+        | OfferCardsBlock
+        | SalesContactBlock
+        | EveningPhasesBlock
+        | ContactInfoBlock
+        | MapEmbedBlock
+        | ArtistCtaBlock
+        | Notice21PlusBlock
+        | NewsletterCtaBlock
+        | ArtistFormBlock
+        | TestimonialsBlock
         | {
             content: {
               root: {
@@ -440,6 +486,21 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PageHeroBlock".
+ */
+export interface PageHeroBlock {
+  eyebrow?: string | null;
+  title: string;
+  titleStyle?: ('serif' | 'uppercase') | null;
+  backgroundImage?: (number | null) | Media;
+  inlineLinkLabel?: string | null;
+  inlineLinkUrl?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'pageHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
 export interface Post {
@@ -451,6 +512,10 @@ export interface Post {
   generateSlug?: boolean | null;
   slug: string;
   heroImage?: (number | null) | Media;
+  /**
+   * Short summary shown on news cards
+   */
+  excerpt?: string | null;
   content?: {
     root: {
       type: string;
@@ -504,41 +569,123 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "EventsCalendarBlock".
+ * via the `definition` "AboutIntroBlock".
  */
-export interface EventsCalendarBlock {
-  /**
-   * Choose how the calendar is displayed
-   */
-  variant?: ('teaser' | 'full') | null;
-  /**
-   * Background style for the teaser carousel
-   */
-  colorScheme?: ('gold' | 'white') | null;
+export interface AboutIntroBlock {
+  eyebrow?: string | null;
   heading?: string | null;
+  subheading?: string | null;
+  body?: string | null;
   /**
-   * CTA button label
+   * Italic quote
    */
-  ctaLabel?: string | null;
-  /**
-   * CTA button URL
-   */
-  ctaUrl?: string | null;
-  /**
-   * How to populate the teaser carousel
-   */
-  eventsSource?: ('auto' | 'manual') | null;
-  /**
-   * How many upcoming events to show
-   */
-  autoCount?: number | null;
-  /**
-   * Select specific events to show in the teaser (only events marked as Featured appear here)
-   */
-  manualEvents?: (number | Event)[] | null;
+  pullQuote?: string | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'eventsCalendar';
+  blockType: 'aboutIntro';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BentoSectionBlock".
+ */
+export interface BentoSectionBlock {
+  subheading?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  /**
+   * Each item is a bento card. Set colSpan to control layout.
+   */
+  items?:
+    | {
+        image?: (number | null) | Media;
+        /**
+         * Controls how wide this card is in the grid
+         */
+        colSpan: 'half' | 'full';
+        /**
+         * Small description text above title
+         */
+        label?: string | null;
+        title: string;
+        ctaLabel?: string | null;
+        ctaUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'bentoSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MenuSectionBlock".
+ */
+export interface MenuSectionBlock {
+  sectionTag?: string | null;
+  heading?: string | null;
+  /**
+   * Which menu-items to show
+   */
+  menuType: 'cigars' | 'cocktails' | 'wine' | 'food';
+  layout: 'pricedList' | 'cardGrid';
+  groupByCategory?: boolean | null;
+  /**
+   * ZOBACZ CAŁE MENU (PDF)
+   */
+  pdfDownload?: (number | null) | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'menuSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SetMenuBlock".
+ */
+export interface SetMenuBlock {
+  heading?: string | null;
+  dateLabel?: string | null;
+  menus?:
+    | {
+        name?: string | null;
+        price?: number | null;
+        courses?:
+          | {
+              courseLabel?: string | null;
+              dish?: string | null;
+              description?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'setMenu';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PromoBandBlock".
+ */
+export interface PromoBandBlock {
+  heading?: string | null;
+  body?: string | null;
+  image?: (number | null) | Media;
+  items?:
+    | {
+        label?: string | null;
+        sub?: string | null;
+        price?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  relatedEvent?: (number | null) | Event;
+  style?: ('gold' | 'navy') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'promoBand';
 }
 /**
  * Manage events and performances. Use recurring events to avoid creating entries manually each week.
@@ -578,6 +725,70 @@ export interface Event {
    */
   featured?: boolean | null;
   /**
+   * Controls badge/styling on the program + detail pages
+   */
+  eventType?: ('standard' | 'special') | null;
+  /**
+   * Eyebrow above the title (e.g. "Muzyka na żywo", "Recital")
+   */
+  leadTitle?: string | null;
+  /**
+   * Genre/category chips (JAZZ, SWING, MUZYKA KLASYCZNA…)
+   */
+  genres?: (number | Category)[] | null;
+  /**
+   * Poster artwork (used in the special-events carousel)
+   */
+  posterImage?: (number | null) | Media;
+  /**
+   * Heading above the long description on the event detail page
+   */
+  descriptionHeading?: string | null;
+  /**
+   * Full description shown on the event detail page
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Musicians performing at this event
+   */
+  performers?:
+    | {
+        musician?: (number | null) | Musician;
+        instrument?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Which room/strefa
+   */
+  room?: (number | null) | Room;
+  /**
+   * Part of a recurring series (cykliczne)
+   */
+  recurringSeries?: (number | null) | RecurringSery;
+  /**
+   * Overrides the global reservation link
+   */
+  reservationUrl?: string | null;
+  /**
+   * Show social share buttons
+   */
+  shareEnabled?: boolean | null;
+  /**
    * Enable if this event repeats on a regular schedule
    */
   isRecurring?: boolean | null;
@@ -597,28 +808,244 @@ export interface Event {
   createdAt: string;
 }
 /**
+ * Musicians and performers featured on the site.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "BentoSectionBlock".
+ * via the `definition` "musicians".
  */
-export interface BentoSectionBlock {
-  subheading?: string | null;
+export interface Musician {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  instrument?: string | null;
+  photo?: (number | null) | Media;
+  bio?: string | null;
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Bookable rooms and spaces (e.g. VIP ROOM).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms".
+ */
+export interface Room {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Maximum number of guests ("do N osób")
+   */
+  capacity?: number | null;
+  description?: string | null;
+  equipment?:
+    | {
+        item?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  gallery?:
+    | {
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Recurring event series with their own branding and gallery.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recurring-series".
+ */
+export interface RecurringSery {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Series logo/wordmark
+   */
+  wordmarkImage?: (number | null) | Media;
+  heroImage?: (number | null) | Media;
+  themeColor?: ('amber' | 'blackwhite' | 'sepia' | 'purple') | null;
+  eyebrow?: string | null;
+  description?: string | null;
+  gallery?:
+    | {
+        image?: (number | null) | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsTeaserBlock".
+ */
+export interface EventsTeaserBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  viewAllLabel?: string | null;
+  viewAllUrl?: string | null;
+  limit?: number | null;
+  onlyFeatured?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'eventsTeaser';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpecialEventsBlock".
+ */
+export interface SpecialEventsBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'specialEvents';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsCalendarBlock".
+ */
+export interface EventsCalendarBlock {
+  /**
+   * Choose how the calendar is displayed
+   */
+  variant?: ('teaser' | 'full') | null;
+  /**
+   * Background style for the teaser carousel
+   */
+  colorScheme?: ('gold' | 'white') | null;
+  heading?: string | null;
+  /**
+   * CTA button label
+   */
+  ctaLabel?: string | null;
+  /**
+   * CTA button URL
+   */
+  ctaUrl?: string | null;
+  /**
+   * How to populate the teaser carousel
+   */
+  eventsSource?: ('auto' | 'manual') | null;
+  /**
+   * How many upcoming events to show
+   */
+  autoCount?: number | null;
+  /**
+   * Select specific events to show in the teaser (only events marked as Featured appear here)
+   */
+  manualEvents?: (number | Event)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'eventsCalendar';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MusiciansGridBlock".
+ */
+export interface MusiciansGridBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Optional — leave empty to show all by order
+   */
+  musicians?: (number | Musician)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'musiciansGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RecurringSeriesTeaserBlock".
+ */
+export interface RecurringSeriesTeaserBlock {
+  eyebrow?: string | null;
   heading?: string | null;
   description?: string | null;
   /**
-   * Each item is a bento card. Set colSpan to control layout.
+   * Optional — leave empty to show all
    */
-  items?:
+  series?: (number | RecurringSery)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'recurringSeriesTeaser';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsCarouselBlock".
+ */
+export interface NewsCarouselBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  viewAllLabel?: string | null;
+  viewAllUrl?: string | null;
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsCarousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RoomSelectorBlock".
+ */
+export interface RoomSelectorBlock {
+  heading?: string | null;
+  /**
+   * Optional. Leave empty to show all rooms by their order.
+   */
+  rooms?: (number | Room)[] | null;
+  equipmentHeading?: string | null;
+  offerHeading?: string | null;
+  offerItems?:
     | {
-        image: number | Media;
-        /**
-         * Controls how wide this card is in the grid
-         */
-        colSpan: 'half' | 'full';
-        /**
-         * Small description text above title
-         */
-        label?: string | null;
-        title: string;
+        item?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'roomSelector';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "OfferCardsBlock".
+ */
+export interface OfferCardsBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  cards?:
+    | {
+        image?: (number | null) | Media;
+        tag?: string | null;
+        title?: string | null;
+        body?: string | null;
         ctaLabel?: string | null;
         ctaUrl?: string | null;
         id?: string | null;
@@ -626,7 +1053,278 @@ export interface BentoSectionBlock {
     | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'bentoSection';
+  blockType: 'offerCards';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SalesContactBlock".
+ */
+export interface SalesContactBlock {
+  heading?: string | null;
+  teamMember?: (number | null) | TeamMember;
+  callLabel?: string | null;
+  emailLabel?: string | null;
+  style?: ('gold' | 'navy') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'salesContact';
+}
+/**
+ * Team members and staff shown on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members".
+ */
+export interface TeamMember {
+  id: number;
+  name: string;
+  role?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  photo?: (number | null) | Media;
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EveningPhasesBlock".
+ */
+export interface EveningPhasesBlock {
+  heading?: string | null;
+  phases?:
+    | {
+        image?: (number | null) | Media;
+        title?: string | null;
+        timeLabel?: string | null;
+        body?: string | null;
+        primaryCtaLabel?: string | null;
+        primaryCtaUrl?: string | null;
+        secondaryCtaLabel?: string | null;
+        secondaryCtaUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'eveningPhases';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactInfoBlock".
+ */
+export interface ContactInfoBlock {
+  showForm?: boolean | null;
+  formHeading?: string | null;
+  showMap?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'contactInfo';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MapEmbedBlock".
+ */
+export interface MapEmbedBlock {
+  /**
+   * Google Maps iframe src URL
+   */
+  embedUrl?: string | null;
+  height?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mapEmbed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArtistCtaBlock".
+ */
+export interface ArtistCtaBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  backgroundImage?: (number | null) | Media;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'artistCTA';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Notice21PlusBlock".
+ */
+export interface Notice21PlusBlock {
+  heading?: string | null;
+  body?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'notice21Plus';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterCtaBlock".
+ */
+export interface NewsletterCtaBlock {
+  heading?: string | null;
+  body?: string | null;
+  placeholder?: string | null;
+  buttonLabel?: string | null;
+  consentText?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsletterCTA';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArtistFormBlock".
+ */
+export interface ArtistFormBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  intro?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'artistForm';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  heading?: string | null;
+  reviewSummary?: string | null;
+  items?:
+    | {
+        name: string;
+        stars: number;
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * Categories that group menu items (e.g. Nikaragua, Przystawki, Koktajle).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu-categories".
+ */
+export interface MenuCategory {
+  id: number;
+  title: string;
+  menuType: 'cigars' | 'cocktails' | 'wine' | 'food';
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Individual menu items — cocktails, food, wine and cigars.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu-items".
+ */
+export interface MenuItem {
+  id: number;
+  name: string;
+  description?: string | null;
+  /**
+   * Ingredients list (mainly for cocktails)
+   */
+  ingredients?: string | null;
+  menuType: 'cigars' | 'cocktails' | 'wine' | 'food';
+  category?: (number | null) | MenuCategory;
+  price?: number | null;
+  currency?: string | null;
+  image?: (number | null) | Media;
+  /**
+   * Country or region of origin
+   */
+  origin?: string | null;
+  /**
+   * Variants of this item (e.g. SMASH BURGER CLASSIC / BBQ)
+   */
+  variants?:
+    | {
+        label?: string | null;
+        price?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  tag?: string | null;
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
+  available?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Customer reviews and testimonials.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials".
+ */
+export interface Testimonial {
+  id: number;
+  author: string;
+  rating?: number | null;
+  text: string;
+  source?: ('google' | 'other') | null;
+  featured?: boolean | null;
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Submissions from the public artist contact form.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artist-applications".
+ */
+export interface ArtistApplication {
+  id: number;
+  fullName: string;
+  phone?: string | null;
+  email: string;
+  city?: string | null;
+  instrument?: string | null;
+  genres?: string | null;
+  preferredLineup?: ('solo' | 'duo' | 'trio' | 'quartet' | 'band' | 'other') | null;
+  bandName?: string | null;
+  rateProposal?: string | null;
+  dateProposals?: string | null;
+  repertoire?: string | null;
+  musicEducation?: ('none' | 'inProgress' | 'secondary' | 'higher') | null;
+  schoolName?: string | null;
+  educationDetails?: string | null;
+  stageExperience?: ('none' | 'some' | 'experienced' | 'professional') | null;
+  pastVenues?: string | null;
+  recordings?:
+    | {
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  message?: string | null;
+  status?: ('new' | 'reviewed' | 'contacted') | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -891,6 +1589,38 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
+        relationTo: 'musicians';
+        value: number | Musician;
+      } | null)
+    | ({
+        relationTo: 'recurring-series';
+        value: number | RecurringSery;
+      } | null)
+    | ({
+        relationTo: 'menu-categories';
+        value: number | MenuCategory;
+      } | null)
+    | ({
+        relationTo: 'menu-items';
+        value: number | MenuItem;
+      } | null)
+    | ({
+        relationTo: 'rooms';
+        value: number | Room;
+      } | null)
+    | ({
+        relationTo: 'team-members';
+        value: number | TeamMember;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'artist-applications';
+        value: number | ArtistApplication;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -993,6 +1723,7 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
+        pageHero?: T | PageHeroBlockSelect<T>;
         heroBanner?:
           | T
           | {
@@ -1027,8 +1758,28 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        eventsCalendar?: T | EventsCalendarBlockSelect<T>;
+        aboutIntro?: T | AboutIntroBlockSelect<T>;
         bentoSection?: T | BentoSectionBlockSelect<T>;
+        menuSection?: T | MenuSectionBlockSelect<T>;
+        setMenu?: T | SetMenuBlockSelect<T>;
+        promoBand?: T | PromoBandBlockSelect<T>;
+        eventsTeaser?: T | EventsTeaserBlockSelect<T>;
+        specialEvents?: T | SpecialEventsBlockSelect<T>;
+        eventsCalendar?: T | EventsCalendarBlockSelect<T>;
+        musiciansGrid?: T | MusiciansGridBlockSelect<T>;
+        recurringSeriesTeaser?: T | RecurringSeriesTeaserBlockSelect<T>;
+        newsCarousel?: T | NewsCarouselBlockSelect<T>;
+        roomSelector?: T | RoomSelectorBlockSelect<T>;
+        offerCards?: T | OfferCardsBlockSelect<T>;
+        salesContact?: T | SalesContactBlockSelect<T>;
+        eveningPhases?: T | EveningPhasesBlockSelect<T>;
+        contactInfo?: T | ContactInfoBlockSelect<T>;
+        mapEmbed?: T | MapEmbedBlockSelect<T>;
+        artistCTA?: T | ArtistCtaBlockSelect<T>;
+        notice21Plus?: T | Notice21PlusBlockSelect<T>;
+        newsletterCTA?: T | NewsletterCtaBlockSelect<T>;
+        artistForm?: T | ArtistFormBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
         richText?:
           | T
           | {
@@ -1144,17 +1895,28 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "EventsCalendarBlock_select".
+ * via the `definition` "PageHeroBlock_select".
  */
-export interface EventsCalendarBlockSelect<T extends boolean = true> {
-  variant?: T;
-  colorScheme?: T;
+export interface PageHeroBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  titleStyle?: T;
+  backgroundImage?: T;
+  inlineLinkLabel?: T;
+  inlineLinkUrl?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutIntroBlock_select".
+ */
+export interface AboutIntroBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
   heading?: T;
-  ctaLabel?: T;
-  ctaUrl?: T;
-  eventsSource?: T;
-  autoCount?: T;
-  manualEvents?: T;
+  subheading?: T;
+  body?: T;
+  pullQuote?: T;
   id?: T;
   blockName?: T;
 }
@@ -1182,6 +1944,307 @@ export interface BentoSectionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MenuSectionBlock_select".
+ */
+export interface MenuSectionBlockSelect<T extends boolean = true> {
+  sectionTag?: T;
+  heading?: T;
+  menuType?: T;
+  layout?: T;
+  groupByCategory?: T;
+  pdfDownload?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SetMenuBlock_select".
+ */
+export interface SetMenuBlockSelect<T extends boolean = true> {
+  heading?: T;
+  dateLabel?: T;
+  menus?:
+    | T
+    | {
+        name?: T;
+        price?: T;
+        courses?:
+          | T
+          | {
+              courseLabel?: T;
+              dish?: T;
+              description?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PromoBandBlock_select".
+ */
+export interface PromoBandBlockSelect<T extends boolean = true> {
+  heading?: T;
+  body?: T;
+  image?: T;
+  items?:
+    | T
+    | {
+        label?: T;
+        sub?: T;
+        price?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaUrl?: T;
+  relatedEvent?: T;
+  style?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsTeaserBlock_select".
+ */
+export interface EventsTeaserBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  viewAllLabel?: T;
+  viewAllUrl?: T;
+  limit?: T;
+  onlyFeatured?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpecialEventsBlock_select".
+ */
+export interface SpecialEventsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsCalendarBlock_select".
+ */
+export interface EventsCalendarBlockSelect<T extends boolean = true> {
+  variant?: T;
+  colorScheme?: T;
+  heading?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  eventsSource?: T;
+  autoCount?: T;
+  manualEvents?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MusiciansGridBlock_select".
+ */
+export interface MusiciansGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  musicians?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RecurringSeriesTeaserBlock_select".
+ */
+export interface RecurringSeriesTeaserBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  description?: T;
+  series?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsCarouselBlock_select".
+ */
+export interface NewsCarouselBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  viewAllLabel?: T;
+  viewAllUrl?: T;
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RoomSelectorBlock_select".
+ */
+export interface RoomSelectorBlockSelect<T extends boolean = true> {
+  heading?: T;
+  rooms?: T;
+  equipmentHeading?: T;
+  offerHeading?: T;
+  offerItems?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "OfferCardsBlock_select".
+ */
+export interface OfferCardsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  cards?:
+    | T
+    | {
+        image?: T;
+        tag?: T;
+        title?: T;
+        body?: T;
+        ctaLabel?: T;
+        ctaUrl?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SalesContactBlock_select".
+ */
+export interface SalesContactBlockSelect<T extends boolean = true> {
+  heading?: T;
+  teamMember?: T;
+  callLabel?: T;
+  emailLabel?: T;
+  style?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EveningPhasesBlock_select".
+ */
+export interface EveningPhasesBlockSelect<T extends boolean = true> {
+  heading?: T;
+  phases?:
+    | T
+    | {
+        image?: T;
+        title?: T;
+        timeLabel?: T;
+        body?: T;
+        primaryCtaLabel?: T;
+        primaryCtaUrl?: T;
+        secondaryCtaLabel?: T;
+        secondaryCtaUrl?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactInfoBlock_select".
+ */
+export interface ContactInfoBlockSelect<T extends boolean = true> {
+  showForm?: T;
+  formHeading?: T;
+  showMap?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MapEmbedBlock_select".
+ */
+export interface MapEmbedBlockSelect<T extends boolean = true> {
+  embedUrl?: T;
+  height?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArtistCtaBlock_select".
+ */
+export interface ArtistCtaBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  backgroundImage?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Notice21PlusBlock_select".
+ */
+export interface Notice21PlusBlockSelect<T extends boolean = true> {
+  heading?: T;
+  body?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterCtaBlock_select".
+ */
+export interface NewsletterCtaBlockSelect<T extends boolean = true> {
+  heading?: T;
+  body?: T;
+  placeholder?: T;
+  buttonLabel?: T;
+  consentText?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArtistFormBlock_select".
+ */
+export interface ArtistFormBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  intro?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  reviewSummary?: T;
+  items?:
+    | T
+    | {
+        name?: T;
+        stars?: T;
+        text?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -1189,6 +2252,7 @@ export interface PostsSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   heroImage?: T;
+  excerpt?: T;
   content?: T;
   publishedAt?: T;
   authors?: T;
@@ -1237,10 +2301,191 @@ export interface EventsSelect<T extends boolean = true> {
   price?: T;
   ticketUrl?: T;
   featured?: T;
+  eventType?: T;
+  leadTitle?: T;
+  genres?: T;
+  posterImage?: T;
+  descriptionHeading?: T;
+  body?: T;
+  performers?:
+    | T
+    | {
+        musician?: T;
+        instrument?: T;
+        id?: T;
+      };
+  room?: T;
+  recurringSeries?: T;
+  reservationUrl?: T;
+  shareEnabled?: T;
   isRecurring?: T;
   repeatType?: T;
   repeatDays?: T;
   repeatUntil?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "musicians_select".
+ */
+export interface MusiciansSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  instrument?: T;
+  photo?: T;
+  bio?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recurring-series_select".
+ */
+export interface RecurringSeriesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  wordmarkImage?: T;
+  heroImage?: T;
+  themeColor?: T;
+  eyebrow?: T;
+  description?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu-categories_select".
+ */
+export interface MenuCategoriesSelect<T extends boolean = true> {
+  title?: T;
+  menuType?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu-items_select".
+ */
+export interface MenuItemsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  ingredients?: T;
+  menuType?: T;
+  category?: T;
+  price?: T;
+  currency?: T;
+  image?: T;
+  origin?: T;
+  variants?:
+    | T
+    | {
+        label?: T;
+        price?: T;
+        id?: T;
+      };
+  tag?: T;
+  order?: T;
+  available?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms_select".
+ */
+export interface RoomsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  capacity?: T;
+  description?: T;
+  equipment?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members_select".
+ */
+export interface TeamMembersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  phone?: T;
+  email?: T;
+  photo?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  author?: T;
+  rating?: T;
+  text?: T;
+  source?: T;
+  featured?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artist-applications_select".
+ */
+export interface ArtistApplicationsSelect<T extends boolean = true> {
+  fullName?: T;
+  phone?: T;
+  email?: T;
+  city?: T;
+  instrument?: T;
+  genres?: T;
+  preferredLineup?: T;
+  bandName?: T;
+  rateProposal?: T;
+  dateProposals?: T;
+  repertoire?: T;
+  musicEducation?: T;
+  schoolName?: T;
+  educationDetails?: T;
+  stageExperience?: T;
+  pastVenues?: T;
+  recordings?:
+    | T
+    | {
+        url?: T;
+        id?: T;
+      };
+  facebook?: T;
+  instagram?: T;
+  message?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1456,6 +2701,10 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface Header {
   id: number;
   /**
+   * Site logo shown in the header
+   */
+  logo?: (number | null) | Media;
+  /**
    * Announcement text shown in the top bar
    */
   topBarText?: string | null;
@@ -1554,6 +2803,17 @@ export interface Header {
  */
 export interface Footer {
   id: number;
+  /**
+   * Logo shown in the footer
+   */
+  logo?: (number | null) | Media;
+  newsletter?: {
+    heading?: string | null;
+    placeholder?: string | null;
+    buttonLabel?: string | null;
+    consentText?: string | null;
+  };
+  ageBadge?: boolean | null;
   navColumns?:
     | {
         heading: string;
@@ -1587,9 +2847,79 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName?: string | null;
+  address?: string | null;
+  phones?:
+    | {
+        label?: string | null;
+        number?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  emails?:
+    | {
+        label?: string | null;
+        email?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  social?:
+    | {
+        platform?: ('google' | 'facebook' | 'instagram' | 'youtube' | 'tiktok') | null;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  mapEmbedUrl?: string | null;
+  /**
+   * Default booking / ticket link
+   */
+  reservationUrl?: string | null;
+  reviewAggregate?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "opening-hours".
+ */
+export interface OpeningHour {
+  id: number;
+  days?:
+    | {
+        day?: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday') | null;
+        closed?: boolean | null;
+        openTime?: string | null;
+        closeTime?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal".
+ */
+export interface Legal {
+  id: number;
+  regulamin?: string | null;
+  privacy?: string | null;
+  companyData?: string | null;
+  age21Notice?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
+  logo?: T;
   topBarText?: T;
   phone?: T;
   address?: T;
@@ -1647,6 +2977,16 @@ export interface HeaderSelect<T extends boolean = true> {
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
+  logo?: T;
+  newsletter?:
+    | T
+    | {
+        heading?: T;
+        placeholder?: T;
+        buttonLabel?: T;
+        consentText?: T;
+      };
+  ageBadge?: T;
   navColumns?:
     | T
     | {
@@ -1678,6 +3018,82 @@ export interface FooterSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  address?: T;
+  phones?:
+    | T
+    | {
+        label?: T;
+        number?: T;
+        id?: T;
+      };
+  emails?:
+    | T
+    | {
+        label?: T;
+        email?: T;
+        id?: T;
+      };
+  social?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  mapEmbedUrl?: T;
+  reservationUrl?: T;
+  reviewAggregate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "opening-hours_select".
+ */
+export interface OpeningHoursSelect<T extends boolean = true> {
+  days?:
+    | T
+    | {
+        day?: T;
+        closed?: T;
+        openTime?: T;
+        closeTime?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal_select".
+ */
+export interface LegalSelect<T extends boolean = true> {
+  regulamin?: T;
+  privacy?: T;
+  companyData?: T;
+  age21Notice?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

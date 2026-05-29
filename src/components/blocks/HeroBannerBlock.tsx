@@ -57,15 +57,17 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
           src={image.url}
           alt={image.alt || ''}
           fill
+          sizes="100vw"
           className="object-cover object-center"
           priority
         />
       ) : (
-        <div className="absolute inset-0 bg-brand-navy" />
+        /* Dramatic brand gradient — replaced by a real hero photo via CMS */
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0820] via-brand-navy to-brand-navy-royal" />
       )}
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-brand-navy/65" />
+      {/* Dark overlay — lighter when no photo so gradient shows */}
+      <div className="absolute inset-0 bg-brand-navy/40" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center gap-6 px-6 max-w-3xl mx-auto">
