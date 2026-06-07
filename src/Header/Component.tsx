@@ -70,43 +70,23 @@ export async function Header({ locale }: { locale: Locale }) {
     ctaEnabled,
   } = header || {}
 
+  // Połącz obie listy nav w jedną do wyświetlenia w środku
+  const allNavItems = [...(navItemsLeft || []), ...(navItemsRight || [])]
+
   return (
     <header className="w-full">
-      {/* ── Top bar (gold) — social icons LEFT, contact RIGHT ── */}
+      {/* ── Top bar (gold) ── */}
       <div className="bg-brand-gold">
-        <div className="container flex items-center py-2 text-[13px] font-medium text-brand-navy">
+        <div className="container flex items-center justify-between py-2 text-[12px] font-medium text-brand-navy">
 
-          {/* Social icons — per PDF design they live in the gold top bar */}
-          {socialLinks && socialLinks.length > 0 && (
-            <div className="flex items-center gap-3 mr-4">
-              {socialLinks.map((social, i) => (
-                <a
-                  key={i}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:opacity-70 transition-opacity"
-                  aria-label={social.platform}
-                >
-                  <SocialIcon platform={social.platform} />
-                </a>
-              ))}
-            </div>
-          )}
-
-          {/* Announcement text — hidden on small screens */}
-          {topBarText && (
-            <span className="hidden lg:block leading-tight">{topBarText}</span>
-          )}
-
-          {/* Phone + address — pushed to the right */}
-          <div className="flex items-center gap-5 ml-auto">
+          {/* Lewa strona: telefon + adres */}
+          <div className="flex items-center gap-4">
             {phone && (
               <a
                 href={`tel:${phone.replace(/\s/g, '')}`}
-                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
               >
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                 </svg>
                 {phone}
@@ -117,72 +97,70 @@ export async function Header({ locale }: { locale: Locale }) {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                className="hidden sm:flex items-center gap-1.5 hover:opacity-70 transition-opacity"
               >
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
                 {address}
               </a>
+            )}
+            {topBarText && (
+              <span className="hidden lg:block leading-tight">{topBarText}</span>
+            )}
+          </div>
+
+          {/* Prawa strona: social icons */}
+          <div className="flex items-center gap-3">
+            {socialLinks && socialLinks.length > 0 && (
+              <>
+                {socialLinks.map((social, i) => (
+                  <a
+                    key={i}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-60 transition-opacity"
+                    aria-label={social.platform}
+                  >
+                    <SocialIcon platform={social.platform} />
+                  </a>
+                ))}
+              </>
             )}
           </div>
         </div>
       </div>
 
       {/* ── Main nav (navy) ── */}
+      {/*
+        Layout (desktop):
+          [Logo — left]  [Nav links — center]  [Lang + CTA — right]
+        Używamy CSS Grid cols=[auto 1fr auto] żeby środkowy nav był
+        wyśrodkowany w dostępnej przestrzeni.
+      */}
       <div className="bg-brand-navy">
-        {/*
-          Layout: relative flex so the logo can be absolutely centered
-          regardless of how wide the left/right nav items are.
-          Each side gets flex-1 so they share equal space and don't crowd the logo.
-        */}
-        <div className="container relative flex items-center justify-between h-[120px]">
+        <div className="container h-[90px] hidden lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-6">
 
-          {/* ── LEFT nav items (desktop only) ── */}
-          <div className="hidden lg:flex items-center gap-5 flex-1">
-            {navItemsLeft && navItemsLeft.length > 0 && (
-              <nav className="flex items-center gap-5">
-                {navItemsLeft.map(({ link }, i) => (
-                  <CMSLink
-                    key={i}
-                    {...link}
-                    locale={locale}
-                    className="text-white uppercase tracking-[0.09em] text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
-                  />
-                ))}
-              </nav>
-            )}
-          </div>
+          {/* LEWA: Logo */}
+          <Link href={`/${locale}`} className="flex-shrink-0">
+            <Logo className="h-[68px] w-auto" />
+          </Link>
 
-          {/* ── CENTER: logo — absolutely positioned to guarantee perfect centering ── */}
-          <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Link href={`/${locale}`} className="block pointer-events-auto">
-              <Logo className="h-[72px] w-auto" />
-            </Link>
-          </div>
+          {/* ŚRODEK: Nav links — wyśrodkowane */}
+          <nav className="flex items-center justify-center gap-6">
+            {allNavItems.map(({ link }, i) => (
+              <CMSLink
+                key={i}
+                {...link}
+                locale={locale}
+                className="text-white uppercase tracking-[0.1em] text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
+              />
+            ))}
+          </nav>
 
-          {/* Mobile logo */}
-          <div className="lg:hidden">
-            <Link href={`/${locale}`} className="block">
-              <Logo className="h-16 w-auto" />
-            </Link>
-          </div>
-
-          {/* ── RIGHT: nav items + language switcher + CTA (desktop only) ── */}
-          <div className="hidden lg:flex items-center gap-4 flex-1 justify-end">
-            {navItemsRight && navItemsRight.length > 0 && (
-              <nav className="flex items-center gap-4">
-                {navItemsRight.map(({ link }, i) => (
-                  <CMSLink
-                    key={i}
-                    {...link}
-                    locale={locale}
-                    className="text-white uppercase tracking-[0.09em] text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
-                  />
-                ))}
-              </nav>
-            )}
-
+          {/* PRAWA: Language switcher + CTA */}
+          <div className="flex items-center gap-4 flex-shrink-0">
             {/* Language switcher */}
             <div className="flex items-center gap-1 text-[12px] font-bold tracking-wider">
               <Link
@@ -208,17 +186,22 @@ export async function Header({ locale }: { locale: Locale }) {
               </Link>
             </div>
 
-            {/* CTA button */}
+            {/* CTA — "Zarezerwuj" */}
             {ctaEnabled && ctaButton && (
               <CMSLink
                 {...ctaButton}
                 locale={locale}
-                className="bg-brand-gold text-white px-4 py-2 rounded-full text-[12px] font-bold uppercase tracking-[0.09em] hover:bg-brand-gold-dark transition-colors flex items-center gap-2 whitespace-nowrap"
+                className="bg-brand-gold text-brand-navy px-5 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-[0.1em] hover:brightness-110 transition-all whitespace-nowrap"
               />
             )}
           </div>
+        </div>
 
-          {/* Mobile hamburger */}
+        {/* ── Mobile nav ── */}
+        <div className="lg:hidden container flex items-center justify-between h-[70px]">
+          <Link href={`/${locale}`}>
+            <Logo className="h-14 w-auto" />
+          </Link>
           <MobileMenu
             navItemsLeft={(navItemsLeft as Parameters<typeof MobileMenu>[0]['navItemsLeft']) || []}
             navItemsRight={(navItemsRight as Parameters<typeof MobileMenu>[0]['navItemsRight']) || []}
