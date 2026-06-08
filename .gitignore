@@ -55,3 +55,6 @@ node_modules/
 
 # Claude git worktrees (local only)
 .claude/worktrees/
+
+# Large local seed assets — served from R2 in production, not stored in git
+scripts/assets/*.mp4
