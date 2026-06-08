@@ -2,7 +2,7 @@ import React from 'react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
-import { expandEvents } from '@/lib/recurring-events'
+import { expandEvents, toOccurrences, todayWarsaw, warsawParts } from '@/lib/recurring-events'
 import type { EventDoc } from '@/lib/recurring-events'
 import { EventsTeaserBlock } from './EventsTeaserBlock'
 import { EventsFullCalendar } from './EventsFullCalendar'
@@ -17,6 +17,7 @@ async function fetchEvents(locale: string) {
     locale: locale as any,
     limit: 1000,
     sort: 'date',
+    depth: 1, // populate image, genres and performers.musician for the popover
   })
   return docs as unknown as EventDoc[]
 }
@@ -48,19 +49,29 @@ export async function EventsCalendarBlock({
   )
 
   if (variant === 'full') {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth()
-    const rangeStart = new Date(year, month, 1)
-    const rangeEnd = new Date(year, month + 1, 1)
+    const occurrences = toOccurrences(allEvents)
 
-    const initialOccurrences = expandEvents(allEvents, rangeStart, rangeEnd)
+    // Bounds (Europe/Warsaw): forward to current month + 3; back to the month of
+    // the earliest event (never past the current month).
+    const today = todayWarsaw()
+    const currentAbs = today.year * 12 + today.month
+    const maxMonthAbs = currentAbs + 3
+    let minMonthAbs = currentAbs
+    if (occurrences.length > 0) {
+      const first = warsawParts(new Date(occurrences[0].dateISO))
+      const firstAbs = first.year * 12 + first.month
+      if (firstAbs < minMonthAbs) minMonthAbs = firstAbs
+    }
+    const todayKey = `${today.year}-${String(today.month + 1).padStart(2, '0')}-${String(today.day).padStart(2, '0')}`
 
     return (
       <EventsFullCalendar
-        initialOccurrences={initialOccurrences}
-        initialYear={year}
-        initialMonth={month}
+        occurrences={occurrences}
+        initialYear={today.year}
+        initialMonth={today.month}
+        minMonthAbs={minMonthAbs}
+        maxMonthAbs={maxMonthAbs}
+        todayKey={todayKey}
         heading={heading}
         ctaLabel={ctaLabel}
         ctaUrl={ctaUrl}
@@ -69,7 +80,7 @@ export async function EventsCalendarBlock({
     )
   }
 
-  // Teaser — expand next 90 days
+  // Teaser — next 90 days
   const now = new Date()
   const futureEnd = new Date(now)
   futureEnd.setDate(futureEnd.getDate() + 90)

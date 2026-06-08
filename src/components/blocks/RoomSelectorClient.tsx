@@ -91,7 +91,8 @@ export function RoomSelectorClient({
   offerItems,
   locale,
 }: Props) {
-  const [activeId, setActiveId] = useState(rooms[0]?.id)
+  const defaultRoom = rooms.find((r) => /vip/i.test(r.name)) ?? rooms[0]
+  const [activeId, setActiveId] = useState(defaultRoom?.id)
   const active = rooms.find((r) => r.id === activeId) ?? rooms[0]
 
   if (!active) return null

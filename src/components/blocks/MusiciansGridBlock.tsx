@@ -1,8 +1,9 @@
 import React from 'react'
-import Image from 'next/image'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { MusiciansGridBlock as MusiciansGridBlockType, Media, Musician } from '@/payload-types'
+import { MusiciansCarouselClient } from './MusiciansCarouselClient'
+import type { MusicianCardData } from './MusiciansCarouselClient'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -31,36 +32,6 @@ async function getMusicians(block: MusiciansGridBlockType, locale: string): Prom
   }
 }
 
-function MusicianCard({ musician }: { musician: Musician }) {
-  const photo = isMedia(musician.photo) ? musician.photo : null
-
-  return (
-    <div className="group">
-      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-navy-royal mb-3">
-        {photo?.url ? (
-          <Image
-            src={photo.url}
-            alt={photo.alt || musician.name}
-            fill
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-brand-navy" />
-        )}
-      </div>
-      <h3 className="text-white text-base font-bold uppercase tracking-wide leading-tight">
-        {musician.name}
-      </h3>
-      {musician.instrument && (
-        <p className="text-brand-gold text-[11px] font-bold uppercase tracking-[0.12em] mt-1">
-          {musician.instrument}
-        </p>
-      )}
-    </div>
-  )
-}
-
 export async function MusiciansGridBlock({
   block,
   locale,
@@ -72,6 +43,17 @@ export async function MusiciansGridBlock({
   const musicians = await getMusicians(block, locale)
 
   if (musicians.length === 0) return null
+
+  const cards: MusicianCardData[] = musicians.map((musician) => {
+    const photo = isMedia(musician.photo) ? musician.photo : null
+    return {
+      id: musician.id,
+      name: musician.name,
+      instrument: musician.instrument ?? null,
+      slug: musician.slug ?? null,
+      image: photo?.url ? { url: photo.url, alt: photo.alt || musician.name } : null,
+    }
+  })
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -91,11 +73,7 @@ export async function MusiciansGridBlock({
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
-          {musicians.map((musician) => (
-            <MusicianCard key={musician.id} musician={musician} />
-          ))}
-        </div>
+        <MusiciansCarouselClient cards={cards} locale={locale} />
       </div>
     </section>
   )

@@ -17,6 +17,7 @@ import 'dotenv/config'
 import path from 'path'
 import { getPayload } from 'payload'
 import configPromise from '../src/payload.config'
+import { warsawParts } from '../src/lib/recurring-events'
 
 const LOCALE = 'pl' as const
 const EN = 'en' as const
@@ -50,6 +51,35 @@ async function run() {
   const payload = await getPayload({ config: configPromise })
   const log = (m: string) => payload.logger.info(m)
 
+  // ── Cleanup stray test records ─────────────────────────────────────────────
+  // These are NOT created by this seed — they're leftover dev/admin test data
+  // (an orphan "Special Recital" event, a "Test Cigar" menu item/category, and a
+  // "test-page") that pollute the calendar, special-events carousel and cigar
+  // menu. Remove them so the public site matches the design exactly.
+  async function deleteStray(collection: string, where: Record<string, unknown>) {
+    try {
+      const found = await payload.find({
+        collection: collection as 'pages',
+        where: where as never,
+        limit: 50,
+        locale: LOCALE,
+      })
+      for (const doc of found.docs) {
+        await payload.delete({ collection: collection as 'pages', id: doc.id })
+        log(`🗑  removed stray ${collection} #${doc.id}`)
+      }
+    } catch (e) {
+      log(`⚠ stray cleanup ${collection} failed: ${(e as Error).message}`)
+    }
+  }
+  await deleteStray('events', { title: { equals: 'Special Recital' } })
+  await deleteStray('menu-items', { name: { contains: 'Test Cigar' } })
+  await deleteStray('menu-categories', { title: { contains: 'Test Cigar' } })
+  await deleteStray('pages', { slug: { equals: 'test-page' } })
+  await deleteStray('musicians', { name: { contains: 'Test' } })
+  await deleteStray('musicians', { slug: { equals: 'sax-player' } })
+  await deleteStray('team-members', { name: { equals: 'Jan Manager' } })
+
   // ── Media ────────────────────────────────────────────────────────────────
   const mediaCache = new Map<string, number | null>()
   async function media(rel: string, alt: string): Promise<number | null> {
@@ -79,23 +109,31 @@ async function run() {
     }
   }
 
-  // The ADC_*.jpg files are full PAGE-DESIGN screenshots, not content photos —
-  // using them as hero/card backgrounds looks wrong (text baked into the image).
-  // Per decision: render clean brand cards now; real photos get uploaded via CMS
-  // into each item's `image` field later. Only the real logo is kept.
-  const none = () => Promise.resolve<number | null>(null)
+  // PLACEHOLDER PHOTOS. The real ADC_*.jpg files are full page-design screenshots
+  // (text baked in), so they can't be used as backgrounds. These grayscale stock
+  // photos in public/images/placeholders/ stand in so the layout reads correctly;
+  // the client replaces each one via the CMS (every block/item has an `image`/
+  // `heroImage` upload field). Swapping a photo in /admin needs no code change.
+  const ph = (name: string, alt: string) => () =>
+    media(`public/images/placeholders/${name}.jpg`, alt)
   const img = {
-    home: none,
-    restauracja: none,
-    bar: none,
-    cigar: none,
-    program: none,
-    twoje: none,
-    single: none,
-    special: none,
-    gallery: none,
+    home: ph('home', 'Klub muzyczny — wnętrze'),
+    restauracja: ph('restauracja', 'Restauracja — danie'),
+    bar: ph('bar', 'Cocktail bar — koktajl'),
+    cigar: ph('cigar', 'Cigar room — wnętrze'),
+    program: ph('program', 'Koncert na żywo'),
+    twoje: ph('twoje', 'Impreza okolicznościowa'),
+    single: ph('single', 'Wydarzenie muzyczne'),
+    special: ph('special', 'Wydarzenie specjalne'),
+    gallery: ph('gallery', 'Galeria klubu'),
     logo: () => media('public/images/logo-on-navy.jpg', 'American Dream Club logo'),
   }
+  // Distinct portrait placeholders for musicians (rotated round-robin).
+  const musicianPhotos = [
+    'musician-1', 'musician-2', 'musician-3', 'musician-4', 'musician-5', 'musician-6',
+  ]
+  const musicianPhoto = (i: number) =>
+    media(`public/images/placeholders/${musicianPhotos[i % musicianPhotos.length]}.jpg`, 'Muzyk')
 
   // ── helper: upsert by slug / unique field ──────────────────────────────────
   // Creates/updates the doc in PL (the canonical content). If `en` is provided
@@ -217,11 +255,7 @@ async function run() {
     topBarText: 'Restauracja & Jazz Club — kolacja i drinki w trakcie koncertu na żywo',
     phone: '+48 500 210 333',
     address: 'ul. Dominikańska 9, 61-456 Poznań',
-    socialLinks: [
-      { platform: 'facebook', url: 'https://www.facebook.com/americandreamclubpoznan' },
-      { platform: 'instagram', url: 'https://www.instagram.com/americandreamclubpoznan/' },
-      { platform: 'youtube', url: 'https://www.youtube.com/@americandreamclubpoznan' },
-    ],
+    // Social links live in the `site-settings` global (single source of truth).
     navItemsLeft: [
       { link: { type: 'custom', label: 'RESTAURACJA', url: '/restauracja' } },
       { link: { type: 'custom', label: 'PROGRAM', url: '/program' } },
@@ -238,80 +272,100 @@ async function run() {
     topBarText: 'Restaurant & Jazz Club — dinner and drinks during a live concert',
   })
 
-  await setGlobal('footer', {
-    logo: logoId,
-    newsletter: {
-      heading: 'NEWSLETTER',
-      placeholder: 'Adres email',
-      buttonLabel: 'DOŁĄCZ',
-      consentText: 'Akceptuję politykę prywatności',
+  // Footer: navColumns/bottomBarLinks are arrays whose *inner* fields are
+  // localized but the array itself is NOT array-level localized. Writing PL then
+  // a fresh EN array would make Payload replace the rows and drop PL → the PL
+  // site falls back to EN. Fix: write PL first, re-read the generated row ids,
+  // then write EN reusing those ids so each locale persists on the same rows.
+  await payload.updateGlobal({
+    slug: 'footer' as 'header',
+    locale: LOCALE,
+    data: {
+      logo: logoId,
+      newsletter: {
+        heading: 'NEWSLETTER',
+        placeholder: 'Adres email',
+        buttonLabel: 'DOŁĄCZ',
+        consentText: 'Akceptuję politykę prywatności',
+      },
+      ageBadge: true,
+      navColumns: [
+        {
+          heading: 'OFERTA',
+          links: [
+            { label: 'Wydarzenia muzyczne', url: '/program' },
+            { label: 'Restauracja', url: '/restauracja' },
+            { label: 'Cocktail Bar & Wino', url: '/bar' },
+            { label: 'Cygara', url: '/cigar-room' },
+          ],
+        },
+        {
+          heading: 'REZERWACJE',
+          links: [
+            { label: 'Rezerwacje indywidualne', url: '/rezerwacje' },
+            { label: 'Imprezy prywatne', url: '/twoje-wydarzenie' },
+            { label: 'Imprezy firmowe', url: '/twoje-wydarzenie' },
+            { label: 'Kontakt', url: '/kontakt' },
+          ],
+        },
+      ],
+      bottomBarLinks: [
+        { label: 'AMERICAN DREAM CLUB® 2026 Wszelkie prawa zastrzeżone', url: '/' },
+        { label: 'Regulamin klubu', url: '/kontakt' },
+        { label: 'Polityka prywatności', url: '/kontakt' },
+        { label: 'Dane firmy', url: '/kontakt' },
+      ],
+      // Social links live in the `site-settings` global (single source of truth).
+    } as never,
+  })
+
+  const footerPL = await payload.findGlobal({ slug: 'footer' as 'header', locale: LOCALE, depth: 0 })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fp = footerPL as any
+  const enNav = [
+    {
+      heading: 'WHAT WE OFFER',
+      labels: ['Live music events', 'Restaurant', 'Cocktail Bar & Wine', 'Cigars'],
     },
-    ageBadge: true,
-    navColumns: [
-      {
-        heading: 'OFERTA',
-        links: [
-          { label: 'Wydarzenia muzyczne', url: '/program' },
-          { label: 'Restauracja', url: '/restauracja' },
-          { label: 'Cocktail Bar & Wino', url: '/bar' },
-          { label: 'Cygara', url: '/cigar-room' },
-        ],
-      },
-      {
-        heading: 'REZERWACJE',
-        links: [
-          { label: 'Rezerwacje indywidualne', url: '/rezerwacje' },
-          { label: 'Imprezy prywatne', url: '/twoje-wydarzenie' },
-          { label: 'Imprezy firmowe', url: '/twoje-wydarzenie' },
-          { label: 'Kontakt', url: '/kontakt' },
-        ],
-      },
-    ],
-    bottomBarLinks: [
-      { label: 'AMERICAN DREAM CLUB® 2026 Wszelkie prawa zastrzeżone', url: '/' },
-      { label: 'Regulamin klubu', url: '/kontakt' },
-      { label: 'Polityka prywatności', url: '/kontakt' },
-      { label: 'Dane firmy', url: '/kontakt' },
-    ],
-    socialLinks: [
-      { platform: 'facebook', url: 'https://www.facebook.com/americandreamclubpoznan' },
-      { platform: 'instagram', url: 'https://www.instagram.com/americandreamclubpoznan/' },
-      { platform: 'youtube', url: 'https://www.youtube.com/@americandreamclubpoznan' },
-    ],
-  }, {
-    // localized: newsletter copy, navColumns headings/labels, bottomBarLinks labels
-    newsletter: {
-      heading: 'NEWSLETTER',
-      placeholder: 'Email address',
-      buttonLabel: 'JOIN',
-      consentText: 'I accept the privacy policy',
+    {
+      heading: 'RESERVATIONS',
+      labels: ['Individual reservations', 'Private parties', 'Corporate events', 'Contact'],
     },
-    navColumns: [
-      {
-        heading: 'WHAT WE OFFER',
-        links: [
-          { label: 'Live music events', url: '/program' },
-          { label: 'Restaurant', url: '/restauracja' },
-          { label: 'Cocktail Bar & Wine', url: '/bar' },
-          { label: 'Cigars', url: '/cigar-room' },
-        ],
+  ]
+  const enBottom = [
+    'AMERICAN DREAM CLUB® 2026 All rights reserved',
+    'Club rules',
+    'Privacy policy',
+    'Company details',
+  ]
+  await payload.updateGlobal({
+    slug: 'footer' as 'header',
+    locale: EN,
+    data: {
+      newsletter: {
+        heading: 'NEWSLETTER',
+        placeholder: 'Email address',
+        buttonLabel: 'JOIN',
+        consentText: 'I accept the privacy policy',
       },
-      {
-        heading: 'RESERVATIONS',
-        links: [
-          { label: 'Individual reservations', url: '/rezerwacje' },
-          { label: 'Private parties', url: '/twoje-wydarzenie' },
-          { label: 'Corporate events', url: '/twoje-wydarzenie' },
-          { label: 'Contact', url: '/kontakt' },
-        ],
-      },
-    ],
-    bottomBarLinks: [
-      { label: 'AMERICAN DREAM CLUB® 2026 All rights reserved', url: '/' },
-      { label: 'Club rules', url: '/kontakt' },
-      { label: 'Privacy policy', url: '/kontakt' },
-      { label: 'Company details', url: '/kontakt' },
-    ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      navColumns: (fp.navColumns ?? []).map((col: any, i: number) => ({
+        id: col.id,
+        heading: enNav[i]?.heading ?? col.heading,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        links: (col.links ?? []).map((l: any, j: number) => ({
+          id: l.id,
+          label: enNav[i]?.labels[j] ?? l.label,
+          url: l.url,
+        })),
+      })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      bottomBarLinks: (fp.bottomBarLinks ?? []).map((b: any, i: number) => ({
+        id: b.id,
+        label: enBottom[i] ?? b.label,
+        url: b.url,
+      })),
+    } as never,
   })
 
   // ════════════════════════════════════════════════════════════════════════
@@ -349,6 +403,24 @@ async function run() {
     ['Montecristo No. 4', 147, catKuba],
     ['Partagas Serie D No. 4', 147, catKuba],
     ['Romeo y Julieta Romeo No. 1', 89, catKuba],
+    // Additional cigars transcribed from ADC_cigar_room.pdf. Prices are best-read
+    // estimates (PDF raster illegible) — verify against the real menu.
+    ['Oliva Serie G Doble Robusto', 49, catNikaragua],
+    ['Oliva Connecticut Reserve Petit Corona', 59, catNikaragua],
+    ['Oliva Serie V No. 4', 69, catNikaragua],
+    ['Plasencia Alma Del Cielo Celeste Robusto', 129, catNikaragua],
+    ['Plasencia Reserva Original Resticos', 99, catNikaragua],
+    ['Rocky Patel Vintage 1999 Connecticut Corona', 55, catNikaragua],
+    ['Rocky Patel Vintage 2003 Cabinet Selection Junior', 59, catNikaragua],
+    ['Rocky Patel Edge 20th Anniversary Robusto', 75, catNikaragua],
+    ['Laura Chevin Classik No. 33 Corona', 69, catDominikana],
+    ['Laura Chevin Virginia No. 2 Belicoso', 79, catDominikana],
+    ['PDR El Trovador Rosado Robusto', 85, catDominikana],
+    ['PDR & Flores Gran Reserva Desflorado Half Corona', 75, catDominikana],
+    ['La Flor Dominicana Ligero No. 250 Tubos', 99, catDominikana],
+    ['La Flor Dominicana Oro No. 6 Natural Tubos', 93, catDominikana],
+    ['Hoyo de Monterrey Epicure Especial Tubos', 179, catKuba],
+    ['H. Upmann Regalias', 119, catKuba],
   ]
   let o = 0
   for (const [name, price, category] of cigars) {
@@ -433,11 +505,27 @@ async function run() {
   o = 0
   for (const [name, instrument, instrumentEn] of musicians) {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    const instLow = instrument.toLowerCase()
+    const instLowEn = instrumentEn.toLowerCase()
     musicianIds[name] = await upsert(
       'musicians',
       { slug: { equals: slug } },
-      { name, slug, instrument, order: o++, photo: await img.program() },
-      { instrument: instrumentEn },
+      {
+        name, slug, instrument, order: o++, photo: await musicianPhoto(o),
+        bio: `${name} — ${instLow}. Wykształcony muzyk związany z poznańską sceną koncertową i środowiskiem akademickim.`,
+        body: rich([
+          `${name} to ceniony instrumentalista (${instLow}), dla którego każdy koncert jest spotkaniem z publicznością. Gra z autentycznym zaangażowaniem i osobistą interpretacją — bez estradowego patosu, za to z prawdziwą muzyczną energią.`,
+          `Na scenie American Dream Club usłyszysz go w repertuarze obejmującym największe amerykańskie i światowe standardy: jazz, swing, blues i soul. To brzmienia, które przez dekady kształtowały kulturę klubową i emocje słuchaczy.`,
+        ]),
+      },
+      {
+        instrument: instrumentEn,
+        bio: `${name} — ${instLowEn}. A trained musician rooted in Poznań's live-music and academic community.`,
+        body: rich([
+          `${name} is a respected ${instLowEn} player for whom every concert is a meeting with the audience — playing with genuine commitment and personal interpretation, without stage pathos but with real musical energy.`,
+          `At American Dream Club you'll hear them in a repertoire spanning the greatest American and world standards: jazz, swing, blues and soul — the sounds that shaped club culture for decades.`,
+        ]),
+      },
     )
   }
 
@@ -491,6 +579,20 @@ async function run() {
     role: 'MANAGER', // localized field
   })
 
+  // Reservation contact — powers the amber "REZERWACJA" band on /rezerwacje
+  // (uses the club's reservation line + mailbox, not a personal contact).
+  const reservationContactId = await upsert(
+    'team-members',
+    { name: { equals: 'Rezerwacja stolika' } },
+    {
+      name: 'Rezerwacja stolika', role: 'REZERWACJA', phone: '+48 500 210 333',
+      email: 'rezerwacja@americandreamclub.pl', order: 1,
+    },
+    // Only `role` is localized; `name` is a shared field, so don't override it in
+    // EN (that would overwrite the PL name).
+    { role: 'RESERVATION' },
+  )
+
   // ════════════════════════════════════════════════════════════════════════
   // TESTIMONIALS
   // ════════════════════════════════════════════════════════════════════════
@@ -520,21 +622,61 @@ async function run() {
   // EVENTS
   // ════════════════════════════════════════════════════════════════════════
   log('Seeding events…')
-  function futureDate(daysAhead: number, hour = 19): string {
-    const d = new Date()
-    d.setDate(d.getDate() + daysAhead)
-    d.setHours(hour, 0, 0, 0)
-    return d.toISOString()
+  // Pin an event to a specific day-of-month in the current (or next) month, so the
+  // calendar looks realistic regardless of when the seed runs. The Events collection
+  // enforces two rules we must respect here: only one event per day, and no events on
+  // Mondays (the club is closed). So `resolveDay` advances forward from the requested
+  // day to the first day that is neither a Monday (Europe/Warsaw) nor already taken.
+  const usedDays: Record<number, Set<number>> = { 0: new Set(), 1: new Set() }
+  function resolveDay(day: number, hour: number, monthOffset: 0 | 1): string {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + monthOffset
+    const lastDay = new Date(year, month + 1, 0).getDate()
+    const used = usedDays[monthOffset]
+    const start = Math.min(day, lastDay)
+    for (let i = 0; i < lastDay; i++) {
+      const cand = ((start - 1 + i) % lastDay) + 1
+      const iso = new Date(year, month, cand, hour, 0, 0, 0).toISOString()
+      if (!used.has(cand) && warsawParts(new Date(iso)).weekday !== 1) {
+        used.add(cand)
+        return iso
+      }
+    }
+    used.add(start)
+    return new Date(year, month, start, hour, 0, 0, 0).toISOString()
+  }
+  function monthDay(day: number, hour = 19): string {
+    return resolveDay(day, hour, 0)
+  }
+  function nextMonthDay(day: number, hour = 19): string {
+    return resolveDay(day, hour, 1)
   }
   // `en` carries the English values for localized fields only: title,
   // description, leadTitle, descriptionHeading, body, performers[].instrument.
   // The where-clause still matches on the canonical (PL) title.
   async function event(d: Record<string, unknown>, en?: Record<string, unknown>) {
-    return upsert('events', { title: { equals: d.title } }, d, en)
+    // Inject editable detail-page section defaults (overridable per call).
+    const withDefaults: Record<string, unknown> = {
+      showUpcoming: true,
+      performersHeading: 'Wykonawcy',
+      upcomingHeading: 'Nadchodzące wydarzenia',
+      shareLabel: 'Udostępnij to wydarzenie',
+      ...d,
+    }
+    const enWithDefaults = en
+      ? {
+          performersHeading: 'Performers',
+          upcomingHeading: 'Upcoming events',
+          shareLabel: 'Share this event',
+          ...en,
+        }
+      : en
+    return upsert('events', { title: { equals: d.title } }, withDefaults, enWithDefaults)
   }
   await event({
     title: "Chicago — Szalone Lata '20", leadTitle: 'Muzyka na żywo', eventType: 'standard',
-    date: futureDate(3), endTime: '23:00', price: 40, featured: true,
+    date: monthDay(4), endTime: '23:00', price: 40, featured: true,
     image: await img.single(), heroImage: await img.single(),
     descriptionHeading: 'Jazz prosto z serca Illinois!',
     body: rich(['Czwartek w rytmie Chicago — swing, jazz i energia klubów lat 20. Muzyka, która buduje nastrój spotkań, rozmów i naturalnego ruchu.']),
@@ -550,15 +692,13 @@ async function run() {
     descriptionHeading: 'Jazz straight from the heart of Illinois!',
     body: rich(['Thursday to the rhythm of Chicago — swing, jazz and the energy of the 1920s clubs. Music that sets the mood for meeting, talking and moving naturally.']),
     description: 'Swing, jazz and the energy of the 1920s clubs.',
-    performers: [
-      { musician: musicianIds['Jacek Szwaj'], instrument: 'piano' },
-      { musician: musicianIds['Wojciech Braszak'], instrument: 'clarinet' },
-      { musician: musicianIds['Mikołaj Wienke'], instrument: 'saxophone' },
-    ],
+    // performers omitted in EN on purpose: the array isn't array-level localized,
+    // so re-sending it here would replace the rows and wipe the PL instruments.
+    // EN falls back to the PL instrument labels (acceptable — PDF scope is PL).
   })
   await event({
     title: 'Just The Two Of Us — duet, który rozpala', leadTitle: 'Muzyka na żywo', eventType: 'standard',
-    date: futureDate(7), endTime: '23:00', price: 40, featured: true,
+    date: monthDay(6), endTime: '23:00', price: 40, featured: true,
     image: await img.program(), heroImage: await img.program(),
     descriptionHeading: 'Wieczór z duetem', description: 'Soul, jazz i wielkie standardy.',
     body: rich(['Wyjątkowy wieczór w duecie — fortepian i wokal w klasycznym repertuarze.']),
@@ -570,7 +710,7 @@ async function run() {
   })
   await event({
     title: 'Chopin na dwa fortepiany', leadTitle: 'Recital', eventType: 'special',
-    date: futureDate(14), endTime: '22:00', price: 140, featured: true,
+    date: monthDay(18, 20), endTime: '22:00', price: 140, featured: true,
     image: await img.special(), heroImage: await img.special(), posterImage: await img.special(),
     descriptionHeading: 'Wydarzenie specjalne', description: 'Muzyka klasyczna na dwa fortepiany.',
     body: rich(['Wyjątkowy recital — muzyka Chopina w aranżacji na dwa fortepiany.']),
@@ -583,15 +723,12 @@ async function run() {
     title: 'Chopin for Two Pianos', leadTitle: 'Recital',
     descriptionHeading: 'Special event', description: 'Classical music for two pianos.',
     body: rich(["A special recital — Chopin's music arranged for two pianos."]),
-    performers: [
-      { musician: musicianIds['Jacek Szwaj'], instrument: 'piano' },
-      { musician: musicianIds['Jakub Królikowski'], instrument: 'piano' },
-    ],
+    // performers omitted in EN (see note above) — keeps PL instruments intact.
   })
   // Two more special poster events (from PDF: Miles Davis tribute, Andrzej Zaucha tribute)
   await event({
     title: 'Książę Jazzu — Tribute to Miles Davis', leadTitle: 'Wieczór specjalny', eventType: 'special',
-    date: futureDate(21), endTime: '23:00', price: 120, featured: true,
+    date: monthDay(26), endTime: '23:00', price: 120, featured: true,
     descriptionHeading: 'Hołd dla Księcia Jazzu',
     description: 'Tribute to Miles Davis — muzyka, która zmieniła historię jazzu.',
     body: rich(['Wieczór dedykowany jednemu z największych innowatorów w historii muzyki jazzowej. Program obejmuje przeboje ze złotych lat Milesa Davisa — Kind of Blue, Bitches Brew i wiele innych.']),
@@ -606,15 +743,11 @@ async function run() {
     descriptionHeading: 'A tribute to the Prince of Jazz',
     description: 'Tribute to Miles Davis — music that changed the history of jazz.',
     body: rich(["An evening dedicated to one of the greatest innovators in the history of jazz. The programme features highlights from Miles Davis's golden years — Kind of Blue, Bitches Brew and many more."]),
-    performers: [
-      { musician: musicianIds['Jacek Szwaj'], instrument: 'piano' },
-      { musician: musicianIds['Wojciech Braszak'], instrument: 'trumpet' },
-      { musician: musicianIds['Mikołaj Wienke'], instrument: 'saxophone' },
-    ],
+    // performers omitted in EN (see note above) — keeps PL instruments intact.
   })
   await event({
     title: 'Tribute to Andrzej Zaucha — Byłaś Serca Biciem', leadTitle: 'Wieczór specjalny', eventType: 'special',
-    date: futureDate(35), endTime: '23:00', price: 110, featured: true,
+    date: nextMonthDay(9), endTime: '23:00', price: 110, featured: true,
     descriptionHeading: 'Hołd dla polskiego króla swingu',
     description: 'Tribute to Andrzej Zaucha — wieczór z muzyką polskiego króla swingu i jazzu.',
     body: rich(['Wieczór poświęcony pamięci Andrzeja Zauchy — śpiewaka, który połączył jazz z popem. Usłyszysz najpiękniejsze standardy jazzowe i piosenki w polskim wykonaniu.']),
@@ -629,33 +762,100 @@ async function run() {
     descriptionHeading: 'A tribute to the Polish King of Swing',
     description: 'Tribute to Andrzej Zaucha — an evening with the music of the Polish king of swing and jazz.',
     body: rich(["An evening in memory of Andrzej Zaucha — a singer who blended jazz with pop. You'll hear the most beautiful jazz standards and songs performed in the Polish style."]),
-    performers: [
-      { musician: musicianIds['Zuzanna Babiak'], instrument: 'vocals' },
-      { musician: musicianIds['Jacek Szwaj'], instrument: 'piano' },
-      { musician: musicianIds['Flavio Gullotta'], instrument: 'double bass' },
-    ],
+    // performers omitted in EN (see note above) — keeps PL instruments intact.
   })
-  // Recurring standard events — populate the calendar grid across all weekdays
-  const recurringEvents: Array<[string, string, number, number, string, string[], string]> = [
-    ['Towarzyska Niedziela', 'Muzyka na żywo', 0, 25, 'Relaksująca niedziela z jazzem, brunchem i koktajlami.', ['Zuzanna Babiak', 'Jakub Kraszewski'], 'sun'],
-    ['Jazzowe Wtorki', 'Muzyka na żywo', 7, 35, 'Wieczór z jazzem w wykonaniu poznańskich muzyków.', ['Adam Czech', 'Flavio Gullotta'], 'tue'],
-    ['Blues & Soul Night', 'Muzyka na żywo', 9, 40, 'Bluesowy wieczór z duszą i energią.', ['Zuzanna Babiak', 'Wojciech Braszak'], 'thu'],
-    ['Swing Night', 'Muzyka na żywo', 11, 35, 'Gorąca noc swingowa — tanecznie i rozrywkowo.', ['Jacek Szwaj', 'Mikołaj Wienke'], 'fri'],
-    ['Klub x Muzy', 'Muzyka na żywo', 13, 30, 'Klimatyczny wieczór z muzyką kameralną i koktajlami.', ['Jakub Królikowski'], 'wed'],
-    ['Road Songs Country', 'Muzyka na żywo', 15, 35, 'Muzyczne opowieści z drogi — country & americana.', ['Adam Czech'], 'sat'],
+  // Individual dated events spread across the CURRENT month — no recurrence.
+  // Each is a unique document pinned to a specific day-of-month so the calendar
+  // grid looks realistic regardless of when the seed runs. `seriesSlug` links an
+  // event to a themed series (so the series page can list "Nadchodzące
+  // wydarzenia w cyklu"). These are the events that demonstrate the
+  // "duplicate + tweak" workflow editors will use in production.
+  type MonthEvent = {
+    title: string; titleEn: string
+    leadTitle: string; leadTitleEn: string
+    day: number; price: number
+    eventType?: 'standard' | 'special'
+    description: string; descriptionEn: string
+    performers: string[]
+    seriesSlug?: string
+  }
+  const monthEvents: MonthEvent[] = [
+    { title: 'Jazzowe Wtorki: Standardy Bebopu', titleEn: 'Jazz Tuesdays: Bebop Standards',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 3, price: 35,
+      description: 'Wtorkowy wieczór z klasyką bebopu w wykonaniu poznańskich muzyków.',
+      descriptionEn: 'A Tuesday evening of bebop classics performed by Poznań musicians.',
+      performers: ['Adam Czech', 'Flavio Gullotta'], seriesSlug: 'jazzowe-wtorki' },
+    { title: 'Blues & Soul Night', titleEn: 'Blues & Soul Night',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 5, price: 40,
+      description: 'Bluesowy wieczór z duszą i energią.',
+      descriptionEn: 'A blues evening with soul and energy.',
+      performers: ['Zuzanna Babiak', 'Wojciech Braszak'] },
+    { title: 'Towarzyska Niedziela: Brunch & Swing', titleEn: 'Social Sunday: Brunch & Swing',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 7, price: 25,
+      description: 'Relaksująca niedziela z jazzem, brunchem i koktajlami od 16:00.',
+      descriptionEn: 'A relaxed Sunday with jazz, brunch and cocktails from 4 PM.',
+      performers: ['Zuzanna Babiak', 'Jakub Kraszewski'], seriesSlug: 'towarzyska-niedziela' },
+    { title: 'Jazzowe Wtorki: Hołd dla Billa Evansa', titleEn: 'Jazz Tuesdays: A Tribute to Bill Evans',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 10, price: 35,
+      description: 'Liryczny jazz fortepianowy w hołdzie Billowi Evansowi.',
+      descriptionEn: 'Lyrical piano jazz in tribute to Bill Evans.',
+      performers: ['Jakub Królikowski', 'Flavio Gullotta'], seriesSlug: 'jazzowe-wtorki' },
+    { title: 'Klub x Muzy: Chaplin na żywo', titleEn: 'Club x Muses: Chaplin Live',
+      leadTitle: 'Kino nieme', leadTitleEn: 'Silent cinema', day: 11, price: 30,
+      description: 'Wieczór kina niemego z akompaniamentem fortepianu na żywo.',
+      descriptionEn: 'A silent-film evening with live piano accompaniment.',
+      performers: ['Jakub Królikowski'], seriesSlug: 'klub-x-muzy' },
+    { title: 'Swing Night', titleEn: 'Swing Night',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 12, price: 35,
+      description: 'Gorąca noc swingowa — tanecznie i rozrywkowo.',
+      descriptionEn: 'A hot swing night — danceable and entertaining.',
+      performers: ['Jacek Szwaj', 'Mikołaj Wienke'] },
+    { title: 'Road Songs: Nashville Night', titleEn: 'Road Songs: Nashville Night',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 14, price: 35,
+      description: 'Muzyczne opowieści z drogi — country prosto z Nashville.',
+      descriptionEn: 'Musical stories from the road — country straight from Nashville.',
+      performers: ['Adam Czech'], seriesSlug: 'road-songs-country' },
+    { title: 'Vocal Jazz Evening', titleEn: 'Vocal Jazz Evening',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 17, price: 40,
+      description: 'Wokalny wieczór z największymi standardami jazzu.',
+      descriptionEn: 'A vocal evening with the greatest jazz standards.',
+      performers: ['Zuzanna Babiak', 'Jacek Szwaj'] },
+    { title: 'Towarzyska Niedziela: Dancing', titleEn: 'Social Sunday: Dancing',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 21, price: 25,
+      description: 'Niedzielna impreza taneczna w doborowym towarzystwie.',
+      descriptionEn: 'A Sunday dance party in fine company.',
+      performers: ['Jakub Kraszewski', 'Mikołaj Wienke'], seriesSlug: 'towarzyska-niedziela' },
+    { title: 'Latin Jazz Quartet', titleEn: 'Latin Jazz Quartet',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 24, price: 40,
+      description: 'Gorące rytmy latynoskiego jazzu na cztery instrumenty.',
+      descriptionEn: 'Hot Latin-jazz rhythms for four instruments.',
+      performers: ['Flavio Gullotta', 'Maciej Sokołowski'] },
+    { title: 'Klub x Muzy: Buster Keaton', titleEn: 'Club x Muses: Buster Keaton',
+      leadTitle: 'Kino nieme', leadTitleEn: 'Silent cinema', day: 25, price: 30,
+      description: 'Komedie Bustera Keatona z akompaniamentem fortepianu na żywo.',
+      descriptionEn: 'Buster Keaton comedies with live piano accompaniment.',
+      performers: ['Jakub Królikowski'], seriesSlug: 'klub-x-muzy' },
+    { title: 'Road Songs: Americana', titleEn: 'Road Songs: Americana',
+      leadTitle: 'Muzyka na żywo', leadTitleEn: 'Live music', day: 28, price: 35,
+      description: 'Gitary, banjo i opowieści prosto z amerykańskiej drogi.',
+      descriptionEn: 'Guitars, banjo and stories straight from the American road.',
+      performers: ['Adam Czech'], seriesSlug: 'road-songs-country' },
   ]
-  for (const [title, leadTitle, daysAhead, price, description, perfNames, repeatDay] of recurringEvents) {
+  const monthEventSeriesLinks: Array<[string, string]> = []
+  for (const me of monthEvents) {
     await event({
-      title, leadTitle, eventType: 'standard',
-      date: futureDate(daysAhead, 19), endTime: '23:00', price, featured: false,
-      description, body: rich([description]),
-      isRecurring: true, repeatType: 'weekly',
-      repeatDays: [repeatDay],
+      title: me.title, leadTitle: me.leadTitle, eventType: me.eventType ?? 'standard',
+      date: monthDay(me.day, 19), endTime: '23:00', price: me.price, featured: false,
+      description: me.description, body: rich([me.description]),
       reservationUrl: 'tel:+48500210333', shareEnabled: true,
-      performers: perfNames
+      performers: me.performers
         .filter(n => musicianIds[n])
         .map(n => ({ musician: musicianIds[n], instrument: '' })),
+    }, {
+      title: me.titleEn, leadTitle: me.leadTitleEn,
+      description: me.descriptionEn, body: rich([me.descriptionEn]),
     })
+    if (me.seriesSlug) monthEventSeriesLinks.push([me.title, me.seriesSlug])
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -803,28 +1003,63 @@ async function run() {
     },
   ]
   const seriesIds: number[] = []
+  const seriesIdBySlug: Record<string, number> = {}
   for (const s of seriesDefs) {
-    seriesIds.push(
-      await upsert(
-        'recurring-series',
-        { slug: { equals: s.slug } },
-        {
-          name: s.name,
-          slug: s.slug,
-          themeColor: s.themeColor,
-          eyebrow: s.eyebrow,
-          description: s.description,
-          heroImage: s.heroImage,
-          gallery: s.gallery.map((g) => ({ image: g.image, caption: g.caption })),
-        },
-        {
-          name: s.en.name,
-          eyebrow: s.en.eyebrow,
-          description: s.en.description,
-          gallery: s.en.gallery.map((g) => ({ caption: g.caption })),
-        },
-      ),
+    const sid = await upsert(
+      'recurring-series',
+      { slug: { equals: s.slug } },
+      {
+        name: s.name,
+        slug: s.slug,
+        themeColor: s.themeColor,
+        eyebrow: s.eyebrow,
+        description: s.description,
+        heroImage: s.heroImage,
+        gallery: s.gallery.map((g) => ({ image: g.image, caption: g.caption })),
+        // Editable page-section controls
+        upcomingHeading: 'Nadchodzące wydarzenia w cyklu',
+        upcomingCount: 6,
+        seeProgrammeLabel: 'Zobacz program',
+        showOtherSeries: true,
+        otherSeriesHeading: 'Pozostałe wydarzenia cykliczne',
+        showNews: true,
+        newsHeading: 'Aktualności',
+      },
+      {
+        name: s.en.name,
+        eyebrow: s.en.eyebrow,
+        description: s.en.description,
+        gallery: s.en.gallery.map((g) => ({ caption: g.caption })),
+        upcomingHeading: 'Upcoming events in this series',
+        seeProgrammeLabel: 'See programme',
+        otherSeriesHeading: 'Other recurring series',
+        newsHeading: 'News',
+      },
     )
+    seriesIds.push(sid)
+    seriesIdBySlug[s.slug] = sid
+  }
+
+  // Link the individual month events to their series so each series page can
+  // list its "Nadchodzące wydarzenia w cyklu" (derived purely from Events).
+  const seriesEventLinks: Array<[string, string]> = monthEventSeriesLinks
+  for (const [eventTitle, seriesSlug] of seriesEventLinks) {
+    const sid = seriesIdBySlug[seriesSlug]
+    if (!sid) continue
+    const found = await payload.find({
+      collection: 'events',
+      where: { title: { equals: eventTitle } },
+      limit: 1,
+      locale: LOCALE,
+    })
+    if (found.docs[0]) {
+      await payload.update({
+        collection: 'events',
+        id: found.docs[0].id,
+        data: { recurringSeries: sid } as never,
+        locale: LOCALE,
+      })
+    }
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -1030,7 +1265,6 @@ async function run() {
   await page('program', 'Program', [
     { blockType: 'pageHero', eyebrow: 'Sprawdź nadchodzące wydarzenia i zaplanuj swój wieczór', title: 'Program', titleStyle: 'serif', backgroundImage: await img.program() },
     { blockType: 'aboutIntro', heading: 'Muzyka, którą gramy', subheading: 'Największe standardy świata — inny klimat w każdy wieczór.', body: 'W klubie gramy największe amerykańskie i światowe standardy. Usłyszysz: jazz, swing, blues, soul i country.' },
-    { blockType: 'eventsTeaser', eyebrow: 'Nadchodzące', heading: 'NAJBLIŻSZE WYDARZENIA', viewAllLabel: '', viewAllUrl: '', limit: 6 },
     { blockType: 'eventsCalendar', variant: 'full', heading: 'KALENDARZ', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: 'Nie przegap', heading: 'WYDARZENIA SPECJALNE', limit: 4 },
     { blockType: 'musiciansGrid', eyebrow: 'Poznaj', heading: 'NASI MUZYCY' },
@@ -1043,7 +1277,6 @@ async function run() {
   ], 'Program', [
     { blockType: 'pageHero', eyebrow: 'Check the upcoming events and plan your evening', title: 'Program', titleStyle: 'serif', backgroundImage: await img.program() },
     { blockType: 'aboutIntro', heading: 'The music we play', subheading: "The world's greatest standards — a different vibe every evening.", body: "At the club we play the greatest American and international standards. You'll hear jazz, swing, blues, soul and country." },
-    { blockType: 'eventsTeaser', eyebrow: 'Upcoming', heading: 'NEXT EVENTS', viewAllLabel: '', viewAllUrl: '', limit: 6 },
     { blockType: 'eventsCalendar', variant: 'full', heading: 'CALENDAR', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: "Don't miss", heading: 'SPECIAL EVENTS', limit: 4 },
     { blockType: 'musiciansGrid', eyebrow: 'Meet', heading: 'OUR MUSICIANS' },
@@ -1101,6 +1334,7 @@ async function run() {
       { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo — subtelne brzmienia fortepianu i saksofonu.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
       { image: await img.bar(), title: 'WIECZÓR KLUBOWY', timeLabel: '21:00–23:00', body: 'Po części koncertowej zapraszamy do dalszego spędzenia czasu w naszej przestrzeni.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
     ] },
+    { blockType: 'salesContact', heading: 'REZERWACJA', teamMember: reservationContactId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
     { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia.', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/kontakt' },
   ], 'Reservation', [
     { blockType: 'pageHero', eyebrow: 'Plan your evening', title: 'Reservation', titleStyle: 'serif', backgroundImage: await img.restauracja() },
@@ -1110,6 +1344,7 @@ async function run() {
       { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', timeLabel: 'od 19:00', body: 'A special evening of live music — the subtle sounds of piano and saxophone.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
       { image: await img.bar(), title: 'CLUB NIGHT', timeLabel: '21:00–23:00', body: 'After the concert, stay on and enjoy more time in our space.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
     ] },
+    { blockType: 'salesContact', heading: 'RESERVATION', teamMember: reservationContactId, callLabel: 'CALL US', emailLabel: 'WRITE TO US', style: 'gold' },
     { blockType: 'notice21Plus', heading: 'Dear Guests', body: 'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over.', ctaLabel: 'CLUB RULES 21+', ctaUrl: '/kontakt' },
   ])
 

@@ -1,37 +1,54 @@
-export type DayCode = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
+// Calendar/event helpers.
+//
+// NOTE: events no longer recur — every event is a single, individually-created
+// document with one concrete date/time. This module keeps the historical name
+// (`recurring-events`) and the `expandEvents` export for compatibility, but
+// expansion is now just a date-range filter. All formatting and day-grouping is
+// done in the club's timezone (Europe/Warsaw) so the server and client always
+// agree regardless of where they run.
 
-// JS getDay() returns 0=Sun, 1=Mon, ..., 6=Sat
-const DAY_INDEX: Record<DayCode, number> = {
-  sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6,
-}
+export const TIME_ZONE = 'Europe/Warsaw'
 
 export type EventDoc = {
   id: string | number
   title?: string | null
   description?: string | null
+  leadTitle?: string | null
   image?: { url?: string | null; alt?: string | null } | number | null
   date?: string | null
   endTime?: string | null
   price?: number | null
   ticketUrl?: string | null
+  reservationUrl?: string | null
   featured?: boolean | null
-  isRecurring?: boolean | null
-  repeatType?: 'weekly' | 'monthly' | null
-  repeatDays?: DayCode[] | null
-  repeatUntil?: string | null
+  eventType?: 'standard' | 'special' | null
+  genres?: Array<{ title?: string | null } | number | null> | null
+  performers?:
+    | Array<{
+        musician?: { name?: string | null } | number | null
+        instrument?: string | null
+      } | null>
+    | null
 }
+
+export type OccurrencePerformer = { name: string; instrument?: string | null }
 
 export type EventOccurrence = {
   id: string
   eventId: string | number
   title: string
   description?: string | null
+  leadTitle?: string | null
   image?: { url: string; alt: string } | null
   dateISO: string
   endTime?: string | null
   price?: number | null
   ticketUrl?: string | null
+  reservationUrl?: string | null
   featured: boolean
+  eventType?: 'standard' | 'special' | null
+  genres: string[]
+  performers: OccurrencePerformer[]
 }
 
 function resolveImage(image: EventDoc['image']): { url: string; alt: string } | null {
@@ -39,84 +56,135 @@ function resolveImage(image: EventDoc['image']): { url: string; alt: string } | 
   return { url: image.url ?? '', alt: image.alt ?? '' }
 }
 
-function makeOccurrence(event: EventDoc, date: Date): EventOccurrence {
+function resolveGenres(genres: EventDoc['genres']): string[] {
+  if (!genres) return []
+  return genres
+    .map((g) => (g && typeof g === 'object' ? (g.title ?? '') : ''))
+    .filter((t): t is string => Boolean(t))
+}
+
+function resolvePerformers(performers: EventDoc['performers']): OccurrencePerformer[] {
+  if (!performers) return []
+  const out: OccurrencePerformer[] = []
+  for (const p of performers) {
+    if (!p) continue
+    const name = p.musician && typeof p.musician === 'object' ? (p.musician.name ?? '') : ''
+    if (!name) continue
+    out.push({ name, instrument: p.instrument ?? null })
+  }
+  return out
+}
+
+function makeOccurrence(event: EventDoc): EventOccurrence {
   return {
-    id: `${event.id}-${date.toISOString()}`,
+    id: String(event.id),
     eventId: event.id,
     title: event.title ?? '',
     description: event.description,
+    leadTitle: event.leadTitle ?? null,
     image: resolveImage(event.image),
-    dateISO: date.toISOString(),
+    dateISO: event.date as string,
     endTime: event.endTime,
     price: event.price,
-    ticketUrl: event.ticketUrl,
+    ticketUrl: event.ticketUrl ?? null,
+    reservationUrl: event.reservationUrl ?? null,
     featured: Boolean(event.featured),
+    eventType: event.eventType ?? null,
+    genres: resolveGenres(event.genres),
+    performers: resolvePerformers(event.performers),
   }
 }
 
+/** Map raw event docs into sorted occurrences (drops events without a date). */
+export function toOccurrences(events: EventDoc[]): EventOccurrence[] {
+  const occurrences = events.filter((e) => Boolean(e.date)).map(makeOccurrence)
+  occurrences.sort((a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime())
+  return occurrences
+}
+
+/**
+ * Return the occurrences whose date falls within [rangeStart, rangeEnd).
+ * (Formerly expanded recurring events — now a plain range filter.)
+ */
 export function expandEvents(
   events: EventDoc[],
   rangeStart: Date,
   rangeEnd: Date,
 ): EventOccurrence[] {
-  const occurrences: EventOccurrence[] = []
+  return toOccurrences(events).filter((occ) => {
+    const t = new Date(occ.dateISO).getTime()
+    return t >= rangeStart.getTime() && t < rangeEnd.getTime()
+  })
+}
 
-  for (const event of events) {
-    if (!event.date) continue
+// ── Timezone-aware date parts ────────────────────────────────────────────────
 
-    const eventStart = new Date(event.date)
-    const repeatUntil = event.repeatUntil ? new Date(event.repeatUntil) : null
-    const effectiveEnd = repeatUntil && repeatUntil < rangeEnd ? repeatUntil : rangeEnd
+export type WarsawParts = {
+  year: number
+  month: number // 0-indexed
+  day: number
+  hour: number
+  minute: number
+  weekday: number // 0=Sun … 6=Sat
+}
 
-    if (!event.isRecurring) {
-      if (eventStart >= rangeStart && eventStart < rangeEnd) {
-        occurrences.push(makeOccurrence(event, eventStart))
-      }
-      continue
-    }
+const WEEKDAY_TO_INDEX: Record<string, number> = {
+  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+}
 
-    if (event.repeatType === 'weekly' && event.repeatDays && event.repeatDays.length > 0) {
-      const targetDays = new Set(event.repeatDays.map((d) => DAY_INDEX[d]))
-      const cursor = new Date(Math.max(rangeStart.getTime(), eventStart.getTime()))
-      // Align cursor to start of day
-      cursor.setHours(eventStart.getHours(), eventStart.getMinutes(), 0, 0)
-      // Go back to the start of its day
-      const dayStart = new Date(cursor)
-      dayStart.setHours(0, 0, 0, 0)
-      const rangeStartDay = new Date(rangeStart)
-      rangeStartDay.setHours(0, 0, 0, 0)
-      const walk = new Date(rangeStartDay)
+const partsFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+  weekday: 'short',
+})
 
-      while (walk <= effectiveEnd) {
-        if (targetDays.has(walk.getDay()) && walk >= new Date(eventStart.getFullYear(), eventStart.getMonth(), eventStart.getDate())) {
-          const occurrence = new Date(walk)
-          occurrence.setHours(eventStart.getHours(), eventStart.getMinutes(), 0, 0)
-          if (occurrence >= rangeStart && occurrence < rangeEnd) {
-            occurrences.push(makeOccurrence(event, occurrence))
-          }
-        }
-        walk.setDate(walk.getDate() + 1)
-      }
-    } else if (event.repeatType === 'monthly') {
-      const dayOfMonth = eventStart.getDate()
-      const walk = new Date(rangeStart)
-      walk.setHours(0, 0, 0, 0)
-
-      while (walk <= effectiveEnd) {
-        if (walk.getDate() === dayOfMonth && walk >= new Date(eventStart.getFullYear(), eventStart.getMonth(), eventStart.getDate())) {
-          const occurrence = new Date(walk)
-          occurrence.setHours(eventStart.getHours(), eventStart.getMinutes(), 0, 0)
-          if (occurrence >= rangeStart && occurrence < rangeEnd) {
-            occurrences.push(makeOccurrence(event, occurrence))
-          }
-        }
-        walk.setDate(walk.getDate() + 1)
-      }
-    }
+/** Break an instant down into its Europe/Warsaw calendar parts. */
+export function warsawParts(date: Date): WarsawParts {
+  const parts = partsFormatter.formatToParts(date)
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
+  let hour = parseInt(get('hour'), 10)
+  if (hour === 24) hour = 0 // some engines emit "24" for midnight
+  return {
+    year: parseInt(get('year'), 10),
+    month: parseInt(get('month'), 10) - 1,
+    day: parseInt(get('day'), 10),
+    hour,
+    minute: parseInt(get('minute'), 10),
+    weekday: WEEKDAY_TO_INDEX[get('weekday')] ?? 0,
   }
+}
 
-  occurrences.sort((a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime())
-  return occurrences
+/** Today's date in Europe/Warsaw, as { year, month (0-idx), day }. */
+export function todayWarsaw(now: Date = new Date()): { year: number; month: number; day: number } {
+  const p = warsawParts(now)
+  return { year: p.year, month: p.month, day: p.day }
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+/** Day key (YYYY-MM-DD) from y/m/d numbers. */
+export function dayKey(year: number, month: number, day: number): string {
+  return `${year}-${pad(month + 1)}-${pad(day)}`
+}
+
+/** Day key (YYYY-MM-DD) for an ISO instant, in Europe/Warsaw. */
+export function warsawDayKey(iso: string): string {
+  const p = warsawParts(new Date(iso))
+  return dayKey(p.year, p.month, p.day)
+}
+
+/** HH:MM time of an ISO instant, in Europe/Warsaw. */
+export function formatTime(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const p = warsawParts(new Date(iso))
+  return `${pad(p.hour)}:${pad(p.minute)}`
 }
 
 // ── Locale helpers ──────────────────────────────────────────────────────────
@@ -137,9 +205,11 @@ const MONTHS_EN = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ]
 
+/** Weekday abbreviation for an ISO instant, in Europe/Warsaw. */
 export function getDayAbbr(date: Date, locale: string): string {
+  const weekday = warsawParts(date).weekday
   const abbrs = locale === 'pl' ? DAY_ABBR_PL : DAY_ABBR_EN
-  return abbrs[date.getDay()].toUpperCase()
+  return abbrs[weekday].toUpperCase()
 }
 
 export function getMonthName(year: number, month: number, locale: string): string {
@@ -147,16 +217,17 @@ export function getMonthName(year: number, month: number, locale: string): strin
   return `${names[month].toUpperCase()} ${year}`
 }
 
+// The club is closed on Mondays, so the calendar never shows them — the visible
+// week runs Tuesday→Sunday (drop the leading Monday from the Monday-first arrays).
 export function getWeekDays(locale: string): string[] {
-  return locale === 'pl' ? WEEK_DAYS_PL : WEEK_DAYS_EN
+  return (locale === 'pl' ? WEEK_DAYS_PL : WEEK_DAYS_EN).slice(1)
 }
 
-/** Group occurrences by YYYY-MM-DD */
+/** Group occurrences by their Europe/Warsaw day key (YYYY-MM-DD). */
 export function groupByDay(occurrences: EventOccurrence[]): Record<string, EventOccurrence[]> {
   const map: Record<string, EventOccurrence[]> = {}
   for (const occ of occurrences) {
-    const d = new Date(occ.dateISO)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const key = warsawDayKey(occ.dateISO)
     if (!map[key]) map[key] = []
     map[key].push(occ)
   }

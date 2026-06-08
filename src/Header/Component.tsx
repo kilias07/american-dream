@@ -9,6 +9,7 @@ import type { Locale } from '@/config/locales'
 import { CMSLink } from '@/components/Link'
 import { MobileMenu } from './MobileMenu'
 import { Logo } from './Logo'
+import { HeaderShell } from './HeaderShell'
 
 const SocialIcon = ({ platform }: { platform: string }) => {
   const cls = 'w-4 h-4 fill-current'
@@ -37,6 +38,12 @@ const SocialIcon = ({ platform }: { platform: string }) => {
           <path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z" />
         </svg>
       )
+    case 'tiktok':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+        </svg>
+      )
     default:
       return null
   }
@@ -51,6 +58,25 @@ async function getHeader(locale: Locale): Promise<Header | null> {
   }
 }
 
+type SocialEntry = { platform: string; url: string }
+
+/**
+ * Social links pochodzą z JEDNEGO miejsca — globalu „Site Settings” (pole
+ * `social`). Header, mobilne menu, stopka i SEO czytają z tego samego źródła,
+ * więc edycja w jednym miejscu zmienia je wszędzie.
+ */
+async function getSocialLinks(): Promise<SocialEntry[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
+    return (settings?.social ?? [])
+      .filter((s) => Boolean(s?.platform && s?.url))
+      .map((s) => ({ platform: s.platform as string, url: s.url as string }))
+  } catch {
+    return []
+  }
+}
+
 export async function Header({ locale }: { locale: Locale }) {
   const cachedHeader = unstable_cache(
     () => getHeader(locale),
@@ -59,11 +85,15 @@ export async function Header({ locale }: { locale: Locale }) {
   )
   const header = await cachedHeader()
 
+  const cachedSocial = unstable_cache(() => getSocialLinks(), ['social-links'], {
+    tags: ['global_site_settings'],
+  })
+  const socialLinks = await cachedSocial()
+
   const {
     topBarText,
     phone,
     address,
-    socialLinks,
     navItemsLeft,
     navItemsRight,
     ctaButton,
@@ -74,9 +104,10 @@ export async function Header({ locale }: { locale: Locale }) {
   const allNavItems = [...(navItemsLeft || []), ...(navItemsRight || [])]
 
   return (
-    <header className="w-full">
-      {/* ── Top bar (gold) ── */}
-      <div className="bg-brand-gold">
+    <HeaderShell
+      topBar={
+        /* ── Top bar (gold) ── */
+        <div className="bg-brand-gold">
         <div className="container flex items-center justify-between py-2 text-[12px] font-medium text-brand-navy">
 
           {/* Lewa strona: telefon + adres */}
@@ -131,36 +162,35 @@ export async function Header({ locale }: { locale: Locale }) {
           </div>
         </div>
       </div>
-
-      {/* ── Main nav (navy) ── */}
-      {/*
-        Layout (desktop):
-          [Logo — left]  [Nav links — center]  [Lang + CTA — right]
-        Używamy CSS Grid cols=[auto 1fr auto] żeby środkowy nav był
-        wyśrodkowany w dostępnej przestrzeni.
-      */}
-      <div className="bg-brand-navy">
-        <div className="container h-[90px] hidden lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-6">
+      }
+      nav={
+        /* ── Main nav (navy) ──
+           Layout (desktop):
+             [Logo — left]  [Nav links — center]  [Lang + CTA — right]
+           Używamy CSS Grid cols=[auto 1fr auto] żeby środkowy nav był
+           wyśrodkowany w dostępnej przestrzeni. */
+        <div className="bg-brand-navy">
+        <div className="container h-[90px] hidden lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-3 xl:gap-6">
 
           {/* LEWA: Logo */}
           <Link href={`/${locale}`} className="flex-shrink-0">
-            <Logo className="h-[68px] w-auto" />
+            <Logo className="h-14 xl:h-[68px] w-auto" />
           </Link>
 
           {/* ŚRODEK: Nav links — wyśrodkowane */}
-          <nav className="flex items-center justify-center gap-6">
+          <nav className="flex items-center justify-center gap-3 xl:gap-6">
             {allNavItems.map(({ link }, i) => (
               <CMSLink
                 key={i}
                 {...link}
                 locale={locale}
-                className="text-white uppercase tracking-[0.1em] text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
+                className="text-white uppercase tracking-normal xl:tracking-[0.03em] text-[12px] xl:text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
               />
             ))}
           </nav>
 
           {/* PRAWA: Language switcher + CTA */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 xl:gap-4 flex-shrink-0">
             {/* Language switcher */}
             <div className="flex items-center gap-1 text-[12px] font-bold tracking-wider">
               <Link
@@ -191,7 +221,7 @@ export async function Header({ locale }: { locale: Locale }) {
               <CMSLink
                 {...ctaButton}
                 locale={locale}
-                className="bg-brand-gold text-brand-navy px-5 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-[0.1em] hover:brightness-110 transition-all whitespace-nowrap"
+                className="bg-brand-gold text-brand-navy px-3.5 xl:px-5 py-2.5 rounded-full text-[11px] xl:text-[12px] font-bold uppercase tracking-[0.02em] xl:tracking-[0.06em] hover:brightness-110 transition-all whitespace-nowrap"
               />
             )}
           </div>
@@ -212,6 +242,7 @@ export async function Header({ locale }: { locale: Locale }) {
           />
         </div>
       </div>
-    </header>
+      }
+    />
   )
 }

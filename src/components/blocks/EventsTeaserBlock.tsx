@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { EventOccurrence } from '@/lib/recurring-events'
-import { getDayAbbr } from '@/lib/recurring-events'
+import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
 
 type Props = {
   occurrences: EventOccurrence[]
@@ -17,13 +17,9 @@ type Props = {
 function EventCard({ occ, locale, featured }: { occ: EventOccurrence; locale: string; featured: boolean }) {
   const date = new Date(occ.dateISO)
   const dayAbbr = getDayAbbr(date, locale)
-  const dayNum = String(date.getDate()).padStart(2, '0')
+  const dayNum = warsawDayKey(occ.dateISO).slice(-2)
 
-  const startTime = date.toLocaleTimeString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
+  const startTime = formatTime(occ.dateISO)
 
   return (
     <div
@@ -200,7 +196,7 @@ export function EventsTeaserBlock({ occurrences, heading, ctaLabel, ctaUrl, loca
         <button
           onClick={() => scroll(-1)}
           disabled={!canPrev}
-          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-brand-navy bg-transparent disabled:opacity-30 disabled:cursor-not-allowed items-center justify-center transition-colors hover:bg-brand-navy/10 text-brand-navy"
+          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-brand-navy bg-transparent disabled:opacity-30 items-center justify-center transition-colors hover:bg-brand-navy/10 text-brand-navy"
           aria-label="Previous"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,7 +225,7 @@ export function EventsTeaserBlock({ occurrences, heading, ctaLabel, ctaUrl, loca
         <button
           onClick={() => scroll(1)}
           disabled={!canNext}
-          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-brand-navy bg-transparent disabled:opacity-30 disabled:cursor-not-allowed items-center justify-center transition-colors hover:bg-brand-navy/10 text-brand-navy"
+          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-brand-navy bg-transparent disabled:opacity-30 items-center justify-center transition-colors hover:bg-brand-navy/10 text-brand-navy"
           aria-label="Next"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

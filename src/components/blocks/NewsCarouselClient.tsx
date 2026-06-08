@@ -101,7 +101,7 @@ export function NewsCarouselClient({ cards, locale }: Props) {
         <button
           onClick={() => scroll(-1)}
           disabled={!canPrev}
-          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 disabled:cursor-not-allowed items-center justify-center transition-colors hover:bg-white/10 text-white"
+          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 items-center justify-center transition-colors hover:bg-white/10 text-white"
           aria-label="Previous"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,7 +124,7 @@ export function NewsCarouselClient({ cards, locale }: Props) {
         <button
           onClick={() => scroll(1)}
           disabled={!canNext}
-          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 disabled:cursor-not-allowed items-center justify-center transition-colors hover:bg-white/10 text-white"
+          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 items-center justify-center transition-colors hover:bg-white/10 text-white"
           aria-label="Next"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -22,6 +22,20 @@ export const HeroBanner: Block = {
       name: 'backgroundImage',
       type: 'upload',
       relationTo: 'media',
+      admin: {
+        description:
+          'Używane jako plakat filmu (przed załadowaniem) i fallback dla osób z ograniczoną animacją. Bez filmu — pełne tło.',
+      },
+    },
+    {
+      name: 'backgroundVideoUrl',
+      type: 'text',
+      label: 'Background Video URL',
+      defaultValue: '/videos/hero-banner.mp4',
+      admin: {
+        description:
+          'Film w tle hero — leci automatycznie, w pętli, wyciszony, lekko przyciemniony. Np. /videos/hero-banner.mp4. Zostaw puste, aby użyć tylko zdjęcia.',
+      },
     },
     // Secondary outline buttons (e.g. MENU, PROGRAM)
     {

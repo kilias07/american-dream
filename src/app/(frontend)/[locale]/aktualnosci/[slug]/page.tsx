@@ -50,6 +50,56 @@ async function getRelatedPosts(currentId: number, locale: Locale): Promise<Post[
   }
 }
 
+// Adjacent articles by publish date: `prev` = newer post, `next` = older post.
+async function getAdjacentPosts(
+  publishedAt: string | null | undefined,
+  currentId: number,
+  locale: Locale,
+): Promise<{ prev: Post | null; next: Post | null }> {
+  if (!publishedAt) return { prev: null, next: null }
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const [newer, older] = await Promise.all([
+      payload.find({
+        collection: 'posts',
+        where: {
+          and: [
+            { _status: { equals: 'published' } },
+            { id: { not_equals: currentId } },
+            { publishedAt: { greater_than: publishedAt } },
+          ],
+        },
+        sort: 'publishedAt',
+        locale,
+        fallbackLocale: defaultLocale,
+        depth: 0,
+        limit: 1,
+      }),
+      payload.find({
+        collection: 'posts',
+        where: {
+          and: [
+            { _status: { equals: 'published' } },
+            { id: { not_equals: currentId } },
+            { publishedAt: { less_than: publishedAt } },
+          ],
+        },
+        sort: '-publishedAt',
+        locale,
+        fallbackLocale: defaultLocale,
+        depth: 0,
+        limit: 1,
+      }),
+    ])
+    return {
+      prev: (newer.docs[0] as Post) ?? null,
+      next: (older.docs[0] as Post) ?? null,
+    }
+  } catch {
+    return { prev: null, next: null }
+  }
+}
+
 export default async function ArticlePage({
   params,
 }: {
@@ -74,7 +124,21 @@ export default async function ArticlePage({
   )
   const related = await cachedRelated()
 
+  const cachedAdjacent = unstable_cache(
+    () => getAdjacentPosts(post.publishedAt, post.id, locale as Locale),
+    [`post-adjacent-${post.id}-${locale}`],
+    { tags: ['posts'] },
+  )
+  const { prev, next } = await cachedAdjacent()
+
   const hero = isMedia(post.heroImage) ? post.heroImage : null
+  const publishedDate = post.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null
 
   return (
     <div className="bg-brand-navy text-white">
@@ -102,9 +166,44 @@ export default async function ArticlePage({
             <span aria-hidden>‹</span>
             {locale === 'pl' ? 'Wróć' : 'Back'}
           </Link>
+          {publishedDate && (
+            <p className="text-brand-gold text-[12px] font-bold uppercase tracking-[0.16em] mb-3">
+              {publishedDate}
+            </p>
+          )}
           <h1 className="font-serif text-3xl md:text-5xl font-bold leading-tight">{post.title}</h1>
         </div>
       </section>
+
+      {/* Prev / next article navigation */}
+      {(prev || next) && (
+        <section className="border-b border-white/10">
+          <div className="max-w-[860px] mx-auto px-6 md:px-10 py-5 flex items-center justify-between gap-4">
+            {prev ? (
+              <Link
+                href={`/${locale}/aktualnosci/${prev.slug}`}
+                className="group inline-flex items-center gap-2 text-white/80 hover:text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] transition-colors max-w-[45%]"
+              >
+                <span aria-hidden>‹</span>
+                <span className="truncate">{locale === 'pl' ? 'Poprzednie' : 'Previous'}</span>
+              </Link>
+            ) : (
+              <span />
+            )}
+            {next ? (
+              <Link
+                href={`/${locale}/aktualnosci/${next.slug}`}
+                className="group inline-flex items-center gap-2 text-white/80 hover:text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] transition-colors max-w-[45%] text-right"
+              >
+                <span className="truncate">{locale === 'pl' ? 'Następne' : 'Next'}</span>
+                <span aria-hidden>›</span>
+              </Link>
+            ) : (
+              <span />
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Body */}
       <section className="py-12 md:py-16">

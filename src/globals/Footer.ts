@@ -64,26 +64,8 @@ export const Footer: GlobalConfig = {
         { name: 'url', type: 'text', required: true },
       ],
     },
-    {
-      name: 'socialLinks',
-      type: 'array',
-      label: 'Social Links',
-      admin: { initCollapsed: true },
-      fields: [
-        {
-          name: 'platform',
-          type: 'select',
-          required: true,
-          options: [
-            { label: 'Google', value: 'google' },
-            { label: 'Facebook', value: 'facebook' },
-            { label: 'Instagram', value: 'instagram' },
-            { label: 'YouTube', value: 'youtube' },
-          ],
-        },
-        { name: 'url', type: 'text', required: true },
-      ],
-    },
+    // Social links live in the "Site Settings" global (single source of truth);
+    // the footer reads them from there.
   ],
   hooks: {
     afterChange: [

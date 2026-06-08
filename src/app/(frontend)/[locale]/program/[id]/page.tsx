@@ -9,6 +9,10 @@ import { locales, defaultLocale, type Locale } from '@/config/locales'
 import { RichTextRenderer } from '@/components/RichTextRenderer'
 import { localizedAlternates } from '@/utilities/seo'
 import { EventJsonLd } from '@/components/seo/EventJsonLd'
+import { ShareBar } from '@/components/ui/ShareBar'
+import { AddToCalendar } from '@/components/ui/AddToCalendar'
+import { UpcomingEventsCarousel } from '@/components/ui/UpcomingEventsCarousel'
+import { warsawParts } from '@/lib/recurring-events'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -50,7 +54,7 @@ async function getUpcomingEvents(currentId: string, locale: Locale): Promise<Eve
       locale,
       fallbackLocale: defaultLocale,
       depth: 1,
-      limit: 6,
+      limit: 5,
     })
     return result.docs as Event[]
   } catch {
@@ -62,10 +66,12 @@ function formatDateParts(value: string | null | undefined, locale: string) {
   if (!value) return { weekday: '', dayMonth: '', time: '' }
   const date = new Date(value)
   const intl = locale === 'pl' ? 'pl-PL' : 'en-GB'
-  const weekday = date.toLocaleDateString(intl, { weekday: 'long' })
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const time = date.toLocaleTimeString(intl, { hour: '2-digit', minute: '2-digit', hour12: false })
+  // All parts formatted in the club's timezone (Europe/Warsaw).
+  const weekday = date.toLocaleDateString(intl, { weekday: 'long', timeZone: 'Europe/Warsaw' })
+  const p = warsawParts(date)
+  const day = String(p.day).padStart(2, '0')
+  const month = String(p.month + 1).padStart(2, '0')
+  const time = `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
   return { weekday, dayMonth: `${day}.${month}`, time }
 }
 
@@ -167,6 +173,19 @@ export default async function EventDetailPage({
             >
               {locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'}
             </Link>
+            {event.date && (
+              <AddToCalendar
+                theme="light"
+                locale={locale}
+                event={{
+                  id: event.id,
+                  title: event.title ?? '',
+                  description: event.description ?? undefined,
+                  startISO: event.date,
+                  endTime: event.endTime ?? undefined,
+                }}
+              />
+            )}
           </div>
         </div>
       </section>
@@ -174,14 +193,23 @@ export default async function EventDetailPage({
       {/* Description band */}
       {(event.descriptionHeading || event.body) && (
         <section className="py-14 md:py-20 bg-brand-navy-royal">
-          <div className="max-w-[860px] mx-auto px-6 md:px-10">
-            {event.descriptionHeading && (
-              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">
-                {event.descriptionHeading}
-              </h2>
-            )}
-            <div className="prose prose-invert max-w-none text-white/85">
-              <RichTextRenderer content={event.body} />
+          <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="max-w-[860px]">
+              {event.descriptionHeading && (
+                <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">
+                  {event.descriptionHeading}
+                </h2>
+              )}
+              <div className="prose prose-invert max-w-none text-white/85">
+                <RichTextRenderer content={event.body} />
+              </div>
+              {event.shareEnabled && (
+                <div className="mt-10 pt-6 border-t border-white/10">
+                  <ShareBar
+                    label={event.shareLabel || (locale === 'pl' ? 'Udostępnij to wydarzenie' : 'Share this event')}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -192,35 +220,40 @@ export default async function EventDetailPage({
         <section className="py-14 md:py-16">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <h2 className="font-serif text-2xl md:text-3xl font-bold mb-8">
-              {locale === 'pl' ? 'Wykonawcy' : 'Performers'}
+              {event.performersHeading || (locale === 'pl' ? 'Wykonawcy' : 'Performers')}
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap gap-x-8 gap-y-5">
               {performers.map((p, i) => {
                 const musician = p.musician as Musician
                 const photo = isMedia(musician.photo) ? musician.photo : null
                 return (
-                  <div key={p.id ?? i} className="flex flex-col items-center text-center">
-                    <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-brand-navy-royal mb-3">
+                  <div
+                    key={p.id ?? i}
+                    className="flex items-center gap-4 text-left w-full sm:w-[280px]"
+                  >
+                    <div className="relative w-14 h-14 flex-shrink-0 rounded-full overflow-hidden bg-brand-navy-royal">
                       {photo?.url ? (
                         <Image
                           src={photo.url}
                           alt={photo.alt || musician.name}
                           fill
                           className="object-cover"
-                          sizes="112px"
+                          sizes="56px"
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-brand-gold text-2xl font-serif">
+                        <div className="absolute inset-0 flex items-center justify-center text-brand-gold text-xl font-serif">
                           {musician.name?.charAt(0)}
                         </div>
                       )}
                     </div>
-                    <p className="font-semibold text-sm">{musician.name}</p>
-                    {(p.instrument || musician.instrument) && (
-                      <p className="text-white/60 text-xs uppercase tracking-wide mt-0.5">
-                        {p.instrument || musician.instrument}
-                      </p>
-                    )}
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm leading-tight">{musician.name}</p>
+                      {(p.instrument || musician.instrument) && (
+                        <p className="text-white/60 text-xs uppercase tracking-wide mt-0.5">
+                          {p.instrument || musician.instrument}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )
               })}
@@ -230,50 +263,25 @@ export default async function EventDetailPage({
       )}
 
       {/* Upcoming events strip */}
-      {upcoming.length > 0 && (
+      {event.showUpcoming !== false && upcoming.length > 0 && (
         <section className="py-14 md:py-16 bg-brand-navy-royal">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <h2 className="font-serif text-2xl md:text-3xl font-bold mb-8 uppercase">
-              {locale === 'pl' ? 'Nadchodzące wydarzenia' : 'Upcoming events'}
+              {event.upcomingHeading || (locale === 'pl' ? 'Nadchodzące wydarzenia' : 'Upcoming events')}
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {upcoming.map((ev) => {
+            <UpcomingEventsCarousel
+              cards={upcoming.map((ev) => {
                 const img = isMedia(ev.image) ? ev.image : isMedia(ev.posterImage) ? ev.posterImage : null
                 const d = formatDateParts(ev.date, locale)
-                return (
-                  <Link
-                    key={ev.id}
-                    href={`/${locale}/program/${ev.id}`}
-                    className="group relative rounded-xl overflow-hidden bg-brand-navy"
-                    style={{ minHeight: 220 }}
-                  >
-                    {img?.url ? (
-                      <Image
-                        src={img.url}
-                        alt={img.alt || ev.title || ''}
-                        fill
-                        className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                        sizes="(max-width: 768px) 50vw, 16vw"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-brand-navy" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/50 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      {(d.weekday || d.dayMonth) && (
-                        <p className="text-brand-gold text-[10px] font-bold uppercase tracking-wide mb-1">
-                          {d.dayMonth}
-                          {d.time ? ` · ${d.time}` : ''}
-                        </p>
-                      )}
-                      <h3 className="text-white text-[12px] font-bold uppercase leading-tight">
-                        {ev.title}
-                      </h3>
-                    </div>
-                  </Link>
-                )
+                return {
+                  id: ev.id,
+                  href: `/${locale}/program/${ev.id}`,
+                  title: ev.title ?? '',
+                  dateLabel: d.dayMonth ? `${d.dayMonth}${d.time ? ` · ${d.time}` : ''}` : '',
+                  image: img?.url ? { url: img.url, alt: img.alt || ev.title || '' } : null,
+                }
               })}
-            </div>
+            />
           </div>
         </section>
       )}

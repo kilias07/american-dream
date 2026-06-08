@@ -7,6 +7,16 @@ const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclu
 const SITE_NAME = 'American Dream Club'
 const SITE_DESCRIPTION =
   'American Dream Club — restauracja i klub jazzowy w sercu Poznania. Koncerty na żywo, autorska kuchnia, bar i cigar room.'
+// 1200×630 sRGB link-preview card (public/og-image.jpg). Used by Facebook,
+// Messenger, WhatsApp, iMessage, LinkedIn, X, etc. when the link is shared.
+const OG_IMAGE = {
+  url: '/og-image.jpg',
+  width: 1200,
+  height: 630,
+  alt: SITE_NAME,
+}
+// Brand Facebook page — mirrors the old site's `article:publisher` tag.
+const FACEBOOK_PAGE = 'https://www.facebook.com/americandreamclubpoznan'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -16,6 +26,15 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  // Same crawl directives Yoast emitted on the live site, so the Google
+  // listing keeps large image previews and untruncated snippets.
+  robots: {
+    index: true,
+    follow: true,
+    'max-snippet': -1,
+    'max-image-preview': 'large',
+    'max-video-preview': -1,
+  },
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
@@ -23,11 +42,16 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     locale: 'pl_PL',
     alternateLocale: ['en_GB'],
+    images: [OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
+  },
+  other: {
+    'article:publisher': FACEBOOK_PAGE,
   },
 }
 
@@ -41,7 +65,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <InitTheme />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Preload the primary local font weight to cut FOUT on first paint. */}
+        {/* Metropolis (body) is self-hosted — preload the primary weight to cut
+            FOUT on first paint. Playfair Display (display headings) is loaded from
+            Google Fonts. Bank Gothic is self-hosted via @font-face in globals.css
+            and applied only where the `.font-display` class is explicitly used. */}
         <link
           rel="preload"
           as="font"

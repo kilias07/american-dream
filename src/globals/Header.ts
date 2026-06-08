@@ -37,36 +37,9 @@ export const Header: GlobalConfig = {
         description: 'Physical address shown in the top bar',
       },
     },
-    // Social media links
-    {
-      name: 'socialLinks',
-      type: 'array',
-      maxRows: 8,
-      admin: {
-        description: 'Social media icons shown on the left side of the nav',
-      },
-      fields: [
-        {
-          name: 'platform',
-          type: 'select',
-          required: true,
-          options: [
-            { label: 'Google', value: 'google' },
-            { label: 'Facebook', value: 'facebook' },
-            { label: 'Instagram', value: 'instagram' },
-            { label: 'YouTube', value: 'youtube' },
-          ],
-        },
-        {
-          name: 'url',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'Full URL (e.g. https://facebook.com/...)',
-          },
-        },
-      ],
-    },
+    // Social media links live in the "Site Settings" global (single source of
+    // truth). The header reads them from there — edit them once, updates
+    // everywhere (header, mobile menu, footer, SEO).
     // Left navigation (before logo)
     {
       name: 'navItemsLeft',

@@ -17,6 +17,50 @@ async function getFooter(locale: Locale): Promise<FooterType | null> {
   }
 }
 
+type OpeningDay = {
+  day?: string | null
+  closed?: boolean | null
+  openTime?: string | null
+  closeTime?: string | null
+  id?: string | null
+}
+
+async function getOpeningDays(): Promise<OpeningDay[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const oh = await payload.findGlobal({ slug: 'opening-hours', depth: 0 })
+    return (oh?.days as OpeningDay[]) ?? []
+  } catch {
+    return []
+  }
+}
+
+type SocialEntry = { platform: string; url: string }
+
+// Social links — jedno źródło prawdy: global „Site Settings” (pole `social`).
+async function getSocialLinks(): Promise<SocialEntry[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
+    return (settings?.social ?? [])
+      .filter((s) => Boolean(s?.platform && s?.url))
+      .map((s) => ({ platform: s.platform as string, url: s.url as string }))
+  } catch {
+    return []
+  }
+}
+
+const DAY_LABELS: Record<string, { pl: string; en: string }> = {
+  monday: { pl: 'Poniedziałek', en: 'Monday' },
+  tuesday: { pl: 'Wtorek', en: 'Tuesday' },
+  wednesday: { pl: 'Środa', en: 'Wednesday' },
+  thursday: { pl: 'Czwartek', en: 'Thursday' },
+  friday: { pl: 'Piątek', en: 'Friday' },
+  saturday: { pl: 'Sobota', en: 'Saturday' },
+  sunday: { pl: 'Niedziela', en: 'Sunday' },
+}
+const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   google: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -44,6 +88,11 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
       <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/>
     </svg>
   ),
+  tiktok: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+    </svg>
+  ),
 }
 
 export async function Footer({ locale }: { locale: Locale }) {
@@ -54,14 +103,26 @@ export async function Footer({ locale }: { locale: Locale }) {
   )
   const footer = await cachedFooter()
 
+  const cachedOpeningDays = unstable_cache(() => getOpeningDays(), ['footer-opening-days'], {
+    tags: ['global_opening_hours'],
+  })
+  const openingDaysRaw = await cachedOpeningDays()
+  const openingDays = DAY_ORDER.map((d) => openingDaysRaw.find((od) => od.day === d)).filter(
+    (od): od is OpeningDay => Boolean(od),
+  )
+
+  const cachedSocial = unstable_cache(() => getSocialLinks(), ['social-links'], {
+    tags: ['global_site_settings'],
+  })
+  const socialLinks = await cachedSocial()
+
   const navColumns = footer?.navColumns || []
   const bottomBarLinks = footer?.bottomBarLinks || []
-  const socialLinks = footer?.socialLinks || []
 
   return (
     <footer className="bg-brand-gold">
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_1fr_1fr_220px] gap-8 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[200px_1fr_1fr_1fr_220px] gap-8 items-start">
 
           {/* Logo + contact */}
           <div className="flex flex-col gap-4">
@@ -88,10 +149,38 @@ export async function Footer({ locale }: { locale: Locale }) {
             </div>
           </div>
 
+          {/* Opening hours column (from OpeningHours global) */}
+          {openingDays.length > 0 && (
+            <div>
+              <p className="text-brand-navy text-xs font-bold uppercase tracking-[0.1em] mb-4">
+                {locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours'}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {openingDays.map((od) => {
+                  const label = od.day ? DAY_LABELS[od.day]?.[locale === 'pl' ? 'pl' : 'en'] : ''
+                  const hours = od.closed
+                    ? locale === 'pl'
+                      ? 'Zamknięte'
+                      : 'Closed'
+                    : `${od.openTime ?? ''}${od.closeTime ? `–${od.closeTime}` : ''}`
+                  return (
+                    <li
+                      key={od.id ?? od.day}
+                      className="flex items-baseline justify-between gap-2 text-brand-navy text-sm"
+                    >
+                      <span>{label}</span>
+                      <span className="text-brand-navy/80 whitespace-nowrap">{hours}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
+
           {/* Nav columns from Payload */}
           {navColumns.map((col) => (
             <div key={col.id}>
-              <p className="text-brand-navy text-xs font-bold uppercase tracking-widest mb-4">
+              <p className="text-brand-navy text-xs font-bold uppercase tracking-[0.1em] mb-4">
                 {col.heading}
               </p>
               <ul className="flex flex-col gap-2">
@@ -112,7 +201,7 @@ export async function Footer({ locale }: { locale: Locale }) {
 
           {/* Newsletter + 21+ */}
           <div className="flex flex-col gap-4">
-            <p className="text-brand-navy text-xs font-bold uppercase tracking-widest">
+            <p className="text-brand-navy text-xs font-bold uppercase tracking-[0.1em]">
               Newsletter
             </p>
             <NewsletterForm />
@@ -140,9 +229,9 @@ export async function Footer({ locale }: { locale: Locale }) {
           ))}
           {socialLinks.length > 0 && (
             <div className="flex items-center gap-3 lg:justify-end">
-              {socialLinks.map((s) => (
+              {socialLinks.map((s, i) => (
                 <a
-                  key={s.id}
+                  key={i}
                   href={s.url}
                   aria-label={s.platform}
                   className="hover:text-white transition-colors"

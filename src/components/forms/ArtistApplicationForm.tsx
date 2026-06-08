@@ -310,7 +310,7 @@ export function ArtistApplicationForm() {
         <button
           type="submit"
           disabled={!consent || status === 'submitting'}
-          className="bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors disabled:opacity-40"
         >
           {status === 'submitting' ? 'WYSYŁANIE…' : 'WYŚLIJ WIADOMOŚĆ'}
         </button>

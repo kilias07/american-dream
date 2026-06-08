@@ -37,11 +37,17 @@ export const SiteSettings: GlobalConfig = {
     {
       name: 'social',
       type: 'array',
-      admin: { initCollapsed: true },
+      label: 'Social Links',
+      admin: {
+        initCollapsed: true,
+        description:
+          'Single source of truth for social links across the whole site (header, mobile menu, footer, SEO). Edit here once — updates everywhere.',
+      },
       fields: [
         {
           name: 'platform',
           type: 'select',
+          required: true,
           options: [
             { label: 'Google', value: 'google' },
             { label: 'Facebook', value: 'facebook' },
@@ -50,7 +56,7 @@ export const SiteSettings: GlobalConfig = {
             { label: 'TikTok', value: 'tiktok' },
           ],
         },
-        { name: 'url', type: 'text' },
+        { name: 'url', type: 'text', required: true },
       ],
     },
     {

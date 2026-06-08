@@ -1,12 +1,63 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
+import { unstable_cache } from 'next/cache'
 import type { EveningPhasesBlock as EveningPhasesBlockType, Media } from '@/payload-types'
 
 type Phase = NonNullable<EveningPhasesBlockType['phases']>[number]
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
+}
+
+type OpeningDay = {
+  day?: string | null
+  closed?: boolean | null
+  openTime?: string | null
+  closeTime?: string | null
+  id?: string | null
+}
+
+const DAY_LABELS_PL: Record<string, string> = {
+  monday: 'Poniedziałek',
+  tuesday: 'Wtorek',
+  wednesday: 'Środa',
+  thursday: 'Czwartek',
+  friday: 'Piątek',
+  saturday: 'Sobota',
+  sunday: 'Niedziela',
+}
+const DAY_LABELS_EN: Record<string, string> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+}
+const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+async function getOpenDays(): Promise<OpeningDay[]> {
+  const cached = unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayload({ config: configPromise })
+        const oh = await payload.findGlobal({ slug: 'opening-hours', depth: 0 })
+        return (oh?.days as OpeningDay[]) ?? []
+      } catch {
+        return []
+      }
+    },
+    ['evening-phases-open-days'],
+    { tags: ['global_opening_hours'] },
+  )
+  const raw = await cached()
+  return DAY_ORDER.map((d) => raw.find((od) => od.day === d))
+    .filter((od): od is OpeningDay => Boolean(od))
+    .filter((od) => !od.closed)
 }
 
 function PhaseCard({
@@ -86,7 +137,7 @@ function PhaseCard({
   )
 }
 
-export function EveningPhasesBlock({
+export async function EveningPhasesBlock({
   block,
   locale,
 }: {
@@ -97,6 +148,9 @@ export function EveningPhasesBlock({
 
   if (!phases?.length) return null
 
+  const openDays = await getOpenDays()
+  const dayLabels = locale === 'pl' ? DAY_LABELS_PL : DAY_LABELS_EN
+
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
@@ -106,6 +160,32 @@ export function EveningPhasesBlock({
               {heading}
             </h2>
             <span className="text-brand-gold text-2xl md:text-3xl font-bold">›</span>
+          </div>
+        )}
+
+        {/* Weekday hours pills (from OpeningHours global) */}
+        {openDays.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
+            {openDays.map((od, i) => (
+              <div
+                key={od.id ?? od.day}
+                className={`rounded-full px-4 py-3 text-center ${
+                  i === 0 ? 'bg-white text-brand-navy' : 'border border-white/30 text-white'
+                }`}
+              >
+                <div className="text-[12px] font-bold uppercase tracking-[0.1em]">
+                  {od.day ? dayLabels[od.day] : ''}
+                </div>
+                <div
+                  className={`text-[12px] font-semibold mt-1 ${
+                    i === 0 ? 'text-brand-navy/70' : 'text-brand-gold'
+                  }`}
+                >
+                  {od.openTime}
+                  {od.closeTime ? ` - ${od.closeTime}` : ''}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -33,17 +33,69 @@
   --color-brand-navy: #110D35;
   --color-brand-navy-royal: #171A5C;
 
-  /* Typography: geometric sans (Metropolis) + Didone serif (Playfair) for display */
+  /* Typography:
+       --font-sans    Metropolis — body / UI text
+       --font-serif   Playfair Display — display headings (1:1 with the old site)
+       --font-display Bank Gothic — kept loaded & available via `.font-display`,
+                      but applied only where explicitly requested.
+     Bank Gothic is NOT the default for any heading or UI element; opt in per
+     element with the `.font-display` utility class. */
   --font-sans: 'Metropolis', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-display: 'Bank Gothic', 'Metropolis', ui-sans-serif, sans-serif;
 }
 
-/* Local Metropolis font (woff2 served from /public/fonts) */
+@layer base {
+  /* Tailwind v4's Preflight resets buttons to `cursor: default`. Restore the
+     pointer cursor on interactive buttons so clickable elements feel clickable.
+     Disabled buttons keep the default cursor. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* ── Metropolis (body sans) — full weight set, woff2 from /public/fonts ── */
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-ThinItalic.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-ExtraLightItalic.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
 @font-face {
   font-family: 'Metropolis';
   src: url('/fonts/metropolis/Metropolis-Light.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-LightItalic.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
   font-display: swap;
 }
 @font-face {
@@ -69,9 +121,23 @@
 }
 @font-face {
   font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-MediumItalic.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
   src: url('/fonts/metropolis/Metropolis-SemiBold.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-SemiBoldItalic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
   font-display: swap;
 }
 @font-face {
@@ -83,8 +149,52 @@
 }
 @font-face {
   font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
   src: url('/fonts/metropolis/Metropolis-ExtraBold.woff2') format('woff2');
   font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-ExtraBoldItalic.woff2') format('woff2');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('/fonts/metropolis/Metropolis-BlackItalic.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ── Bank Gothic (display / headings / uppercase UI) ── */
+@font-face {
+  font-family: 'Bank Gothic';
+  src: url('/fonts/bank-gothic/BankGothic-Light.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bank Gothic';
+  src: url('/fonts/bank-gothic/BankGothic-Bold.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -218,6 +328,11 @@
   }
   .font-serif {
     font-family: var(--font-serif);
+  }
+  /* Bank Gothic display font — for uppercase UI (nav, buttons, labels) and any
+     element that should use the display typeface explicitly. */
+  .font-display {
+    font-family: var(--font-display);
   }
 }
 

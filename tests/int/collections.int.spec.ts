@@ -68,7 +68,8 @@ describe('ADC collections', () => {
         title: 'Special Recital',
         eventType: 'special',
         leadTitle: 'Recital',
-        date: new Date().toISOString(),
+        // A Tuesday (Europe/Warsaw) — events may not be scheduled on Mondays.
+        date: '2026-06-09T17:00:00.000Z',
         price: 140,
         performers: [{ musician: musician.id, instrument: 'saksofon' }],
         shareEnabled: true,
@@ -77,6 +78,20 @@ describe('ADC collections', () => {
     })
     expect(event.eventType).toBe('special')
     expect(event.performers?.length).toBe(1)
+  })
+
+  it('rejects an Event scheduled on a Monday (the club is closed)', async () => {
+    await expect(
+      payload.create({
+        collection: 'events',
+        data: {
+          title: 'Monday Event (should fail)',
+          // 2026-06-08 19:00 Europe/Warsaw is a Monday.
+          date: '2026-06-08T17:00:00.000Z',
+        },
+        locale: 'pl',
+      }),
+    ).rejects.toThrow()
   })
 
   it('creates Rooms, TeamMembers and Testimonials', async () => {

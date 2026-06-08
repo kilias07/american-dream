@@ -4,9 +4,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
-import type { Media, RecurringSery } from '@/payload-types'
+import type { Media, Post, RecurringSery } from '@/payload-types'
 import { locales, defaultLocale, type Locale } from '@/config/locales'
 import { localizedAlternates } from '@/utilities/seo'
+import {
+  expandEvents,
+  formatTime,
+  getDayAbbr,
+  warsawDayKey,
+  type EventDoc,
+  type EventOccurrence,
+} from '@/lib/recurring-events'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -53,6 +61,48 @@ async function getOtherSeries(currentId: number, locale: Locale): Promise<Recurr
   }
 }
 
+async function getSeriesOccurrences(
+  seriesId: number,
+  locale: Locale,
+  count: number,
+): Promise<EventOccurrence[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'events',
+      where: { recurringSeries: { equals: seriesId } },
+      locale,
+      fallbackLocale: defaultLocale,
+      depth: 1,
+      limit: 50,
+    })
+    const now = new Date()
+    const end = new Date(now)
+    end.setDate(end.getDate() + 120)
+    return expandEvents(result.docs as unknown as EventDoc[], now, end).slice(0, Math.max(1, count))
+  } catch {
+    return []
+  }
+}
+
+async function getLatestPosts(locale: Locale): Promise<Post[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'posts',
+      where: { _status: { equals: 'published' } },
+      sort: '-publishedAt',
+      locale,
+      fallbackLocale: defaultLocale,
+      depth: 1,
+      limit: 3,
+    })
+    return result.docs as Post[]
+  } catch {
+    return []
+  }
+}
+
 export default async function RecurringSeriesPage({
   params,
 }: {
@@ -78,6 +128,21 @@ export default async function RecurringSeriesPage({
     { tags: ['recurring-series'] },
   )
   const others = await cachedOthers()
+
+  const upcomingCount = series.upcomingCount ?? 6
+  const cachedOccurrences = unstable_cache(
+    () => getSeriesOccurrences(series.id, locale as Locale, upcomingCount),
+    [`series-occurrences-${series.id}-${locale}-${upcomingCount}`],
+    { tags: ['events'] },
+  )
+  const occurrences = await cachedOccurrences()
+
+  const cachedNews = unstable_cache(
+    () => getLatestPosts(locale as Locale),
+    [`series-news-${locale}`],
+    { tags: ['posts'] },
+  )
+  const news = await cachedNews()
 
   const accent = ACCENT[series.themeColor ?? 'amber']
   const hero = isMedia(series.heroImage) ? series.heroImage : null
@@ -134,6 +199,59 @@ export default async function RecurringSeriesPage({
         </div>
       </section>
 
+      {/* Upcoming events in this series */}
+      {occurrences.length > 0 && (
+        <section className="py-12 md:py-16 bg-brand-gold">
+          <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold uppercase text-brand-navy">
+                {series.upcomingHeading ||
+                  (locale === 'pl' ? 'Nadchodzące wydarzenia w cyklu' : 'Upcoming events in this series')}
+              </h2>
+              <Link
+                href={`/${locale}/program`}
+                className="inline-flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-navy-royal transition-colors"
+              >
+                {series.seeProgrammeLabel || (locale === 'pl' ? 'Zobacz program' : 'See programme')}
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {occurrences.map((occ) => {
+                const dayAbbr = getDayAbbr(new Date(occ.dateISO), locale)
+                const dayNum = warsawDayKey(occ.dateISO).slice(-2)
+                const time = formatTime(occ.dateISO)
+                const card = (
+                  <div className="relative h-full rounded-xl overflow-hidden bg-brand-navy min-h-[180px] flex flex-col">
+                    <div className="absolute top-2 left-2 bg-brand-gold text-brand-navy text-center rounded-md px-2 py-1 leading-none z-10">
+                      <div className="text-[9px] font-bold uppercase tracking-wider">{dayAbbr}</div>
+                      <div className="text-[18px] font-bold leading-none">{dayNum}</div>
+                    </div>
+                    <div className="mt-auto p-3">
+                      <h3 className="text-white font-bold text-[12px] uppercase leading-tight mb-1">
+                        {occ.title}
+                      </h3>
+                      <p className="text-white/70 text-[10px]">
+                        {time}
+                        {occ.price != null ? ` · ${occ.price} PLN` : ''}
+                      </p>
+                    </div>
+                  </div>
+                )
+                return (
+                  <Link
+                    key={occ.id}
+                    href={`/${locale}/program/${occ.eventId}`}
+                    className="block"
+                  >
+                    {card}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Gallery */}
       {gallery.length > 0 && (
         <section className="py-12 md:py-16">
@@ -167,11 +285,12 @@ export default async function RecurringSeriesPage({
       )}
 
       {/* Other series */}
-      {others.length > 0 && (
+      {series.showOtherSeries !== false && others.length > 0 && (
         <section className="py-12 md:py-16 bg-brand-navy-royal">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <h2 className="font-serif text-2xl md:text-3xl font-bold mb-8 uppercase">
-              {locale === 'pl' ? 'Pozostałe wydarzenia cykliczne' : 'Other recurring series'}
+              {series.otherSeriesHeading ||
+                (locale === 'pl' ? 'Pozostałe wydarzenia cykliczne' : 'Other recurring series')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {others.map((s) => {
@@ -212,6 +331,62 @@ export default async function RecurringSeriesPage({
                       <h3 className="text-white text-lg font-bold uppercase tracking-wide leading-tight">
                         {s.name}
                       </h3>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* News (Aktualności) */}
+      {series.showNews !== false && news.length > 0 && (
+        <section className="py-12 md:py-16 bg-brand-navy">
+          <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold uppercase">
+                {series.newsHeading || (locale === 'pl' ? 'Aktualności' : 'News')}
+              </h2>
+              <Link
+                href={`/${locale}/aktualnosci`}
+                className="text-brand-gold text-2xl font-bold leading-none"
+                aria-label={locale === 'pl' ? 'Wszystkie aktualności' : 'All news'}
+              >
+                ›
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {news.map((np) => {
+                const img = isMedia(np.heroImage) ? np.heroImage : null
+                return (
+                  <Link
+                    key={np.id}
+                    href={`/${locale}/aktualnosci/${np.slug}`}
+                    className="group relative rounded-2xl overflow-hidden bg-brand-navy-royal flex flex-col"
+                    style={{ minHeight: 260 }}
+                  >
+                    {img?.url ? (
+                      <Image
+                        src={img.url}
+                        alt={img.alt || np.title}
+                        fill
+                        className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-brand-navy-royal" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/60 to-transparent" />
+                    <div className="relative mt-auto p-5">
+                      <h3 className="text-white text-base font-bold uppercase tracking-wide leading-tight mb-1">
+                        {np.title}
+                      </h3>
+                      {np.excerpt && (
+                        <p className="text-white/70 text-sm leading-relaxed line-clamp-2">
+                          {np.excerpt}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 )

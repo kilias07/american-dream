@@ -17,11 +17,14 @@ const nextConfig = {
     },
   },
 
-  // Use Cloudflare's native image resizing (cdn-cgi/image) instead of sharp,
-  // which is not available in the Workers runtime.
+  // sharp is unavailable in the Workers runtime, and Cloudflare Image Resizing
+  // (cdn-cgi/image) requires a custom domain on a Pro+ plan we don't have yet.
+  // Until then images are served as-is — `unoptimized` reflects that and avoids
+  // the "loader does not implement width" warning a pass-through loader triggers.
+  // When CF Image Resizing is set up, switch this back to:
+  //   images: { loader: 'custom', loaderFile: './src/cloudflare-image-loader.ts' }
   images: {
-    loader: 'custom' as const,
-    loaderFile: './src/cloudflare-image-loader.ts',
+    unoptimized: true,
   },
 
   // Redirect unprefixed page slugs → /pl/:slug so visitors can use

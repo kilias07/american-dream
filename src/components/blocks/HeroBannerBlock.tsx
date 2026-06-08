@@ -48,10 +48,11 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
   const ctaLink = (block as any).ctaLink as any
   const ctaIcon = (block as any).ctaIcon as string | undefined
   const image = isMedia(backgroundImage) ? backgroundImage : null
+  const videoUrl = ((block as any).backgroundVideoUrl as string | undefined) ?? '/videos/hero-banner.mp4'
 
   return (
     <section className="relative min-h-[70vh] flex flex-col items-center justify-center text-center text-white overflow-hidden">
-      {/* Background image */}
+      {/* Background base: photo (also serves as the video poster / reduced-motion fallback) or brand gradient */}
       {image?.url ? (
         <Image
           src={image.url}
@@ -66,18 +67,35 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0820] via-brand-navy to-brand-navy-royal" />
       )}
 
-      {/* Dark overlay — lighter when no photo so gradient shows */}
-      <div className="absolute inset-0 bg-brand-navy/40" />
+      {/* Background video — autoplay, muted, looped. Hidden for prefers-reduced-motion (photo/gradient shows). */}
+      {videoUrl && (
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-center motion-reduce:hidden"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={image?.url || undefined}
+          aria-hidden="true"
+          tabIndex={-1}
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      )}
+
+      {/* Darkening overlay so the headings stay legible over the video */}
+      <div className="absolute inset-0 bg-brand-navy/55" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center gap-6 px-6 max-w-3xl mx-auto">
         {/* Logo */}
         <Link href={`/${locale ?? ''}`} className="block mb-2">
-          <Logo className="h-24 w-auto" />
+          <Logo className="h-24 w-auto" variant="white" />
         </Link>
 
         {/* Heading */}
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-wide leading-tight">
+        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
           {heading}
         </h1>
 
@@ -96,7 +114,7 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
                 key={i}
                 {...item.link}
                 locale={locale}
-                className="inline-flex items-center gap-2 border border-white/70 text-white px-6 py-2.5 rounded-full text-[13px] font-semibold uppercase tracking-[0.12em] hover:border-white hover:bg-white/10 transition-all"
+                className="inline-flex items-center gap-2 border border-white/70 text-white px-6 py-2.5 rounded-full text-[13px] font-semibold uppercase tracking-[0.05em] hover:border-white hover:bg-white/10 transition-all"
               >
                 {item.icon && item.icon !== 'none' && <IconMap icon={item.icon} />}
               </CMSLink>
@@ -109,7 +127,7 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
           <CMSLink
             {...ctaLink}
             locale={locale}
-            className="inline-flex items-center gap-2.5 bg-brand-gold text-white px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.12em] hover:bg-brand-gold-dark transition-colors shadow-lg"
+            className="inline-flex items-center gap-2.5 bg-brand-gold text-white px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-brand-gold-dark transition-colors shadow-lg"
           >
             {ctaIcon && ctaIcon !== 'none' && <IconMap icon={ctaIcon} />}
           </CMSLink>

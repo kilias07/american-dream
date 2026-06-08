@@ -70,5 +70,77 @@ export const RecurringSeries: CollectionConfig = {
         },
       ],
     },
+    {
+      type: 'collapsible',
+      label: 'Page sections',
+      admin: {
+        initCollapsed: true,
+        description: 'Headings, visibility and counts for the sections on this series page. Leave a heading blank to use the default.',
+      },
+      fields: [
+        {
+          name: 'upcomingHeading',
+          type: 'text',
+          localized: true,
+          admin: {
+            description: 'Heading for the upcoming-events band (events derive from the Events collection)',
+            placeholder: 'Nadchodzące wydarzenia w cyklu',
+          },
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'upcomingCount',
+              type: 'number',
+              defaultValue: 6,
+              min: 1,
+              max: 12,
+              admin: { width: '50%', description: 'How many upcoming events to list' },
+            },
+            {
+              name: 'seeProgrammeLabel',
+              type: 'text',
+              localized: true,
+              admin: { width: '50%', placeholder: 'Zobacz program' },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'showOtherSeries',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: { width: '50%', description: 'Show the "other recurring series" section' },
+            },
+            {
+              name: 'otherSeriesHeading',
+              type: 'text',
+              localized: true,
+              admin: { width: '50%', placeholder: 'Pozostałe wydarzenia cykliczne' },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'showNews',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: { width: '50%', description: 'Show the "news" (Aktualności) section' },
+            },
+            {
+              name: 'newsHeading',
+              type: 'text',
+              localized: true,
+              admin: { width: '50%', placeholder: 'Aktualności' },
+            },
+          ],
+        },
+      ],
+    },
   ],
 }

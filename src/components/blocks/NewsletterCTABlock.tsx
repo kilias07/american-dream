@@ -72,7 +72,7 @@ export function NewsletterCTABlock({
               <button
                 type="submit"
                 disabled={status === 'submitting'}
-                className="inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors whitespace-nowrap disabled:opacity-40"
               >
                 {status === 'submitting' ? (isPl ? 'WYSYŁANIE…' : 'SENDING…') : buttonLabel || 'OK'}
               </button>

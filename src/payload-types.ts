@@ -219,7 +219,14 @@ export interface Page {
         | {
             heading?: string | null;
             subtext?: string | null;
+            /**
+             * Używane jako plakat filmu (przed załadowaniem) i fallback dla osób z ograniczoną animacją. Bez filmu — pełne tło.
+             */
             backgroundImage?: (number | null) | Media;
+            /**
+             * Film w tle hero — leci automatycznie, w pętli, wyciszony, lekko przyciemniony. Np. /videos/hero-banner.mp4. Zostaw puste, aby użyć tylko zdjęcia.
+             */
+            backgroundVideoUrl?: string | null;
             secondaryLinks?:
               | {
                   link?: {
@@ -688,7 +695,7 @@ export interface PromoBandBlock {
   blockType: 'promoBand';
 }
 /**
- * Manage events and performances. Use recurring events to avoid creating entries manually each week.
+ * Every event is a single, individually-created entry with one concrete date & time. Only one event is allowed per calendar day (Europe/Warsaw), and events cannot be scheduled on Mondays (the club is closed). To set up a similar event (e.g. another night in a series), open an existing one and use the “Duplicate” action, then change the date and details.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events".
@@ -697,7 +704,15 @@ export interface Event {
   id: number;
   title?: string | null;
   /**
-   * Short description shown on event cards
+   * Controls badge/styling on the program + detail pages
+   */
+  eventType?: ('standard' | 'special') | null;
+  /**
+   * Eyebrow above the title (e.g. "Muzyka na żywo", "Recital")
+   */
+  leadTitle?: string | null;
+  /**
+   * Short description shown on event cards and the calendar popover
    */
   description?: string | null;
   /**
@@ -705,7 +720,11 @@ export interface Event {
    */
   image?: (number | null) | Media;
   /**
-   * Start date (and time) of the event. For recurring events this is the first occurrence.
+   * Poster artwork (used in the special-events carousel)
+   */
+  posterImage?: (number | null) | Media;
+  /**
+   * Start date and time of the event (Europe/Warsaw). Only one event per day is allowed, and Mondays are not allowed (the club is closed on Mondays).
    */
   date?: string | null;
   /**
@@ -717,29 +736,28 @@ export interface Event {
    */
   price?: number | null;
   /**
-   * External URL to buy tickets
-   */
-  ticketUrl?: string | null;
-  /**
-   * Mark this event to make it available for manual teaser selection
+   * Make this event available for manual teaser selection
    */
   featured?: boolean | null;
   /**
-   * Controls badge/styling on the program + detail pages
+   * Which room/strefa
    */
-  eventType?: ('standard' | 'special') | null;
+  room?: (number | null) | Room;
   /**
-   * Eyebrow above the title (e.g. "Muzyka na żywo", "Recital")
+   * Themed series this event belongs to (e.g. Jazzowe Wtorki). The series page lists every event linked here.
    */
-  leadTitle?: string | null;
+  recurringSeries?: (number | null) | RecurringSery;
   /**
    * Genre/category chips (JAZZ, SWING, MUZYKA KLASYCZNA…)
    */
   genres?: (number | Category)[] | null;
-  /**
-   * Poster artwork (used in the special-events carousel)
-   */
-  posterImage?: (number | null) | Media;
+  performers?:
+    | {
+        musician?: (number | null) | Musician;
+        instrument?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Heading above the long description on the event detail page
    */
@@ -763,71 +781,30 @@ export interface Event {
     [k: string]: unknown;
   } | null;
   /**
-   * Musicians performing at this event
+   * External URL to buy tickets
    */
-  performers?:
-    | {
-        musician?: (number | null) | Musician;
-        instrument?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Which room/strefa
-   */
-  room?: (number | null) | Room;
-  /**
-   * Part of a recurring series (cykliczne)
-   */
-  recurringSeries?: (number | null) | RecurringSery;
+  ticketUrl?: string | null;
   /**
    * Overrides the global reservation link
    */
   reservationUrl?: string | null;
   /**
-   * Show social share buttons
+   * Show social share buttons on the event detail page
    */
   shareEnabled?: boolean | null;
   /**
-   * Enable if this event repeats on a regular schedule
+   * Heading above the performers grid
    */
-  isRecurring?: boolean | null;
+  performersHeading?: string | null;
   /**
-   * How often the event repeats
+   * Label above the share buttons (visibility is controlled by “Show social share buttons”)
    */
-  repeatType?: ('weekly' | 'monthly') | null;
+  shareLabel?: string | null;
   /**
-   * Which days of the week this event occurs on
+   * Show the "Nadchodzące wydarzenia" strip at the bottom
    */
-  repeatDays?: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[] | null;
-  /**
-   * Last date of the recurrence (leave empty to repeat indefinitely)
-   */
-  repeatUntil?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Musicians and performers featured on the site.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "musicians".
- */
-export interface Musician {
-  id: number;
-  name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  instrument?: string | null;
-  photo?: (number | null) | Media;
-  bio?: string | null;
-  /**
-   * Controls display order (lower numbers first)
-   */
-  order?: number | null;
+  showUpcoming?: boolean | null;
+  upcomingHeading?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -898,6 +875,81 @@ export interface RecurringSery {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Heading for the upcoming-events band (events derive from the Events collection)
+   */
+  upcomingHeading?: string | null;
+  /**
+   * How many upcoming events to list
+   */
+  upcomingCount?: number | null;
+  seeProgrammeLabel?: string | null;
+  /**
+   * Show the "other recurring series" section
+   */
+  showOtherSeries?: boolean | null;
+  otherSeriesHeading?: string | null;
+  /**
+   * Show the "news" (Aktualności) section
+   */
+  showNews?: boolean | null;
+  newsHeading?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Musicians and performers. Each has their own artist page (click a tile) with an editable bio.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "musicians".
+ */
+export interface Musician {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  instrument?: string | null;
+  /**
+   * Optional role/eyebrow on the artist page (e.g. „Wokalistka”, „Lider zespołu”)
+   */
+  role?: string | null;
+  /**
+   * Tile photo (also used as the artist page header if no header image is set)
+   */
+  photo?: (number | null) | Media;
+  /**
+   * Optional large header image for the artist page (falls back to the tile photo)
+   */
+  heroImage?: (number | null) | Media;
+  /**
+   * Short bio (lead paragraph on the artist page)
+   */
+  bio?: string | null;
+  /**
+   * Full biography / content shown on the artist’s page
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Controls display order (lower numbers first)
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1730,6 +1782,7 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               subtext?: T;
               backgroundImage?: T;
+              backgroundVideoUrl?: T;
               secondaryLinks?:
                 | T
                 | {
@@ -2294,19 +2347,18 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   title?: T;
+  eventType?: T;
+  leadTitle?: T;
   description?: T;
   image?: T;
+  posterImage?: T;
   date?: T;
   endTime?: T;
   price?: T;
-  ticketUrl?: T;
   featured?: T;
-  eventType?: T;
-  leadTitle?: T;
+  room?: T;
+  recurringSeries?: T;
   genres?: T;
-  posterImage?: T;
-  descriptionHeading?: T;
-  body?: T;
   performers?:
     | T
     | {
@@ -2314,14 +2366,15 @@ export interface EventsSelect<T extends boolean = true> {
         instrument?: T;
         id?: T;
       };
-  room?: T;
-  recurringSeries?: T;
+  descriptionHeading?: T;
+  body?: T;
+  ticketUrl?: T;
   reservationUrl?: T;
   shareEnabled?: T;
-  isRecurring?: T;
-  repeatType?: T;
-  repeatDays?: T;
-  repeatUntil?: T;
+  performersHeading?: T;
+  shareLabel?: T;
+  showUpcoming?: T;
+  upcomingHeading?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2334,8 +2387,11 @@ export interface MusiciansSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   instrument?: T;
+  role?: T;
   photo?: T;
+  heroImage?: T;
   bio?: T;
+  body?: T;
   order?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2360,6 +2416,13 @@ export interface RecurringSeriesSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  upcomingHeading?: T;
+  upcomingCount?: T;
+  seeProgrammeLabel?: T;
+  showOtherSeries?: T;
+  otherSeriesHeading?: T;
+  showNews?: T;
+  newsHeading?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2717,19 +2780,6 @@ export interface Header {
    */
   address?: string | null;
   /**
-   * Social media icons shown on the left side of the nav
-   */
-  socialLinks?:
-    | {
-        platform: 'google' | 'facebook' | 'instagram' | 'youtube';
-        /**
-         * Full URL (e.g. https://facebook.com/...)
-         */
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
    * Navigation links shown to the left of the logo
    */
   navItemsLeft?:
@@ -2835,13 +2885,6 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
-  socialLinks?:
-    | {
-        platform: 'google' | 'facebook' | 'instagram' | 'youtube';
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2867,10 +2910,13 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Single source of truth for social links across the whole site (header, mobile menu, footer, SEO). Edit here once — updates everywhere.
+   */
   social?:
     | {
-        platform?: ('google' | 'facebook' | 'instagram' | 'youtube' | 'tiktok') | null;
-        url?: string | null;
+        platform: 'google' | 'facebook' | 'instagram' | 'youtube' | 'tiktok';
+        url: string;
         id?: string | null;
       }[]
     | null;
@@ -2923,13 +2969,6 @@ export interface HeaderSelect<T extends boolean = true> {
   topBarText?: T;
   phone?: T;
   address?: T;
-  socialLinks?:
-    | T
-    | {
-        platform?: T;
-        url?: T;
-        id?: T;
-      };
   navItemsLeft?:
     | T
     | {
@@ -3005,13 +3044,6 @@ export interface FooterSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
-        url?: T;
-        id?: T;
-      };
-  socialLinks?:
-    | T
-    | {
-        platform?: T;
         url?: T;
         id?: T;
       };

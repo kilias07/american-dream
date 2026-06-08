@@ -53,7 +53,7 @@ export function NewsletterForm() {
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="self-start px-8 py-2 bg-brand-navy text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-brand-navy/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="self-start px-8 py-2 bg-brand-navy text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-brand-navy/80 transition-colors disabled:opacity-50"
       >
         {status === 'submitting' ? 'Wysyłanie…' : 'Dołącz'}
       </button>

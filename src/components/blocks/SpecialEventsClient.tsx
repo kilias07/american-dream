@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getDayAbbr } from '@/lib/recurring-events'
+import { getDayAbbr, warsawDayKey } from '@/lib/recurring-events'
 
 export type SpecialEventCard = {
   id: number
@@ -23,9 +23,8 @@ function PosterCard({ card, locale }: { card: SpecialEventCard; locale: string }
   let dayNum = ''
   let dayAbbr = ''
   if (card.dateISO) {
-    const date = new Date(card.dateISO)
-    dayNum = String(date.getDate()).padStart(2, '0')
-    dayAbbr = getDayAbbr(date, locale)
+    dayNum = warsawDayKey(card.dateISO).slice(-2)
+    dayAbbr = getDayAbbr(new Date(card.dateISO), locale)
   }
 
   return (
@@ -83,11 +82,14 @@ export function SpecialEventsClient({ cards, locale }: Props) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(false)
+  const [scrollable, setScrollable] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
   const updateState = useCallback(() => {
     const el = trackRef.current
     if (!el) return
+    // Only show navigation when the track actually overflows.
+    setScrollable(el.scrollWidth > el.clientWidth + 4)
     setCanPrev(el.scrollLeft > 4)
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
     const card = el.querySelector('[data-card]') as HTMLElement | null
@@ -118,16 +120,18 @@ export function SpecialEventsClient({ cards, locale }: Props) {
   return (
     <div>
       <div className="relative flex items-center gap-3">
-        <button
-          onClick={() => scroll(-1)}
-          disabled={!canPrev}
-          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 disabled:cursor-not-allowed items-center justify-center transition-colors hover:bg-white/10 text-white"
-          aria-label="Previous"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+        {scrollable && (
+          <button
+            onClick={() => scroll(-1)}
+            disabled={!canPrev}
+            className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 items-center justify-center transition-colors hover:bg-white/10 text-white"
+            aria-label="Previous"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
 
         <div
           ref={trackRef}
@@ -141,19 +145,21 @@ export function SpecialEventsClient({ cards, locale }: Props) {
           </div>
         </div>
 
-        <button
-          onClick={() => scroll(1)}
-          disabled={!canNext}
-          className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 disabled:cursor-not-allowed items-center justify-center transition-colors hover:bg-white/10 text-white"
-          aria-label="Next"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        {scrollable && (
+          <button
+            onClick={() => scroll(1)}
+            disabled={!canNext}
+            className="hidden md:flex flex-shrink-0 w-11 h-11 rounded-full border-2 border-white/60 bg-transparent disabled:opacity-30 items-center justify-center transition-colors hover:bg-white/10 text-white"
+            aria-label="Next"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {cards.length > 1 && (
+      {scrollable && cards.length > 1 && (
         <div className="flex justify-center gap-2 mt-6">
           {cards.map((card, i) => (
             <span

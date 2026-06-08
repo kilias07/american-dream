@@ -2,7 +2,13 @@ import React from 'react'
 
 type LogoProps = {
   className?: string
-  variant?: 'gold' | 'navy'
+  variant?: 'gold' | 'navy' | 'white'
+}
+
+const LOGO_COLORS: Record<NonNullable<LogoProps['variant']>, string> = {
+  gold: '#FF9E0D',
+  navy: '#0A1128',
+  white: '#FFFFFF',
 }
 
 export const Logo = ({ className, variant = 'gold' }: LogoProps) => (
@@ -11,7 +17,7 @@ export const Logo = ({ className, variant = 'gold' }: LogoProps) => (
     xmlnsXlink="http://www.w3.org/1999/xlink"
     viewBox="79 233 457 130"
     className={className}
-    style={{ color: variant === 'navy' ? '#0A1128' : '#FF9E0D' }}
+    style={{ color: LOGO_COLORS[variant] }}
     aria-label="American Dream Club"
   >
     <defs>

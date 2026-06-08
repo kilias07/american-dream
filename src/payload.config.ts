@@ -61,8 +61,13 @@ const cloudflareLogger = {
   silent: () => {},
 } as any
 
+// `PAYLOAD_FORCE_WRANGLER=true` lets maintenance scripts (seed / replace-photos)
+// run via plain `tsx` reach the cloudflare bindings through the wrangler proxy.
+// Combined with NODE_ENV=production it enables `remoteBindings` (see below), so
+// the script operates on the REMOTE D1/R2 — the same path the migrate CLI uses.
+const forceWrangler = process.env.PAYLOAD_FORCE_WRANGLER === 'true'
 const cloudflare =
-  isCLI || !isProduction || isBuild
+  forceWrangler || isCLI || !isProduction || isBuild
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
