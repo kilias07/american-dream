@@ -48,7 +48,11 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
   const ctaLink = (block as any).ctaLink as any
   const ctaIcon = (block as any).ctaIcon as string | undefined
   const image = isMedia(backgroundImage) ? backgroundImage : null
-  const videoUrl = ((block as any).backgroundVideoUrl as string | undefined) ?? '/videos/hero-banner.mp4'
+  const backgroundVideo = (block as any).backgroundVideo as number | null | Media | undefined
+  const uploadedVideo = isMedia(backgroundVideo) ? backgroundVideo : null
+  const externalVideoUrl = (block as any).backgroundVideoUrl as string | undefined
+  const videoUrl = uploadedVideo?.url || externalVideoUrl || undefined
+  const videoMime = uploadedVideo?.mimeType || 'video/mp4'
 
   return (
     <section className="relative min-h-[70vh] flex flex-col items-center justify-center text-center text-white overflow-hidden">
@@ -80,7 +84,7 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
           aria-hidden="true"
           tabIndex={-1}
         >
-          <source src={videoUrl} type="video/mp4" />
+          <source src={videoUrl} type={videoMime} />
         </video>
       )}
 

@@ -224,7 +224,11 @@ export interface Page {
              */
             backgroundImage?: (number | null) | Media;
             /**
-             * Film w tle hero — leci automatycznie, w pętli, wyciszony, lekko przyciemniony. Np. /videos/hero-banner.mp4. Zostaw puste, aby użyć tylko zdjęcia.
+             * Film w tle hero — leci automatycznie, w pętli, wyciszony, lekko przyciemniony. Wgraj plik MP4 tutaj (trafia do magazynu R2). Zostaw puste, aby użyć tylko zdjęcia.
+             */
+            backgroundVideo?: (number | null) | Media;
+            /**
+             * Opcjonalnie: zewnętrzny URL filmu, jeśli nie wgrywasz pliku powyżej. Pole „Background Video” ma pierwszeństwo.
              */
             backgroundVideoUrl?: string | null;
             secondaryLinks?:
@@ -1782,6 +1786,7 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               subtext?: T;
               backgroundImage?: T;
+              backgroundVideo?: T;
               backgroundVideoUrl?: T;
               secondaryLinks?:
                 | T

@@ -28,13 +28,21 @@ export const HeroBanner: Block = {
       },
     },
     {
-      name: 'backgroundVideoUrl',
-      type: 'text',
-      label: 'Background Video URL',
-      defaultValue: '/videos/hero-banner.mp4',
+      name: 'backgroundVideo',
+      type: 'upload',
+      relationTo: 'media',
       admin: {
         description:
-          'Film w tle hero — leci automatycznie, w pętli, wyciszony, lekko przyciemniony. Np. /videos/hero-banner.mp4. Zostaw puste, aby użyć tylko zdjęcia.',
+          'Film w tle hero — leci automatycznie, w pętli, wyciszony, lekko przyciemniony. Wgraj plik MP4 tutaj (trafia do magazynu R2). Zostaw puste, aby użyć tylko zdjęcia.',
+      },
+    },
+    {
+      name: 'backgroundVideoUrl',
+      type: 'text',
+      label: 'Background Video URL (zewnętrzny)',
+      admin: {
+        description:
+          'Opcjonalnie: zewnętrzny URL filmu, jeśli nie wgrywasz pliku powyżej. Pole „Background Video” ma pierwszeństwo.',
       },
     },
     // Secondary outline buttons (e.g. MENU, PROGRAM)

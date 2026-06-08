@@ -128,6 +128,9 @@ async function run() {
     gallery: ph('gallery', 'Galeria klubu'),
     logo: () => media('public/images/logo-on-navy.jpg', 'American Dream Club logo'),
   }
+  // Hero background video — uploaded as Media so it lives in R2 (NOT in /public,
+  // which would bundle it as a Workers static asset and hit the 25 MiB limit).
+  const heroVideo = () => media('scripts/assets/hero-banner.mp4', 'American Dream Club — film w tle hero')
   // Distinct portrait placeholders for musicians (rotated round-robin).
   const musicianPhotos = [
     'musician-1', 'musician-2', 'musician-3', 'musician-4', 'musician-5', 'musician-6',
@@ -1106,7 +1109,7 @@ async function run() {
 
   // HOME
   await page('home', 'Strona główna', [
-    { blockType: 'heroBanner', heading: 'Restauracja & Jazz Club', subtext: 'Kolacja i drinki w trakcie koncertu na żywo', backgroundImage: await img.home(),
+    { blockType: 'heroBanner', heading: 'Restauracja & Jazz Club', subtext: 'Kolacja i drinki w trakcie koncertu na żywo', backgroundImage: await img.home(), backgroundVideo: await heroVideo(),
       ctaLink: { type: 'custom', label: 'ZAREZERWUJ STOLIK', url: '/rezerwacje' }, ctaIcon: 'ticket',
       secondaryLinks: [
         { link: { type: 'custom', label: 'MENU', url: '/restauracja' }, icon: 'fork' },
@@ -1129,7 +1132,7 @@ async function run() {
       items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
     { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Zapisz się i bądź na bieżąco z programem.', placeholder: 'Adres email', buttonLabel: 'ZAPISZ SIĘ', consentText: 'Akceptuję politykę prywatności' },
   ], 'Home', [
-    { blockType: 'heroBanner', heading: 'Restaurant & Jazz Club', subtext: 'Dinner and drinks during a live concert', backgroundImage: await img.home(),
+    { blockType: 'heroBanner', heading: 'Restaurant & Jazz Club', subtext: 'Dinner and drinks during a live concert', backgroundImage: await img.home(), backgroundVideo: await heroVideo(),
       ctaLink: { type: 'custom', label: 'ZAREZERWUJ STOLIK', url: '/rezerwacje' }, ctaIcon: 'ticket',
       secondaryLinks: [
         { link: { type: 'custom', label: 'MENU', url: '/restauracja' }, icon: 'fork' },
