@@ -35,14 +35,9 @@
 
   /* Typography:
        --font-sans    Metropolis — body / UI text
-       --font-serif   Playfair Display — display headings (1:1 with the old site)
-       --font-display Bank Gothic — kept loaded & available via `.font-display`,
-                      but applied only where explicitly requested.
-     Bank Gothic is NOT the default for any heading or UI element; opt in per
-     element with the `.font-display` utility class. */
+       --font-serif   Playfair Display — display headings (1:1 with the old site) */
   --font-sans: 'Metropolis', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-display: 'Bank Gothic', 'Metropolis', ui-sans-serif, sans-serif;
 }
 
 @layer base {
@@ -183,22 +178,6 @@
   font-display: swap;
 }
 
-/* ── Bank Gothic (display / headings / uppercase UI) ── */
-@font-face {
-  font-family: 'Bank Gothic';
-  src: url('/fonts/bank-gothic/BankGothic-Light.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Bank Gothic';
-  src: url('/fonts/bank-gothic/BankGothic-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 @source "../Header/Component.tsx";
 @source "../Header/MobileMenu.tsx";
 @source "../components/blocks/HeroBannerBlock.tsx";
@@ -329,14 +308,18 @@
   .font-serif {
     font-family: var(--font-serif);
   }
-  /* Bank Gothic display font — for uppercase UI (nav, buttons, labels) and any
-     element that should use the display typeface explicitly. */
-  .font-display {
-    font-family: var(--font-display);
-  }
 }
 
 /* NOTE: removed the `html { opacity: 0 }` anti-FOUC hack. It hid the ENTIRE page
    until the theme-init script set data-theme; if that script is delayed/blocked
    (as on the deployed Worker) the page renders completely blank. The public site
    uses fixed brand colors, so a theme flash isn't a concern. */
+
+/* MyRest: the integration script injects its own floating "Zarezerwuj stolik"
+   button. We don't want any extra UI — the booking modal is opened from our own
+   design buttons via window.mrOpen(). Hide the injected floating trigger (the
+   `!important` beats both MyRest's widget.css and the inline display it toggles).
+   The booking modal (#mr-widget-handler) is untouched and still opens normally. */
+#mr-widget-trigger {
+  display: none !important;
+}

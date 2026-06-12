@@ -4,6 +4,8 @@ import Link from 'next/link'
 import React from 'react'
 
 import type { Page, Post } from '@/payload-types'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { isReservationUrl } from '@/lib/reservation-url'
 
 export type CMSLinkType = {
   appearance?: 'inline' | ButtonProps['variant']
@@ -55,6 +57,18 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
   }
 
   if (!href) return null
+
+  // Any CMS link pointing at the reservations page opens the MyRest booking
+  // widget instead of navigating — keeps every "Rezerwacje"/"Zarezerwuj" CTA on
+  // the same booking flow no matter where it's configured.
+  if (isReservationUrl(href)) {
+    return (
+      <ReserveTrigger className={cn(className)}>
+        {label && label}
+        {children && children}
+      </ReserveTrigger>
+    )
+  }
 
   const size = appearance === 'link' ? 'clear' : sizeFromProps
   const newTabProps = newTab ? { rel: 'noopener noreferrer', target: '_blank' } : {}

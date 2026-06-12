@@ -16,6 +16,14 @@ export const SetMenu: Block = {
       },
     },
     {
+      name: 'subtitle',
+      type: 'text',
+      localized: true,
+      admin: {
+        placeholder: '3-daniowa kolacja degustacyjna w stałej cenie',
+      },
+    },
+    {
       name: 'dateLabel',
       type: 'text',
       admin: {

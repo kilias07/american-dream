@@ -20,6 +20,7 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-adc.ts",
     "replace-photos": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/replace-photos.ts",
+    "update:reservation-texts": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/update-reservation-texts.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview --env=$CLOUDFLARE_ENV",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",

@@ -12,6 +12,7 @@ import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 
 import { defaultLexical } from './fields/defaultLexical'
+import { cloudflareEmailAdapter } from './lib/integrations/email'
 import { localeDefinitions, defaultLocale } from './config/locales'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -19,6 +20,7 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
 import { Events } from './collections/Events'
+import { Reservations } from './collections/Reservations'
 import { Musicians } from './collections/Musicians'
 import { RecurringSeries } from './collections/RecurringSeries'
 import { MenuCategories } from './collections/MenuCategories'
@@ -31,6 +33,7 @@ import { Header } from './globals/Header'
 import { Footer } from './globals/Footer'
 import { SiteSettings } from './globals/SiteSettings'
 import { OpeningHours } from './globals/OpeningHours'
+import { ReservationSettings } from './globals/ReservationSettings'
 import { Legal } from './globals/Legal'
 
 const filename = fileURLToPath(import.meta.url)
@@ -85,6 +88,7 @@ export default buildConfig({
     Posts,
     Categories,
     Events,
+    Reservations,
     Musicians,
     RecurringSeries,
     MenuCategories,
@@ -94,13 +98,17 @@ export default buildConfig({
     Testimonials,
     ArtistApplications,
   ],
-  globals: [Header, Footer, SiteSettings, OpeningHours, Legal],
+  globals: [Header, Footer, SiteSettings, OpeningHours, ReservationSettings, Legal],
   editor: defaultLexical,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
+  email: cloudflareEmailAdapter({
+    defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'rezerwacja@americandreamclub.pl',
+    defaultFromName: process.env.EMAIL_FROM_NAME || 'American Dream Club',
+  }),
   logger: isProduction ? cloudflareLogger : undefined,
   localization: {
     locales: [...localeDefinitions],

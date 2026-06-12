@@ -1,7 +1,6 @@
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Category, Event, Media, Musician } from '@/payload-types'
@@ -12,6 +11,7 @@ import { EventJsonLd } from '@/components/seo/EventJsonLd'
 import { ShareBar } from '@/components/ui/ShareBar'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
 import { UpcomingEventsCarousel } from '@/components/ui/UpcomingEventsCarousel'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { warsawParts } from '@/lib/recurring-events'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
@@ -103,8 +103,21 @@ export default async function EventDetailPage({
   const { weekday, dayMonth, time } = formatDateParts(event.date, locale)
   const genres = (event.genres ?? []).filter(isCategory)
   const performers = (event.performers ?? []).filter((p) => isMusician(p.musician))
-  const reserveUrl = event.reservationUrl || event.ticketUrl || '#'
   const isSpecial = event.eventType === 'special'
+
+  // Reservation CTA: concerts that sell tickets through an external vendor keep
+  // their "Kup bilet" link (handled by ReserveTrigger when `ticketUrl` is a real
+  // http URL); everything else opens the MyRest table-booking widget.
+  const concertOn = Boolean(event.optionConcert?.enabled)
+  const ctaLabel = concertOn
+    ? locale === 'pl'
+      ? 'Kup bilet'
+      : 'Buy ticket'
+    : locale === 'pl'
+      ? 'Zarezerwuj stolik'
+      : 'Reserve a table'
+  const ctaClass =
+    'inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-gold-dark transition-colors'
 
   return (
     <div className="bg-brand-navy text-white">
@@ -165,14 +178,9 @@ export default async function EventDetailPage({
             {event.price != null && (
               <span className="text-2xl font-bold text-white">{event.price} PLN</span>
             )}
-            <Link
-              href={reserveUrl}
-              target={reserveUrl.startsWith('http') ? '_blank' : undefined}
-              rel={reserveUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
-              className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-gold-dark transition-colors"
-            >
-              {locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'}
-            </Link>
+            <ReserveTrigger ticketUrl={event.ticketUrl} className={ctaClass}>
+              {ctaLabel}
+            </ReserveTrigger>
             {event.date && (
               <AddToCalendar
                 theme="light"

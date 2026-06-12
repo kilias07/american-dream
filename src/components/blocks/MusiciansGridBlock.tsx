@@ -39,7 +39,7 @@ export async function MusiciansGridBlock({
   block: MusiciansGridBlockType
   locale: string
 }) {
-  const { eyebrow, heading } = block
+  const { eyebrow, heading, intro } = block
   const musicians = await getMusicians(block, locale)
 
   if (musicians.length === 0) return null
@@ -69,6 +69,11 @@ export async function MusiciansGridBlock({
               <h2 className="text-white font-serif text-3xl md:text-4xl font-bold uppercase tracking-tight">
                 {heading}
               </h2>
+            )}
+            {intro && (
+              <p className="text-white/70 text-sm md:text-base leading-relaxed mt-4 max-w-3xl">
+                {intro}
+              </p>
             )}
           </div>
         )}

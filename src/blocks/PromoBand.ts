@@ -13,6 +13,11 @@ export const PromoBand: Block = {
       localized: true,
     },
     {
+      name: 'subtitle',
+      type: 'text',
+      localized: true,
+    },
+    {
       name: 'body',
       type: 'textarea',
       localized: true,

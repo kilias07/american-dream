@@ -6,7 +6,7 @@
 
 import { TIME_ZONE, warsawParts } from './recurring-events'
 
-export const VENUE = 'American Dream Club, ul. Dominikańska 9, 61-456 Poznań'
+export const VENUE = 'American Dream Club, ul. Dominikańska 9, 61-762 Poznań'
 
 export type CalendarEventInput = {
   id: string | number

@@ -21,6 +21,7 @@ export type EventDoc = {
   ticketUrl?: string | null
   reservationUrl?: string | null
   featured?: boolean | null
+  showOnHomepage?: boolean | null
   eventType?: 'standard' | 'special' | null
   genres?: Array<{ title?: string | null } | number | null> | null
   performers?:

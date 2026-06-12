@@ -7,6 +7,8 @@ import type { Footer as FooterType } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { Logo } from '@/Header/Logo'
 import { NewsletterForm } from './NewsletterForm'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { isReservationUrl } from '@/lib/reservation-url'
 
 async function getFooter(locale: Locale): Promise<FooterType | null> {
   try {
@@ -144,7 +146,7 @@ export async function Footer({ locale }: { locale: Locale }) {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>ul. Dominikańska 9<br />61-456 Poznań</span>
+                <span>ul. Dominikańska 9<br />61-762 Poznań</span>
               </div>
             </div>
           </div>
@@ -186,13 +188,20 @@ export async function Footer({ locale }: { locale: Locale }) {
               <ul className="flex flex-col gap-2">
                 {(col.links || []).map((link) => (
                   <li key={link.id}>
-                    <Link
-                      href={link.url.startsWith('/') ? `/${locale}${link.url}` : link.url}
-                      target={link.newTab ? '_blank' : undefined}
-                      className="text-brand-navy text-sm hover:opacity-60 transition-opacity"
-                    >
-                      {link.label}
-                    </Link>
+                    {isReservationUrl(link.url) ? (
+                      // Reservation links open the MyRest widget instead of navigating.
+                      <ReserveTrigger className="text-brand-navy text-sm hover:opacity-60 transition-opacity text-left">
+                        {link.label}
+                      </ReserveTrigger>
+                    ) : (
+                      <Link
+                        href={link.url.startsWith('/') ? `/${locale}${link.url}` : link.url}
+                        target={link.newTab ? '_blank' : undefined}
+                        className="text-brand-navy text-sm hover:opacity-60 transition-opacity"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { locales, type Locale } from '@/config/locales'
 import { Header } from '@/Header/Component'
 import { Footer } from '@/Footer/Component'
+import { MyRestWidget } from '@/components/reservations/MyRest'
 
 export default async function LocaleLayout({
   children,
@@ -24,6 +25,9 @@ export default async function LocaleLayout({
       <Header locale={locale as Locale} />
       <main className="flex-grow">{children}</main>
       <Footer locale={locale as Locale} />
+      {/* Old-site reservation flow: MyRest self-injects a floating
+          "Zarezerwuj stolik" button + booking modal on every page. */}
+      <MyRestWidget />
     </>
   )
 }

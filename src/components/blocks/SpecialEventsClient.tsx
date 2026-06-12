@@ -1,8 +1,8 @@
 'use client'
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { getDayAbbr, warsawDayKey } from '@/lib/recurring-events'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 
 export type SpecialEventCard = {
   id: number
@@ -10,7 +10,7 @@ export type SpecialEventCard = {
   performers: string[]
   dateISO: string | null
   image: { url: string; alt: string } | null
-  reserveUrl: string
+  ticketUrl: string | null
 }
 
 type Props = {
@@ -65,14 +65,12 @@ function PosterCard({ card, locale }: { card: SpecialEventCard; locale: string }
         {card.performers.length > 0 && (
           <p className="text-white/70 text-sm leading-snug mb-4">{card.performers.join(', ')}</p>
         )}
-        <Link
-          href={card.reserveUrl}
-          target={card.reserveUrl.startsWith('http') ? '_blank' : undefined}
-          rel={card.reserveUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+        <ReserveTrigger
+          ticketUrl={card.ticketUrl}
           className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
         >
           {reserveLabel}
-        </Link>
+        </ReserveTrigger>
       </div>
     </div>
   )

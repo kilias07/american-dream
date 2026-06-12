@@ -16,6 +16,15 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+
+  // Retention cron (spec §7): anonymise reservation personal data 12 months after
+  // the event. Cloudflare invokes the worker's scheduled handler daily at 03:00.
+  // The handler must reach /api/cron/anonymize with CRON_SECRET — confirm the
+  // scheduled→fetch bridge for the OpenNext worker at deploy (or point an external
+  // scheduler at the URL with the secret).
+  "triggers": {
+    "crons": ["0 3 * * *"],
+  },
   "d1_databases": [
     {
       "binding": "D1",
@@ -47,6 +56,14 @@
       "bucket_name": "american-dream",
     },
   ],
+
+  // Cloudflare Email Service — transactional e-mail for the reservation system
+  // (spec §6). Uncomment once the Email Sending binding is provisioned and the
+  // domain's SPF/DKIM DNS records are in place. The reservation code already
+  // reads this binding by name (SEND_EMAIL) and no-ops gracefully until then.
+  // "send_email": [
+  //   { "name": "SEND_EMAIL" },
+  // ],
 
   // Here's how to configure an additional environment
   // It can be deployed with `CLOUDFLARE_ENV=staging pnpm run deploy`

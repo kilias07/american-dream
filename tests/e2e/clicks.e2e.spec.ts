@@ -136,13 +136,17 @@ test.describe('Header — desktop clicks', () => {
     await expect(page).toHaveURL(`${BASE}/pl`)
   })
 
-  test('CTA "ZAREZERWUJ" button navigates to reservation page', async ({ page }) => {
+  test('CTA "ZAREZERWUJ" button opens the MyRest booking widget (no navigation)', async ({ page }) => {
     await desktop(page, '/pl')
-    const cta = page.locator('header').getByText(/zarezerwuj/i)
+    const cta = page.locator('header').getByText(/zarezerwuj/i).first()
     await expect(cta).toBeVisible()
+    // The reservation CTA opens the MyRest booking widget instead of navigating
+    // to a page. The integration script is injected client-side (#myrest-integration)
+    // and the modal markup is appended to <body> (#mr-widget-handler).
+    await expect(page.locator('#myrest-integration')).toHaveCount(1)
     await cta.click()
-    // Should navigate to rezerwacje or have a booking URL
-    await expect(page).toHaveURL(/\/pl\/(rezerwacje|[a-z-]+)/)
+    await expect(page).toHaveURL(/\/pl\/?$/) // stays on the homepage — no navigation
+    await expect(page.locator('#mr-widget-handler')).toHaveCount(1)
   })
 })
 

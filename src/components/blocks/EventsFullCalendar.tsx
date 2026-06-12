@@ -13,6 +13,8 @@ import {
   warsawDayKey,
 } from '@/lib/recurring-events'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { isReservationUrl } from '@/lib/reservation-url'
 
 type Props = {
   occurrences: EventOccurrence[]
@@ -61,10 +63,6 @@ function buildCells(year: number, month: number, todayKey: string): Cell[] {
     cursor.setDate(cursor.getDate() + 1)
   }
   return cells
-}
-
-function reserveHref(occ: EventOccurrence, locale: string): string {
-  return occ.ticketUrl || occ.reservationUrl || `/${locale}/program/${occ.eventId}`
 }
 
 /** Add `days` to a YYYY-MM-DD key and return the resulting key (pure calendar math). */
@@ -233,7 +231,6 @@ function EventPopover({
     month: 'long',
     timeZone: 'Europe/Warsaw',
   })
-  const reserve = reserveHref(occ, locale)
   const reserveLabel = locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'
   const detailsLabel = locale === 'pl' ? 'Szczegóły wydarzenia' : 'Event details'
   const isSpecial = occ.eventType === 'special'
@@ -331,14 +328,12 @@ function EventPopover({
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={reserve}
-              target={reserve.startsWith('http') ? '_blank' : undefined}
-              rel={reserve.startsWith('http') ? 'noopener noreferrer' : undefined}
+            <ReserveTrigger
+              ticketUrl={occ.ticketUrl}
               className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.1em] px-4 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
             >
               {reserveLabel}
-            </Link>
+            </ReserveTrigger>
             <AddToCalendar
               theme="dark"
               locale={locale}
@@ -542,17 +537,29 @@ export function EventsFullCalendar({
             </button>
           </div>
 
-          {ctaLabel && ctaUrl && (
-            <Link
-              href={ctaUrl}
-              className="hidden md:flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full hover:bg-brand-navy/80 transition-colors whitespace-nowrap"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
-              </svg>
-              {ctaLabel}
-            </Link>
-          )}
+          {ctaLabel &&
+            ctaUrl &&
+            (() => {
+              const calCtaClass =
+                'hidden md:flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full hover:bg-brand-navy/80 transition-colors whitespace-nowrap'
+              const icon = (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
+                </svg>
+              )
+              // Reservation CTA opens MyRest; any other link navigates normally.
+              return isReservationUrl(ctaUrl) ? (
+                <ReserveTrigger className={calCtaClass}>
+                  {icon}
+                  {ctaLabel}
+                </ReserveTrigger>
+              ) : (
+                <Link href={ctaUrl} className={calCtaClass}>
+                  {icon}
+                  {ctaLabel}
+                </Link>
+              )
+            })()}
         </div>
 
         {/* Calendar grid — desktop/tablet */}

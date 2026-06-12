@@ -22,8 +22,12 @@ export async function EventsTeaserSectionBlock({
   const { docs } = await payload.find({
     collection: 'events',
     where: {
+      // Only upcoming events — past ones drop off this section automatically.
       date: { greater_than_equal: new Date().toISOString() },
       ...(block.onlyFeatured ? { featured: { equals: true } } : {}),
+      // Editors can untick "Show on homepage" to hide a single event here.
+      // Shown by default: include events flagged true or with no flag set yet.
+      or: [{ showOnHomepage: { equals: true } }, { showOnHomepage: { exists: false } }],
     },
     sort: 'date',
     limit: block.limit || 6,
@@ -36,7 +40,6 @@ export async function EventsTeaserSectionBlock({
 
   const cards: TeaserEventCard[] = events.map((event) => {
     const media = isMedia(event.image) ? event.image : null
-    const fallback = `/${locale}/program/${event.id}`
     return {
       id: event.id,
       title: event.title ?? '',
@@ -44,7 +47,8 @@ export async function EventsTeaserSectionBlock({
       endTime: event.endTime ?? null,
       price: event.price ?? null,
       image: media?.url ? { url: media.url, alt: media.alt || event.title || '' } : null,
-      ticketUrl: event.ticketUrl || event.reservationUrl || fallback,
+      // Only a real external ticket URL links out; otherwise the CTA opens MyRest.
+      ticketUrl: event.ticketUrl ?? null,
     }
   })
 

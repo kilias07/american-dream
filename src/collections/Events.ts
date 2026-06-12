@@ -192,6 +192,17 @@ export const Events: CollectionConfig = {
               ],
             },
             {
+              name: 'showOnHomepage',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                description:
+                  'Show this event in the homepage "Nadchodzące wydarzenia" section. ' +
+                  'Ticked by default — untick to hide just this event there. ' +
+                  'Events drop off the section automatically once their date has passed.',
+              },
+            },
+            {
               type: 'row',
               fields: [
                 {
@@ -320,6 +331,97 @@ export const Events: CollectionConfig = {
                   type: 'text',
                   localized: true,
                   admin: { width: '50%', placeholder: 'Nadchodzące wydarzenia' },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Rezerwacje',
+          description:
+            'Włącz i skonfiguruj rezerwacje stolików oraz biletów dla tego wydarzenia. ' +
+            'Każdy otwarty wieczór = osobny wpis w Events; wieczór bez koncertu ma wyłączoną sekcję „Koncert”.',
+          fields: [
+            {
+              name: 'reservationsEnabled',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: { description: 'Włącz rezerwacje online dla tego wydarzenia.' },
+            },
+            {
+              name: 'capacity',
+              type: 'number',
+              min: 0,
+              admin: {
+                condition: (data) => Boolean(data.reservationsEnabled),
+                description:
+                  'Pojemność w osobach. Zostaw puste, aby użyć domyślnej z „Reservation Settings”; ' +
+                  'wpisz wartość, aby nadpisać dla tego wydarzenia. Limit jest MIĘKKI — online nie blokuje, przekroczenie widać w CMS.',
+              },
+            },
+            {
+              name: 'optionOpening',
+              type: 'group',
+              label: 'Otwarcie wieczoru (darmowy stolik)',
+              admin: {
+                condition: (data) => Boolean(data.reservationsEnabled),
+                description:
+                  'Darmowy stolik od otwarcia do startu koncertu. Godziny podpowiadane z „Opening Hours” — nadpisywalne.',
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'enabled', type: 'checkbox', defaultValue: false, admin: { width: '34%' } },
+                    { name: 'startTime', type: 'text', admin: { width: '33%', placeholder: '17:00' } },
+                    { name: 'endTime', type: 'text', admin: { width: '33%', placeholder: '19:00' } },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'optionConcert',
+              type: 'group',
+              label: 'Koncert i wydarzenia muzyczne (bilet)',
+              admin: {
+                condition: (data) => Boolean(data.reservationsEnabled),
+                description:
+                  'Płatny bilet — obejmuje wcześniejsze przyjście (np. kolacja przed) oraz sam koncert.',
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'enabled', type: 'checkbox', defaultValue: false, admin: { width: '34%' } },
+                    { name: 'startTime', type: 'text', admin: { width: '33%', placeholder: '16:00' } },
+                    { name: 'endTime', type: 'text', admin: { width: '33%', placeholder: '22:00' } },
+                  ],
+                },
+                {
+                  name: 'pricePerPerson',
+                  type: 'number',
+                  min: 0,
+                  admin: { step: 5, description: 'Cena biletu za osobę (PLN).' },
+                },
+              ],
+            },
+            {
+              name: 'optionClub',
+              type: 'group',
+              label: 'Wieczór klubowy (darmowy stolik)',
+              admin: {
+                condition: (data) => Boolean(data.reservationsEnabled),
+                description:
+                  'Darmowy stolik od końca koncertu do zamknięcia. Godziny podpowiadane z „Opening Hours” — nadpisywalne.',
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'enabled', type: 'checkbox', defaultValue: false, admin: { width: '34%' } },
+                    { name: 'startTime', type: 'text', admin: { width: '33%', placeholder: '22:00' } },
+                    { name: 'endTime', type: 'text', admin: { width: '33%', placeholder: '24:00' } },
+                  ],
                 },
               ],
             },

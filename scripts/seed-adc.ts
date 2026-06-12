@@ -18,6 +18,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 import configPromise from '../src/payload.config'
 import { warsawParts } from '../src/lib/recurring-events'
+import { legalContentPL, legalContentEN } from './legal-content'
 
 const LOCALE = 'pl' as const
 const EN = 'en' as const
@@ -205,7 +206,7 @@ async function run() {
   log('Seeding globals…')
   await setGlobal('site-settings', {
     siteName: 'American Dream Club',
-    address: 'ul. Dominikańska 9, 61-456 Poznań',
+    address: 'ul. Dominikańska 9, 61-762 Poznań',
     phones: [{ label: 'Rezerwacje', number: '+48 500 210 333' }],
     emails: [
       { label: 'Kontakt', email: 'info@americandreamclub.pl' },
@@ -217,13 +218,13 @@ async function run() {
       { platform: 'youtube', url: 'https://www.youtube.com/@americandreamclubpoznan' },
     ],
     mapEmbedUrl:
-      'https://www.google.com/maps?q=ul.+Dominika%C5%84ska+9,+61-456+Pozna%C5%84&output=embed',
+      'https://www.google.com/maps?q=ul.+Dominika%C5%84ska+9,+61-762+Pozna%C5%84&output=embed',
     reservationUrl: 'tel:+48500210333',
-    reviewAggregate: '500+ opinii · 4,8/5 w Google',
+    reviewAggregate: '478 opinii · 4,8/5 w Google',
   }, {
     // localized: address, reviewAggregate
-    address: '9 Dominikańska St., 61-456 Poznań',
-    reviewAggregate: '500+ reviews · 4.8/5 on Google',
+    address: '9 Dominikańska St., 61-762 Poznań',
+    reviewAggregate: '478 reviews · 4.8/5 on Google',
   })
 
   await setGlobal('opening-hours', {
@@ -238,16 +239,18 @@ async function run() {
     ],
   })
 
+  // Legal docs are rich text (formatted), kept consistent with the old site
+  // americandreamclub.pl. See scripts/legal-content.ts for the source notes.
   await setGlobal('legal', {
-    regulamin: 'Regulamin klubu American Dream Club. Klub przeznaczony dla osób 21+.',
-    privacy: 'Polityka prywatności i zasady dotyczące plików cookie.',
-    companyData: 'American Dream Club®, ul. Dominikańska 9, 61-456 Poznań.',
+    regulamin: legalContentPL.regulamin,
+    privacy: legalContentPL.privacy,
+    companyData: legalContentPL.companyData,
     age21Notice:
       'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!',
   }, {
-    regulamin: 'American Dream Club house rules. The club is reserved for guests aged 21 and over.',
-    privacy: 'Privacy policy and cookie information.',
-    companyData: 'American Dream Club®, 9 Dominikańska St., 61-456 Poznań.',
+    regulamin: legalContentEN.regulamin,
+    privacy: legalContentEN.privacy,
+    companyData: legalContentEN.companyData,
     age21Notice:
       'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over. Thank you for understanding — we warmly welcome all guests of legal age who love a great night out!',
   })
@@ -257,13 +260,11 @@ async function run() {
     logo: logoId,
     topBarText: 'Restauracja & Jazz Club — kolacja i drinki w trakcie koncertu na żywo',
     phone: '+48 500 210 333',
-    address: 'ul. Dominikańska 9, 61-456 Poznań',
+    address: 'ul. Dominikańska 9, 61-762 Poznań',
     // Social links live in the `site-settings` global (single source of truth).
-    navItemsLeft: [
+    navItems: [
       { link: { type: 'custom', label: 'RESTAURACJA', url: '/restauracja' } },
       { link: { type: 'custom', label: 'PROGRAM', url: '/program' } },
-    ],
-    navItemsRight: [
       { link: { type: 'custom', label: 'TWOJE WYDARZENIE', url: '/twoje-wydarzenie' } },
       { link: { type: 'custom', label: 'BAR & CIGAR', url: '/bar' } },
       { link: { type: 'custom', label: 'KONTAKT', url: '/kontakt' } },
@@ -314,9 +315,9 @@ async function run() {
       ],
       bottomBarLinks: [
         { label: 'AMERICAN DREAM CLUB® 2026 Wszelkie prawa zastrzeżone', url: '/' },
-        { label: 'Regulamin klubu', url: '/kontakt' },
-        { label: 'Polityka prywatności', url: '/kontakt' },
-        { label: 'Dane firmy', url: '/kontakt' },
+        { label: 'Regulamin klubu', url: '/regulamin' },
+        { label: 'Polityka prywatności', url: '/polityka-prywatnosci' },
+        { label: 'Dane firmy', url: '/dane-firmy' },
       ],
       // Social links live in the `site-settings` global (single source of truth).
     } as never,
@@ -602,15 +603,26 @@ async function run() {
   log('Seeding testimonials…')
   // [author, plText, enText] — only `text` is localized.
   const testis: [string, string, string][] = [
-    ['Jan Kowalski', 'Świetne miejsce, muzyka na żywo i doskonała kuchnia. Wrócę na pewno!',
-      "A wonderful place — live music and excellent food. I'll definitely be back!"],
-    ['Anna Nowak', 'Klimat nowojorskiego klubu jazzowego w sercu Poznania. Polecam!',
-      'The vibe of a New York jazz club right in the heart of Poznań. Highly recommended!'],
-    ['Piotr Wiśniewski', 'Najlepsze koktajle w mieście i niezapomniany wieczór.',
-      'The best cocktails in town and an unforgettable evening.'],
-    ['Maria Lewandowska', 'Idealne miejsce na kolację z muzyką. Obsługa na najwyższym poziomie.',
-      'The perfect spot for dinner with music. Service of the highest standard.'],
+    ['Dominik A.', 'Gdybym mógł dać dziesięć gwiazdek za klimat, to bym bez wahania dał. Wyjątkowe miejsce. Nie trafiają tutaj ludzie z przypadku.',
+      "If I could give ten stars for the atmosphere, I would without hesitation. An exceptional place. People don't end up here by chance."],
+    ['Sami Investment', 'To miejsce mogłoby istnieć w Nowym Orleanie. Dobry, elegancki klub jazzowy był bardzo potrzebny w Poznaniu.',
+      'This place could exist in New Orleans. A good, elegant jazz club was much needed in Poznań.'],
+    ['Jacek W.', 'Świetny koncert. Bardzo dobrzy muzycy — zgrani, czujący to, co grają. Świetna atmosfera. Przed koncertem zjedliśmy bardzo dobrą kolację.',
+      'A great concert. Very good musicians — tight, feeling what they play. A great atmosphere. Before the concert we had a very good dinner.'],
+    ['Aniela K.', 'Miejsce absolutnie wyjątkowe, oryginalne i zachwycające całokształtem. Nie wiem, czy można znaleźć równie ciekawy lokal w Poznaniu.',
+      "An absolutely exceptional place, original and delightful in every respect. I'm not sure you can find an equally interesting spot in Poznań."],
+    ['Sławomir M.', 'Rewelacyjne miejsce. Klimat jest, wygląd jest, dobra muza jest, autorska kuchnia jest, obsługa na najwyższym poziomie. Jest wszystko do zaspokojenia duszy i ciała.',
+      'A sensational place. The atmosphere is there, the look is there, good music is there, signature cuisine is there, service at the highest level. Everything to satisfy body and soul.'],
+    ['Diego C.', 'Fantastyczna przestrzeń na elegancki wieczór w otoczeniu jakości i luksusu. Zdecydowanie wrócę!',
+      "A fantastic space for an elegant evening surrounded by quality and luxury. I'll definitely be back!"],
+    ['Jolanta S.', 'Już przy wejściu wie się, że będzie dużo lepiej niż można się było spodziewać. Wszystko dopięte do ostatniego szczegółu. Godne polecenia.',
+      'Right at the entrance you know it will be far better than you could have expected. Everything buttoned up to the last detail. Highly recommended.'],
+    ['Maria', 'Bardzo lubię tu wracać. Atmosfera jest cudowna, jedzenie przepyszne, obsługa miła i profesjonalna! To jedno z moich ulubionych miejsc.',
+      "I really love coming back here. The atmosphere is wonderful, the food delicious, the service kind and professional! It's one of my favourite places."],
   ]
+  // Reset testimonials so the collection holds EXACTLY these 8 (drops any earlier
+  // placeholder/stray entries on local or remote).
+  await deleteStray('testimonials', { author: { exists: true } })
   o = 0
   for (const [author, text, textEn] of testis) {
     await upsert(
@@ -1128,7 +1140,7 @@ async function run() {
         body: 'Eleganckie przestrzenie z dobrym wyposażeniem technicznym i full gastro na życzenie.',
         ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/twoje-wydarzenie' },
     ] },
-    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '500+ opinii · 4,8/5 w Google',
+    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google',
       items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
     { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Zapisz się i bądź na bieżąco z programem.', placeholder: 'Adres email', buttonLabel: 'ZAPISZ SIĘ', consentText: 'Akceptuję politykę prywatności' },
   ], 'Home', [
@@ -1151,181 +1163,174 @@ async function run() {
         body: 'Elegant spaces with excellent technical equipment and full catering on request.',
         ctaLabel: 'FIND OUT MORE', ctaUrl: '/twoje-wydarzenie' },
     ] },
-    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '500+ reviews · 4.8/5 on Google',
+    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google',
       items: testiItemsEn },
     { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Sign up and stay up to date with the program.', placeholder: 'Email address', buttonLabel: 'SIGN UP', consentText: 'I accept the privacy policy' },
   ])
 
   // RESTAURACJA
   await page('restauracja', 'Restauracja', [
-    { blockType: 'pageHero', eyebrow: 'Nasza kuchnia', title: 'Restauracja', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
-    { blockType: 'aboutIntro', heading: 'Dania inspirowane kulturą różnych stanów USA', body: 'Autorskie dania przygotowywane z dbałością o jakość w nowoczesnej formie. Menu zawiera zawsze ofertę wegetariańską.' },
+    { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
+    { blockType: 'aboutIntro', eyebrow: 'Nasza kuchnia', heading: 'Dania inspirowane kulturą różnych stanów USA', body: 'Karta dań nawiązuje do kuchni amerykańskiej z akcentami europejskimi. Menu stanowi dopełnienie wieczoru — tworząc wraz z muzyką i rozmową jedną spójną, klubową całość. Dania i napoje możesz zamówić przed koncertem lub w jego trakcie — obsługa pozostaje do pełnej dyspozycji. W karcie oferta wegetariańska oraz starannie dobrane wina i koktajle.' },
     { blockType: 'menuSection', sectionTag: 'MENU', heading: 'Nasze dania', menuType: 'food', layout: 'cardGrid', groupByCategory: true },
     // BIG BEAT! — curated set-menu options matched to the evening programme (from PDF)
-    { blockType: 'promoBand', heading: 'BIG BEAT!', body: 'Zestaw dla miłośników muzyki i jedzenia. Wybierz opcję dopasowaną do wieczoru.', items: [
-      { label: '1. B.B. KING', sub: 'Tatar wołowy, żeberka BBQ, deser dnia + drink w zestawie', price: 149 },
-      { label: '2. JAZZ CLUB SPECIAL', sub: 'Przystawka, danie główne + kieliszek wina do wyboru', price: 129 },
-      { label: '3. AMERICAN DREAM', sub: 'Burger, frytki, coleslaw + koktajl autorski', price: 99 },
+    { blockType: 'promoBand', heading: 'BIG BEAT!', subtitle: 'ZAMÓW ZESTAW W ATRAKCYJNEJ CENIE', items: [
+      { label: 'B.B. KING', sub: '1/4 Smash Burgerów + piwo BUD (330 ml) lub lemoniada (330 ml)', price: 60 },
+      { label: 'JAZZ CLUB SPECIAL', sub: 'American Dream Club Sandwich + piwo BUD (330 ml) lub lemoniada (330 ml)', price: 60 },
+      { label: 'AMERICAN DREAM', sub: '2× aperitif (Bellini lub Americano) + przekąski dla dwojga (deska made in USA lub selekcja serów i wędlin) + 2× deser (brownie)', price: 147 },
     ], ctaLabel: 'ZAREZERWUJ STOLIK', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'setMenu', heading: 'Dinner Time', dateLabel: '02.07', menus: [
-      { name: 'MENU A', price: 159, courses: [
-        { courseLabel: 'PRZYSTAWKA', dish: 'Tatar wołowy', description: 'polędwica, żółtko, kapary, ogórek konserwowy' },
-        { courseLabel: 'ZUPA', dish: 'Krem z pieczonej dyni', description: 'olej dyniowy, prażone pestki' },
-        { courseLabel: 'DANIE GŁÓWNE', dish: 'Texas Rib Eye Steak', description: 'stek z antrykotu, masło ziołowe, pieczone ziemniaki' },
-        { courseLabel: 'DESER', dish: 'Szarlotka na ciepło', description: 'lody waniliowe, sos karmelowy' },
+    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: '3-daniowa kolacja degustacyjna w stałej cenie', menus: [
+      { name: 'MENU A', price: 69, courses: [
+        { courseLabel: 'PRZYSTAWKA', dish: 'Tatar wołowy', description: 'wołowina 65 g, ogórek konserwowy, szalotka, borowik, musztarda francuska, kapary, oliwa z oliwek, sos worcestershire, papryka, żółtko' },
+        { courseLabel: 'DANIE GŁÓWNE', dish: 'Polik wołowy', description: 'polik wołowy 100 g, puree z pasternaku, burak, sos z węgielka' },
+        { courseLabel: 'DESER', dish: 'Brownie', description: 'brownie, wiśnie, lody śmietankowe' },
       ] },
-      { name: 'MENU B', price: 139, courses: [
-        { courseLabel: 'PRZYSTAWKA', dish: 'Carpaccio z buraka', description: 'kozi ser, orzechy włoskie, rukola' },
-        { courseLabel: 'ZUPA', dish: 'Bisque z krewetek', description: 'śmietana, koperek, grzanka' },
-        { courseLabel: 'DANIE GŁÓWNE', dish: 'Pappardelle z ragù', description: 'wolno duszona wołowina, parmezan' },
-        { courseLabel: 'DESER', dish: 'Tiramisu', description: 'klasyczne, z mascarpone i espresso' },
+      { name: 'MENU B', price: 69, courses: [
+        { courseLabel: 'PRZYSTAWKA', dish: 'Tatar wołowy', description: 'wołowina 65 g, ogórek konserwowy, szalotka, borowik, musztarda francuska, kapary, oliwa z oliwek, sos worcestershire, papryka, żółtko' },
+        { courseLabel: 'DANIE GŁÓWNE', dish: 'Polik wołowy', description: 'polik wołowy 100 g, puree z pasternaku, burak, sos z węgielka' },
+        { courseLabel: 'DESER', dish: 'Brownie', description: 'brownie, wiśnie, lody śmietankowe' },
       ] },
     ] },
-    { blockType: 'promoBand', heading: 'Specjalne Piątki', body: 'W każdy piątek wyjątkowa oferta degustacyjna w klubowej atmosferze. Zarezerwuj stolik i poczuj weekend.', items: [
-      { label: 'Set ostryg', sub: '6 sztuk z cytryną', price: 79 },
-      { label: 'Butelka prosecco', sub: 'do podzielenia we dwoje', price: 119 },
-      { label: 'Deska serów', sub: 'selekcja z dodatkami', price: 69 },
-    ], ctaLabel: 'ZAREZERWUJ', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'bentoSection', heading: 'BAR & CIGAR', items: [
-      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle i wina.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar' },
-      { image: await img.cigar(), colSpan: 'half', label: 'Selekcja cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-room' },
+    { blockType: 'promoBand', heading: 'Towarzyska Niedziela', subtitle: 'Specjalne menu i relaksująca atmosfera', body: 'Zakończ tydzień razem z nami! Towarzyska Niedziela to wyjątkowy wieczór w klubowej atmosferze — od 16:00 do 21:00. W godzinach 17:00 – 20:00 tańce przy największych przebojach muzycznych XX wieku.', ctaLabel: 'ZAREZERWUJ STOLIK', ctaUrl: '/rezerwacje', style: 'gold' },
+    { blockType: 'bentoSection', items: [
+      { image: await img.bar(), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar' },
     ] },
   ], 'Restaurant', [
-    { blockType: 'pageHero', eyebrow: 'Our kitchen', title: 'Restaurant', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
-    { blockType: 'aboutIntro', heading: 'Dishes inspired by the culture of different US states', body: 'Signature dishes prepared with care for quality and a modern touch. The menu always includes a vegetarian option.' },
+    { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
+    { blockType: 'aboutIntro', eyebrow: 'Our kitchen', heading: 'Dishes inspired by the culture of different US states', body: 'The menu draws on American cuisine with European accents. It is a complement to the evening — forming, together with the music and conversation, one coherent, club-like whole. You can order dishes and drinks before the concert or during it — the staff remain fully at your disposal. The menu includes a vegetarian offer and carefully selected wines and cocktails.' },
     { blockType: 'menuSection', sectionTag: 'MENU', heading: 'Our dishes', menuType: 'food', layout: 'cardGrid', groupByCategory: true },
-    { blockType: 'promoBand', heading: 'BIG BEAT!', body: 'A set for music and food lovers. Choose the option matched to your evening.', items: [
-      { label: '1. B.B. KING', sub: 'Beef tartare, BBQ ribs, dessert of the day + drink included', price: 149 },
-      { label: '2. JAZZ CLUB SPECIAL', sub: 'Starter, main course + a glass of wine of your choice', price: 129 },
-      { label: '3. AMERICAN DREAM', sub: 'Burger, fries, coleslaw + signature cocktail', price: 99 },
+    { blockType: 'promoBand', heading: 'BIG BEAT!', subtitle: 'ORDER A SET AT A GREAT PRICE', items: [
+      { label: 'B.B. KING', sub: '1/4 Smash Burgers + BUD beer (330 ml) or lemonade (330 ml)', price: 60 },
+      { label: 'JAZZ CLUB SPECIAL', sub: 'American Dream Club Sandwich + BUD beer (330 ml) or lemonade (330 ml)', price: 60 },
+      { label: 'AMERICAN DREAM', sub: '2× aperitif (Bellini or Americano) + snacks for two (made-in-USA board or a selection of cheeses and cold cuts) + 2× dessert (brownie)', price: 147 },
     ], ctaLabel: 'BOOK A TABLE', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'setMenu', heading: 'Dinner Time', dateLabel: '02.07', menus: [
-      { name: 'MENU A', price: 159, courses: [
-        { courseLabel: 'STARTER', dish: 'Beef Tartare', description: 'tenderloin, egg yolk, capers, pickled cucumber' },
-        { courseLabel: 'SOUP', dish: 'Roast Pumpkin Cream', description: 'pumpkin seed oil, toasted seeds' },
-        { courseLabel: 'MAIN COURSE', dish: 'Texas Rib Eye Steak', description: 'rib eye steak, herb butter, roasted potatoes' },
-        { courseLabel: 'DESSERT', dish: 'Warm Apple Pie', description: 'vanilla ice cream, caramel sauce' },
+    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: 'A three-course tasting dinner at a fixed price', menus: [
+      { name: 'MENU A', price: 69, courses: [
+        { courseLabel: 'STARTER', dish: 'Beef Tartare', description: 'beef 65 g, pickled cucumber, shallot, porcini, French mustard, capers, olive oil, Worcestershire sauce, paprika, egg yolk' },
+        { courseLabel: 'MAIN COURSE', dish: 'Beef Cheek', description: 'beef cheek 100 g, parsnip purée, beetroot, charcoal sauce' },
+        { courseLabel: 'DESSERT', dish: 'Brownie', description: 'brownie, cherries, cream ice cream' },
       ] },
-      { name: 'MENU B', price: 139, courses: [
-        { courseLabel: 'STARTER', dish: 'Beetroot Carpaccio', description: 'goat cheese, walnuts, rocket' },
-        { courseLabel: 'SOUP', dish: 'Prawn Bisque', description: 'cream, dill, crouton' },
-        { courseLabel: 'MAIN COURSE', dish: 'Pappardelle with Ragù', description: 'slow-braised beef, parmesan' },
-        { courseLabel: 'DESSERT', dish: 'Tiramisu', description: 'classic, with mascarpone and espresso' },
+      { name: 'MENU B', price: 69, courses: [
+        { courseLabel: 'STARTER', dish: 'Beef Tartare', description: 'beef 65 g, pickled cucumber, shallot, porcini, French mustard, capers, olive oil, Worcestershire sauce, paprika, egg yolk' },
+        { courseLabel: 'MAIN COURSE', dish: 'Beef Cheek', description: 'beef cheek 100 g, parsnip purée, beetroot, charcoal sauce' },
+        { courseLabel: 'DESSERT', dish: 'Brownie', description: 'brownie, cherries, cream ice cream' },
       ] },
     ] },
-    { blockType: 'promoBand', heading: 'Special Fridays', body: 'Every Friday a special tasting offer in a club atmosphere. Book a table and feel the weekend.', items: [
-      { label: 'Oyster set', sub: '6 pieces with lemon', price: 79 },
-      { label: 'Bottle of prosecco', sub: 'to share between two', price: 119 },
-      { label: 'Cheese board', sub: 'a selection with sides', price: 69 },
-    ], ctaLabel: 'BOOK NOW', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'bentoSection', heading: 'BAR & CIGAR', items: [
-      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails and wines.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar' },
-      { image: await img.cigar(), colSpan: 'half', label: 'A selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'SEE THE MENU', ctaUrl: '/cigar-room' },
+    { blockType: 'promoBand', heading: 'Social Sunday', subtitle: 'A special menu and a relaxed atmosphere', body: 'End the week together with us! Social Sunday is a special evening in a club atmosphere — from 4 pm to 9 pm. Between 5 pm and 8 pm, dancing to the greatest musical hits of the 20th century.', ctaLabel: 'BOOK A TABLE', ctaUrl: '/rezerwacje', style: 'gold' },
+    { blockType: 'bentoSection', items: [
+      { image: await img.bar(), colSpan: 'full', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar' },
     ] },
   ])
 
   // BAR
   await page('bar', 'Cocktail Bar', [
     { blockType: 'pageHero', eyebrow: 'Starannie dobrana selekcja win oraz autorskie koktajle', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await img.bar() },
-    { blockType: 'aboutIntro', heading: 'Przestrzeń spotkań z wyjątkowym smakiem', subheading: 'Dopełnienie klubowego charakteru wieczoru', body: 'Oferujemy starannie dobraną selekcję win oraz autorskie koktajle przygotowywane przez doświadczonych barmanów.' },
+    { blockType: 'aboutIntro', heading: 'Przestrzeń spotkań z wyjątkowym smakiem', subheading: 'Dopełnienie klubowego charakteru wieczoru', body: 'Oferujemy starannie dobraną selekcję win oraz autorskie koktajle przygotowywane przez doświadczonych barmanów. Wina, drinki i koktajle serwowane są zarówno przy barze, jak i bezpośrednio do stolików, tak aby goście mogli swobodnie rozmawiać, słuchać muzyki i pozostać przy stole przez cały wieczór. W karcie znajdują się wina, alkohole premium oraz klasyczne i autorskie koktajle — skomponowane z myślą o klubowym charakterze wieczoru.' },
     { blockType: 'menuSection', sectionTag: 'KOKTAJLE AUTORSKIE', heading: 'Koktajle', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
     { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą USA.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restauracja' },
-      { image: await img.cigar(), colSpan: 'half', label: 'Profesjonalna palarnia cygar.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-room' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restauracja' },
+      { image: await img.cigar(), colSpan: 'half', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-room' },
     ] },
   ], 'Cocktail Bar', [
     { blockType: 'pageHero', eyebrow: 'A carefully curated wine selection and signature cocktails', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await img.bar() },
-    { blockType: 'aboutIntro', heading: 'A meeting space with exceptional flavour', subheading: 'The finishing touch to the club character of the evening', body: 'We offer a carefully curated selection of wines and signature cocktails prepared by experienced bartenders.' },
+    { blockType: 'aboutIntro', heading: 'A meeting space with exceptional flavour', subheading: 'The finishing touch to the club character of the evening', body: 'We offer a carefully curated selection of wines and signature cocktails prepared by experienced bartenders. Wines, drinks and cocktails are served both at the bar and directly to the tables, so guests can chat freely, listen to the music and stay at their table all evening long. The menu features wines, premium spirits and classic and signature cocktails — composed with the club character of the evening in mind.' },
     { blockType: 'menuSection', sectionTag: 'SIGNATURE COCKTAILS', heading: 'Cocktails', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
     { blockType: 'bentoSection', heading: 'MORE', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by US culture.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restauracja' },
-      { image: await img.cigar(), colSpan: 'half', label: 'A professional cigar lounge.', title: 'CIGAR ROOM', ctaLabel: 'SEE THE MENU', ctaUrl: '/cigar-room' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restauracja' },
+      { image: await img.cigar(), colSpan: 'half', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'SEE THE MENU', ctaUrl: '/cigar-room' },
     ] },
   ])
 
   // CIGAR ROOM
   await page('cigar-room', 'Cigar Room', [
     { blockType: 'pageHero', eyebrow: 'Uzupełnienie wieczoru w otoczeniu klubowej elegancji', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await img.cigar() },
-    { blockType: 'aboutIntro', heading: 'Profesjonalna przestrzeń dla miłośników cygar', subheading: 'Starannie dobrana oferta cygar i alkoholi', body: 'Palarnia cygar w American Dream Club to przestrzeń stworzona z myślą o gościach, którzy cenią spokojną rozmowę i kulturę celebrowania cygara.' },
+    { blockType: 'aboutIntro', heading: 'Profesjonalna przestrzeń dla miłośników cygar', subheading: 'Starannie dobrana oferta cygar i alkoholi', body: 'Palarnia cygar w American Dream Club to przestrzeń stworzona z myślą o gościach, którzy cenią spokojną rozmowę i kulturę celebrowania cygara czy fajki. Zapewnia komfortowe warunki oraz atmosferę sprzyjającą dłuższemu pobytowi. Oferujemy starannie dobraną selekcję cygar, przechowywanych w odpowiednich warunkach i podawanych z należytą dbałością. Do wyboru starannie dobrane trunki, szlachetne whisky i koniaki naturalnie wpisujące się w charakter tego miejsca. Palarnia stanowi uzupełnienie wieczoru — przed koncertem, w przerwie lub po jego zakończeniu. Dedykowana dla osób, które oczekują dyskrecji, spokoju i poczucia bezpieczeństwa, w otoczeniu klubowej elegancji.' },
     { blockType: 'menuSection', sectionTag: 'CYGARA', heading: 'Cygara', menuType: 'cigars', layout: 'pricedList', groupByCategory: true },
     // imageGallery omitted — add after uploading real lounge photos via CMS
     { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą USA.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restauracja' },
-      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle i wina.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restauracja' },
+      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar' },
     ] },
   ], 'Cigar Room', [
     { blockType: 'pageHero', eyebrow: 'A perfect close to the evening amid club elegance', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await img.cigar() },
-    { blockType: 'aboutIntro', heading: 'A professional space for cigar lovers', subheading: 'A carefully curated selection of cigars and spirits', body: 'The cigar lounge at American Dream Club is a space created for guests who value calm conversation and the culture of savouring a fine cigar.' },
+    { blockType: 'aboutIntro', heading: 'A professional space for cigar lovers', subheading: 'A carefully curated selection of cigars and spirits', body: 'The cigar lounge at American Dream Club is a space created for guests who value calm conversation and the culture of savouring a fine cigar or pipe. It offers comfortable conditions and an atmosphere that invites a longer stay. We offer a carefully curated selection of cigars, stored in the right conditions and served with due care. To go with them, a selection of fine spirits, noble whiskies and cognacs that naturally fit the character of this place. The lounge is a complement to the evening — before the concert, during the interval or after it ends. Dedicated to those who expect discretion, calm and a sense of security, amid club elegance.' },
     { blockType: 'menuSection', sectionTag: 'CIGARS', heading: 'Cigars', menuType: 'cigars', layout: 'pricedList', groupByCategory: true },
     // imageGallery omitted — add after uploading real lounge photos via CMS
     { blockType: 'bentoSection', heading: 'MORE', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by US culture.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restauracja' },
-      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails and wines.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restauracja' },
+      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar' },
     ] },
   ])
 
   // PROGRAM
   await page('program', 'Program', [
     { blockType: 'pageHero', eyebrow: 'Sprawdź nadchodzące wydarzenia i zaplanuj swój wieczór', title: 'Program', titleStyle: 'serif', backgroundImage: await img.program() },
-    { blockType: 'aboutIntro', heading: 'Muzyka, którą gramy', subheading: 'Największe standardy świata — inny klimat w każdy wieczór.', body: 'W klubie gramy największe amerykańskie i światowe standardy. Usłyszysz: jazz, swing, blues, soul i country.' },
+    { blockType: 'aboutIntro', heading: 'Muzyka, którą gramy', subheading: 'Największe standardy świata — inny klimat w każdy wieczór.', body: 'W klubie gramy największe amerykańskie i światowe standardy. Usłyszysz: jazz, swing, blues, soul i country — oraz najlepsze europejskie melodie. To brzmienie, które przez dekady kształtowały kulturę klubową oraz emocje słuchaczy, przywołując klimat najlepszych lat XX wieku. Każdy wieczór ma charakter przewodni — sprawdź w kalendarzu poniżej.' },
     { blockType: 'eventsCalendar', variant: 'full', heading: 'KALENDARZ', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: 'Nie przegap', heading: 'WYDARZENIA SPECJALNE', limit: 4 },
-    { blockType: 'musiciansGrid', eyebrow: 'Poznaj', heading: 'NASI MUZYCY' },
+    { blockType: 'musiciansGrid', eyebrow: 'Poznaj', heading: 'NASI MUZYCY', intro: 'Na scenie występują wykształceni i zdolni poznańscy muzycy — artyści związani ze środowiskami akademickimi oraz sceną koncertową. Grają dla Twojej radości z autentycznym zaangażowaniem i osobistą interpretacją, bez estradowego patosu, ale z prawdziwą muzyczną energią. Tutaj znajdziesz się blisko muzyków, poczujesz ich emocje i staniesz się częścią wydarzenia.' },
     { blockType: 'recurringSeriesTeaser', eyebrow: 'Powtarzające się', heading: 'WYDARZENIA CYKLICZNE', description: 'Stałe punkty w naszym kalendarzu — wieczory, które wracają regularnie.', series: seriesIds },
     // PDF: cross-sell bento with Towarzyska Niedziela + Klub x Muzy at bottom
     { blockType: 'bentoSection', heading: 'ZAPLANUJ SWÓJ WIECZÓR', items: [
-      { colSpan: 'half', label: 'Niedzielna muzyka i relaks w klimacie swingu.', title: 'TOWARZYSKA NIEDZIELA', ctaLabel: 'TOWARZYSKA NIEDZIELA ›', ctaUrl: '/wydarzenia-cykliczne/towarzyska-niedziela' },
-      { colSpan: 'half', label: 'Muzyka artystyczna i miejsce dla kreatywnych.', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
+      { colSpan: 'half', label: 'Niedziela w doborowym towarzystwie! Spotkaj się przy dobrym koktajlu, a to wszystko od godziny 18:00.', title: 'TOWARZYSKA NIEDZIELA', ctaLabel: 'TOWARZYSKA NIEDZIELA ›', ctaUrl: '/wydarzenia-cykliczne/towarzyska-niedziela' },
+      { colSpan: 'half', label: 'Wieczory kina niemego z akompaniamentem fortepianu na żywo. Poczuj klimat dawnych lat!', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
     ] },
   ], 'Program', [
     { blockType: 'pageHero', eyebrow: 'Check the upcoming events and plan your evening', title: 'Program', titleStyle: 'serif', backgroundImage: await img.program() },
-    { blockType: 'aboutIntro', heading: 'The music we play', subheading: "The world's greatest standards — a different vibe every evening.", body: "At the club we play the greatest American and international standards. You'll hear jazz, swing, blues, soul and country." },
+    { blockType: 'aboutIntro', heading: 'The music we play', subheading: "The world's greatest standards — a different vibe every evening.", body: "At the club we play the greatest American and international standards. You'll hear jazz, swing, blues, soul and country — and the finest European melodies. This is the sound that for decades shaped club culture and the emotions of listeners, evoking the spirit of the best years of the 20th century. Every evening has a leading theme — check the calendar below." },
     { blockType: 'eventsCalendar', variant: 'full', heading: 'CALENDAR', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: "Don't miss", heading: 'SPECIAL EVENTS', limit: 4 },
-    { blockType: 'musiciansGrid', eyebrow: 'Meet', heading: 'OUR MUSICIANS' },
+    { blockType: 'musiciansGrid', eyebrow: 'Meet', heading: 'OUR MUSICIANS', intro: 'On stage you will find skilled, well-trained Poznań musicians — artists connected with academic circles and the concert scene. They play for your joy with genuine commitment and personal interpretation, without stage pomp but with real musical energy. Here you are close to the musicians, you feel their emotions and become part of the event.' },
     { blockType: 'recurringSeriesTeaser', eyebrow: 'Recurring', heading: 'RECURRING EVENTS', description: 'The regular fixtures in our calendar — evenings that come back again and again.', series: seriesIds },
     { blockType: 'bentoSection', heading: 'PLAN YOUR EVENING', items: [
-      { colSpan: 'half', label: 'Sunday music and relaxation in the spirit of swing.', title: 'SOCIAL SUNDAY', ctaLabel: 'SOCIAL SUNDAY ›', ctaUrl: '/wydarzenia-cykliczne/towarzyska-niedziela' },
-      { colSpan: 'half', label: 'Artistic music and a place for the creative.', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
+      { colSpan: 'half', label: 'Sunday in fine company! Meet over a good cocktail, all from 6 pm.', title: 'SOCIAL SUNDAY', ctaLabel: 'SOCIAL SUNDAY ›', ctaUrl: '/wydarzenia-cykliczne/towarzyska-niedziela' },
+      { colSpan: 'half', label: 'Silent-film evenings with live piano accompaniment. Feel the spirit of bygone years!', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
     ] },
   ])
 
   // TWOJE WYDARZENIE
   await page('twoje-wydarzenie', 'Twoje wydarzenie', [
     { blockType: 'pageHero', eyebrow: 'Codziennie ktoś u nas świętuje', title: 'Twoje wydarzenie', titleStyle: 'serif', backgroundImage: await img.twoje() },
-    { blockType: 'aboutIntro', heading: 'Urodziny. Rocznice. Imprezy firmowe.', subheading: 'Zaproś Gości — my zajmiemy się resztą!', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zadbamy o menu, serwis, oprawę muzyczną, atrakcje wieczoru i dekoracje.' },
+    { blockType: 'aboutIntro', heading: 'Urodziny. Rocznice. Imprezy firmowe.', subheading: 'Zaproś Gości — my zajmiemy się resztą!', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my wszystko zorganizujemy. Przygotujemy ofertę dopasowaną do Twoich potrzeb i charakteru wydarzenia. Zadbamy o menu, serwis, oprawę muzyczną, atrakcje wieczoru i dekoracje. Wszystkie szczegóły ustalimy z Tobą indywidualnie.' },
     { blockType: 'offerCards', eyebrow: 'Zorganizuj z nami', heading: 'OFERTA', cards: [
-      { image: await img.twoje(), tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA', body: 'Ty przychodzisz z Gośćmi, my zajmiemy się organizacją.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/kontakt' },
-      { image: await img.gallery(), tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE', body: 'Eleganckie przestrzenie z dobrym wyposażeniem technicznym.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/kontakt' },
+      { image: await img.twoje(), tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA', body: 'Nasz klub to idealne miejsce, jeśli chcesz świętować spokojnie, z bliską rodziną i muzyką w tle. Ty przychodzisz z Gośćmi — my zajmiemy się organizacją, oprawą i przebiegiem wieczoru. Wszystkie szczegóły organizacyjne — menu, układ sali oraz oprawę wieczoru — ustalimy indywidualnie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/kontakt' },
+      { image: await img.gallery(), tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE', body: 'Eleganckie sale, muzyka na żywo, pełna obsługa — Ty jesteś gościem, my zajmiemy się resztą. Oferujemy przestrzeń dla grup od kilku do 120 osób. Korzystamy z menu à la carte albo uzgodnionego menu grupowego w stałej, z góry określonej cenie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/kontakt' },
     ] },
     { blockType: 'roomSelector', heading: 'DOSTĘPNE STREFY', rooms: roomIds, equipmentHeading: 'WYPOSAŻENIE', offerHeading: 'CO PRZYGOTUJEMY DLA CIEBIE', offerItems: [
       { item: 'Możliwość rezerwacji całego lokalu na wyłączność lub jego części' },
-      { item: 'Usługa gastronomiczna w formie serwowanej lub bufetowej' },
-      { item: 'Szeroka oferta win, drinków i koktajli — w tym Open Bar' },
-      { item: 'Torty, ciasta, lody i inne niespodzianki na życzenie' },
-      { item: 'Pełna gastronomia według autorskiego menu lub dań na życzenie' },
-      { item: 'Ustawienie stołów i sali dopasowane do charakteru imprezy — ustalane z szefem kuchni' },
-      { item: 'Atrakcje dodatkowe: koncert, DJ, inna oprawa muzyczna lub show' },
-      { item: 'Czas trwania imprezy ustalany indywidualnie' },
-      { item: 'Rezerwacja dla grup od 10 osób z wyprzedzeniem min. 1 miesiąc' },
+      { item: 'Usługa gastronomiczna w formie serwowanej lub bufetowej, na wstępie spotkania możemy przygotować małe przekąski Finger Food' },
+      { item: 'Szeroka oferta win, drinków i koktajli w ramach zamówienia — w tym Open Bar' },
+      { item: 'Na życzenie przygotujemy torty, ciasta i lody' },
+      { item: 'Cała oferta gastronomiczna przygotowana pod życzenie organizatora i przewidziany budżet' },
+      { item: 'Ustawienie stołów i zaplanowanie stref w klubie według życzenia — różne aranżacje' },
+      { item: 'Atrakcje dodatkowe: koncert lub inna oprawa muzyczna według życzenia organizatora' },
+      { item: 'Czas spotkania dostosujemy do propozycji organizatora' },
+      { item: 'Maksymalna liczba uczestników: 120 osób' },
+      { item: 'Rezerwację dla grup przyjmujemy z wyprzedzeniem do 1 miesiąca' },
     ] },
-    { blockType: 'salesContact', heading: 'POROZMAWIAJMY O TWOIM WYDARZENIU', teamMember: managerId, callLabel: 'ZADZWOŃ', emailLabel: 'ZAPYTAJ MAILOWO', style: 'gold' },
-    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '500+ opinii · 4,8/5 w Google', items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
+    { blockType: 'salesContact', heading: 'POROZMAWIAJMY O TWOIM WYDARZENIU!', teamMember: managerId, callLabel: 'ZADZWOŃ', emailLabel: 'ZAPYTAJ MAILOWO', style: 'gold' },
+    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google', items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
   ], 'Your event', [
     { blockType: 'pageHero', eyebrow: 'Every day someone is celebrating with us', title: 'Your event', titleStyle: 'serif', backgroundImage: await img.twoje() },
-    { blockType: 'aboutIntro', heading: 'Birthdays. Anniversaries. Corporate events.', subheading: "Invite your guests — we'll take care of the rest!", body: "Your special occasion deserves a special setting. We'll handle the menu, service, music, evening attractions and decorations." },
+    { blockType: 'aboutIntro', heading: 'Birthdays. Anniversaries. Corporate events.', subheading: "Invite your guests — we'll take care of the rest!", body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll organise everything. We'll prepare an offer tailored to your needs and the character of the event. We'll take care of the menu, service, music, evening attractions and decorations. We'll agree on every detail with you individually." },
     { blockType: 'offerCards', eyebrow: 'Plan it with us', heading: 'WHAT WE OFFER', cards: [
-      { image: await img.twoje(), tag: 'PRIVATE PARTIES', title: 'BIRTHDAYS AND ANNIVERSARIES IN THE HEART OF POZNAŃ', body: "You arrive with your guests — we'll handle the organisation.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/kontakt' },
-      { image: await img.gallery(), tag: 'CORPORATE EVENTS', title: 'COMPANY GATHERINGS IN A CLUB ATMOSPHERE', body: "Elegant spaces with great technical equipment.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/kontakt' },
+      { image: await img.twoje(), tag: 'PRIVATE PARTIES', title: 'BIRTHDAYS AND ANNIVERSARIES IN THE HEART OF POZNAŃ', body: "Our club is the perfect place if you want to celebrate calmly, with close family and music in the background. You arrive with your guests — we'll handle the organisation, the setting and the running of the evening. We'll agree on every organisational detail — the menu, the room layout and the evening's setting — individually.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/kontakt' },
+      { image: await img.gallery(), tag: 'CORPORATE EVENTS', title: 'COMPANY GATHERINGS IN A CLUB ATMOSPHERE', body: "Elegant rooms, live music, full service — you are the guest, we'll take care of the rest. We offer space for groups from a few to 120 people. We work from an à la carte menu or an agreed group menu at a fixed, predetermined price.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/kontakt' },
     ] },
     { blockType: 'roomSelector', heading: 'AVAILABLE SPACES', rooms: roomIds, equipmentHeading: 'EQUIPMENT', offerHeading: "WHAT WE'LL PREPARE FOR YOU", offerItems: [
       { item: 'Option to book the entire venue exclusively or just part of it' },
-      { item: 'Catering service, either plated or buffet style' },
-      { item: 'A wide selection of wines, drinks and cocktails — including an Open Bar' },
-      { item: 'Extra attractions: a concert or other live music' },
+      { item: 'Catering service, plated or buffet style; to start we can prepare small Finger Food snacks' },
+      { item: 'A wide selection of wines, drinks and cocktails as part of the order — including an Open Bar' },
+      { item: "On request we'll prepare cakes, pastries and ice cream" },
+      { item: "The whole catering offer prepared to the organiser's wishes and planned budget" },
+      { item: 'Table arrangement and zoning of the club to your wishes — various layouts' },
+      { item: "Extra attractions: a concert or other live music to the organiser's wishes" },
+      { item: "We'll adjust the meeting time to the organiser's proposal" },
+      { item: 'Maximum number of participants: 120 people' },
+      { item: 'We accept group reservations up to 1 month in advance' },
     ] },
-    { blockType: 'salesContact', heading: "LET'S TALK ABOUT YOUR EVENT", teamMember: managerId, callLabel: 'CALL US', emailLabel: 'ASK BY EMAIL', style: 'gold' },
-    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '500+ reviews · 4.8/5 on Google', items: testiItemsEn },
+    { blockType: 'salesContact', heading: "LET'S TALK ABOUT YOUR EVENT!", teamMember: managerId, callLabel: 'CALL US', emailLabel: 'ASK BY EMAIL', style: 'gold' },
+    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google', items: testiItemsEn },
   ])
 
   // REZERWACJE
@@ -1333,19 +1338,19 @@ async function run() {
     { blockType: 'pageHero', eyebrow: 'Zaplanuj swój wieczór', title: 'Rezerwacja', titleStyle: 'serif', backgroundImage: await img.restauracja() },
     { blockType: 'aboutIntro', heading: 'Zaplanuj swój wieczór', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my zajmiemy się pełną organizacją.' },
     { blockType: 'eveningPhases', heading: 'ZAPLANUJ SWÓJ WIECZÓR', phases: [
-      { image: await img.restauracja(), title: 'OTWARCIE WIECZORU', timeLabel: 'od 17:00', body: 'Zapraszamy do rozpoczęcia wieczoru w spokojnej, klubowej atmosferze. Rezerwacja stolika jest bezpłatna.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
-      { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo — subtelne brzmienia fortepianu i saksofonu.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
-      { image: await img.bar(), title: 'WIECZÓR KLUBOWY', timeLabel: '21:00–23:00', body: 'Po części koncertowej zapraszamy do dalszego spędzenia czasu w naszej przestrzeni.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
+      { image: await img.restauracja(), title: 'OTWARCIE WIECZORU', timeLabel: 'od 17:00', body: 'Zapraszamy do rozpoczęcia wieczoru w spokojnej, klubowej atmosferze. Rezerwacja stolika jest bezpłatna. Planujesz zostać na koncert? Prosimy o wcześniejszy zakup biletu.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
+      { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo. Subtelne brzmienia fortepianu i saksofonu, elegancka improwizacja oraz klimat klasycznego jazzu tworzą niezapomniane doświadczenie muzyczne.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
+      { image: await img.bar(), title: 'WIECZÓR KLUBOWY', timeLabel: '21:00–23:00', body: 'Po części koncertowej zapraszamy do dalszego spędzenia czasu w naszej przestrzeni. Na gości czeka projekcja koncertu na dużym ekranie oraz starannie przygotowana oferta kuchni i baru. Rezerwacja stolika pozostaje bezpłatna.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'REZERWACJA', teamMember: reservationContactId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
-    { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia.', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/kontakt' },
+    { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/kontakt' },
   ], 'Reservation', [
     { blockType: 'pageHero', eyebrow: 'Plan your evening', title: 'Reservation', titleStyle: 'serif', backgroundImage: await img.restauracja() },
     { blockType: 'aboutIntro', heading: 'Plan your evening', body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll take care of the full organisation." },
     { blockType: 'eveningPhases', heading: 'PLAN YOUR EVENING', phases: [
-      { image: await img.restauracja(), title: 'START OF THE EVENING', timeLabel: 'od 17:00', body: 'Start your evening in a calm, club atmosphere. Booking a table is free of charge.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
-      { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', timeLabel: 'od 19:00', body: 'A special evening of live music — the subtle sounds of piano and saxophone.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
-      { image: await img.bar(), title: 'CLUB NIGHT', timeLabel: '21:00–23:00', body: 'After the concert, stay on and enjoy more time in our space.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
+      { image: await img.restauracja(), title: 'START OF THE EVENING', timeLabel: 'od 17:00', body: 'Start your evening in a calm, club atmosphere. Booking a table is free of charge. Planning to stay for the concert? Please buy a ticket in advance.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
+      { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', timeLabel: 'od 19:00', body: 'A special evening of live music. The subtle sounds of piano and saxophone, elegant improvisation and the atmosphere of classic jazz create an unforgettable musical experience.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
+      { image: await img.bar(), title: 'CLUB NIGHT', timeLabel: '21:00–23:00', body: 'After the concert, stay on and enjoy more time in our space. Guests can watch the concert on a large screen and enjoy a carefully prepared food and bar offering. Booking a table remains free of charge.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'RESERVATION', teamMember: reservationContactId, callLabel: 'CALL US', emailLabel: 'WRITE TO US', style: 'gold' },
     { blockType: 'notice21Plus', heading: 'Dear Guests', body: 'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over.', ctaLabel: 'CLUB RULES 21+', ctaUrl: '/kontakt' },
@@ -1367,11 +1372,11 @@ async function run() {
   // KONTAKT DLA ARTYSTÓW
   await page('kontakt-dla-artystow', 'Kontakt dla artystów', [
     { blockType: 'pageHero', eyebrow: 'Jesteś muzykiem? Zapraszamy do współpracy!', title: 'Kontakt dla artystów', titleStyle: 'serif', backgroundImage: await img.special() },
-    { blockType: 'aboutIntro', heading: 'Zagraj w American Dream Club', body: 'W American Dream Club grają muzycy z pasją i warsztatem. Jeśli grasz jazz, soul, blues, swing lub pokrewne gatunki i chcesz wystąpić przed wymagającą publicznością — napisz do nas.' },
+    { blockType: 'aboutIntro', heading: 'Zagraj w American Dream Club', body: 'W American Dream Club grają muzycy z pasją i warsztatem. Współpracujemy z absolwentami i studentami Akademii Muzycznej oraz doświadczonymi muzykami z poznańskiej sceny jazzowej. Jeśli grasz jazz, soul, blues, swing lub pokrewne gatunki i chcesz wystąpić przed wymagającą publicznością — wypełnij formularz. Odezwiemy się do Ciebie.' },
     { blockType: 'artistForm', eyebrow: 'Jesteś muzykiem? Zapraszamy do współpracy!', heading: 'FORMULARZ KONTAKTOWY', intro: 'Wypełnij formularz, a nasz zespół skontaktuje się z Tobą w sprawie współpracy.' },
   ], 'Contact for artists', [
     { blockType: 'pageHero', eyebrow: "Are you a musician? We'd love to work with you!", title: 'Contact for artists', titleStyle: 'serif', backgroundImage: await img.special() },
-    { blockType: 'aboutIntro', heading: 'Play at American Dream Club', body: 'At American Dream Club we host musicians with passion and craft. If you play jazz, soul, blues, swing or related genres and want to perform for a discerning audience — get in touch with us.' },
+    { blockType: 'aboutIntro', heading: 'Play at American Dream Club', body: "At American Dream Club we host musicians with passion and craft. We work with graduates and students of the Academy of Music and experienced musicians from the Poznań jazz scene. If you play jazz, soul, blues, swing or related genres and want to perform for a discerning audience — fill in the form. We'll get back to you." },
     { blockType: 'artistForm', eyebrow: "Are you a musician? We'd love to work with you!", heading: 'CONTACT FORM', intro: 'Fill in the form and our team will get in touch with you about working together.' },
   ])
 

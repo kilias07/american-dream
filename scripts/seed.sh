@@ -28,8 +28,7 @@ VALUES (1, 'kamilkiliasinski@gmail.com',
 
 -- ── HEADER ──────────────────────────────────────────────────────────────────
 DELETE FROM header_social_links;
-DELETE FROM header_nav_items_right;
-DELETE FROM header_nav_items_left;
+DELETE FROM header_nav_items;
 DELETE FROM header_locales;
 DELETE FROM header;
 
@@ -41,9 +40,9 @@ INSERT INTO header_locales (_locale, _parent_id, top_bar_text) VALUES
   ('pl', 1, 'Welcome to American Dream Club – Jazz & Restaurant, Poznań'),
   ('en', 1, 'Welcome to American Dream Club – Jazz & Restaurant, Poznań');
 
-INSERT INTO header_nav_items_left (_order, _parent_id, id, link_type, link_url, link_label) VALUES
-  (1, 1, 'nav-l-1', 'custom', '/imprezy', 'IMPREZY'),
-  (2, 1, 'nav-l-2', 'custom', '/test', 'TEST');
+INSERT INTO header_nav_items (_order, _parent_id, id, link_type, link_url, link_label) VALUES
+  (1, 1, 'nav-1', 'custom', '/imprezy', 'IMPREZY'),
+  (2, 1, 'nav-2', 'custom', '/test', 'TEST');
 
 INSERT INTO header_social_links (_order, _parent_id, id, platform, url) VALUES
   (1, 1, 'social-1', 'facebook',  'https://facebook.com/americandreampoznan'),

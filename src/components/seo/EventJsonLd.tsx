@@ -30,7 +30,7 @@ export function EventJsonLd({ event, locale }: { event: Event; locale: string })
       address: {
         '@type': 'PostalAddress',
         streetAddress: 'ul. Dominikańska 9',
-        postalCode: '61-456',
+        postalCode: '61-762',
         addressLocality: 'Poznań',
         addressCountry: 'PL',
       },

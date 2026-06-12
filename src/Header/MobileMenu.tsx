@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { CMSLink } from '@/components/Link'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 
 type NavItem = {
   link: {
@@ -33,8 +34,7 @@ type CtaButton = {
 }
 
 type Props = {
-  navItemsLeft: NavItem[]
-  navItemsRight: NavItem[]
+  navItems: NavItem[]
   socialLinks: SocialLink[]
   ctaButton: CtaButton | null | undefined
   ctaEnabled: boolean | null | undefined
@@ -80,15 +80,14 @@ const SocialIconMobile = ({ platform }: { platform: string }) => {
 }
 
 export const MobileMenu: React.FC<Props> = ({
-  navItemsLeft,
-  navItemsRight,
+  navItems,
   socialLinks,
   ctaButton,
   ctaEnabled,
   locale,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const allNavItems = [...navItemsLeft, ...navItemsRight]
+  const allNavItems = navItems
 
   return (
     <div className="lg:hidden">
@@ -141,14 +140,12 @@ export const MobileMenu: React.FC<Props> = ({
 
         {/* Bottom section */}
         <div className="px-6 pb-8 pt-4 flex flex-col gap-5">
-          {/* CTA button */}
-          {ctaEnabled && ctaButton && (
+          {/* CTA button — opens the MyRest booking widget */}
+          {ctaEnabled && ctaButton?.label && (
             <div onClick={() => setIsOpen(false)}>
-              <CMSLink
-                {...(ctaButton as Parameters<typeof CMSLink>[0])}
-                locale={locale}
-                className="block text-center bg-brand-gold text-white px-6 py-3 rounded-full text-[12px] font-bold uppercase tracking-[0.06em] hover:bg-brand-gold-dark transition-colors"
-              />
+              <ReserveTrigger className="block w-full text-center bg-brand-gold text-white px-6 py-3 rounded-full text-[12px] font-bold uppercase tracking-[0.06em] hover:bg-brand-gold-dark transition-colors">
+                {ctaButton.label}
+              </ReserveTrigger>
             </div>
           )}
 

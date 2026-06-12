@@ -88,6 +88,12 @@ export async function EventsCalendarBlock({
   let events = allEvents
   if (eventsSource === 'manual' && manualEventIds.length > 0) {
     events = allEvents.filter((e) => manualEventIds.includes(String(e.id)))
+  } else {
+    // Auto mode: show every upcoming event except those an editor has explicitly
+    // hidden from the homepage teaser (showOnHomepage === false). Legacy events
+    // without the flag default to shown. Past events fall off on their own via the
+    // date-range filter below — no need to re-tick anything once an event is over.
+    events = allEvents.filter((e) => e.showOnHomepage !== false)
   }
 
   const occurrences = expandEvents(events, now, futureEnd).slice(0, Math.max(autoCount, 20))

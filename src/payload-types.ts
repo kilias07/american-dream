@@ -73,6 +73,7 @@ export interface Config {
     posts: Post;
     categories: Category;
     events: Event;
+    reservations: Reservation;
     musicians: Musician;
     'recurring-series': RecurringSery;
     'menu-categories': MenuCategory;
@@ -97,6 +98,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    reservations: ReservationsSelect<false> | ReservationsSelect<true>;
     musicians: MusiciansSelect<false> | MusiciansSelect<true>;
     'recurring-series': RecurringSeriesSelect<false> | RecurringSeriesSelect<true>;
     'menu-categories': MenuCategoriesSelect<false> | MenuCategoriesSelect<true>;
@@ -122,6 +124,7 @@ export interface Config {
     footer: Footer;
     'site-settings': SiteSetting;
     'opening-hours': OpeningHour;
+    'reservation-settings': ReservationSetting;
     legal: Legal;
   };
   globalsSelect: {
@@ -129,6 +132,7 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'opening-hours': OpeningHoursSelect<false> | OpeningHoursSelect<true>;
+    'reservation-settings': ReservationSettingsSelect<false> | ReservationSettingsSelect<true>;
     legal: LegalSelect<false> | LegalSelect<true>;
   };
   locale: 'en' | 'pl';
@@ -654,6 +658,7 @@ export interface MenuSectionBlock {
  */
 export interface SetMenuBlock {
   heading?: string | null;
+  subtitle?: string | null;
   dateLabel?: string | null;
   menus?:
     | {
@@ -680,6 +685,7 @@ export interface SetMenuBlock {
  */
 export interface PromoBandBlock {
   heading?: string | null;
+  subtitle?: string | null;
   body?: string | null;
   image?: (number | null) | Media;
   items?:
@@ -743,6 +749,10 @@ export interface Event {
    * Make this event available for manual teaser selection
    */
   featured?: boolean | null;
+  /**
+   * Show this event in the homepage "Nadchodzące wydarzenia" section. Ticked by default — untick to hide just this event there. Events drop off the section automatically once their date has passed.
+   */
+  showOnHomepage?: boolean | null;
   /**
    * Which room/strefa
    */
@@ -809,6 +819,42 @@ export interface Event {
    */
   showUpcoming?: boolean | null;
   upcomingHeading?: string | null;
+  /**
+   * Włącz rezerwacje online dla tego wydarzenia.
+   */
+  reservationsEnabled?: boolean | null;
+  /**
+   * Pojemność w osobach. Zostaw puste, aby użyć domyślnej z „Reservation Settings”; wpisz wartość, aby nadpisać dla tego wydarzenia. Limit jest MIĘKKI — online nie blokuje, przekroczenie widać w CMS.
+   */
+  capacity?: number | null;
+  /**
+   * Darmowy stolik od otwarcia do startu koncertu. Godziny podpowiadane z „Opening Hours” — nadpisywalne.
+   */
+  optionOpening?: {
+    enabled?: boolean | null;
+    startTime?: string | null;
+    endTime?: string | null;
+  };
+  /**
+   * Płatny bilet — obejmuje wcześniejsze przyjście (np. kolacja przed) oraz sam koncert.
+   */
+  optionConcert?: {
+    enabled?: boolean | null;
+    startTime?: string | null;
+    endTime?: string | null;
+    /**
+     * Cena biletu za osobę (PLN).
+     */
+    pricePerPerson?: number | null;
+  };
+  /**
+   * Darmowy stolik od końca koncertu do zamknięcia. Godziny podpowiadane z „Opening Hours” — nadpisywalne.
+   */
+  optionClub?: {
+    enabled?: boolean | null;
+    startTime?: string | null;
+    endTime?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1029,6 +1075,10 @@ export interface EventsCalendarBlock {
 export interface MusiciansGridBlock {
   eyebrow?: string | null;
   heading?: string | null;
+  /**
+   * Lead paragraph shown above the musicians grid.
+   */
+  intro?: string | null;
   /**
    * Optional — leave empty to show all by order
    */
@@ -1265,6 +1315,65 @@ export interface TestimonialsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'testimonials';
+}
+/**
+ * Rezerwacje stolików i biletów. Publiczny zapis idzie przez dedykowane route handlery (/api/reservations, /api/payu/notify), nie przez Payload REST. Limit pojemności jest miękki — online nie blokuje, przekroczenie widać tutaj.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservations".
+ */
+export interface Reservation {
+  id: number;
+  /**
+   * Auto-generowany: ADC-RRRRMM-NNNN (licznik resetuje się co miesiąc).
+   */
+  reservationNumber?: string | null;
+  event?: (number | null) | Event;
+  /**
+   * Snapshot daty/godziny wydarzenia (Europe/Warsaw).
+   */
+  date?: string | null;
+  option?: ('opening' | 'concert' | 'club') | null;
+  slotStart?: string | null;
+  slotEnd?: string | null;
+  /**
+   * Liczba osób.
+   */
+  guests?: number | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  /**
+   * Język rezerwacji — steruje językiem powiadomień (SMS/e-mail).
+   */
+  locale?: ('pl' | 'en') | null;
+  /**
+   * Regulamin + przetwarzanie danych do realizacji rezerwacji (wymagane).
+   */
+  consentTerms?: boolean | null;
+  /**
+   * Zgoda na newsletter (MailerLite).
+   */
+  consentNewsletter?: boolean | null;
+  status?: ('awaiting_payment' | 'awaiting_approval' | 'confirmed' | 'rejected' | 'cancelled' | 'abandoned') | null;
+  paymentStatus?: ('none' | 'pending' | 'paid' | 'refunded' | 'failed') | null;
+  /**
+   * Kwota w PLN = pricePerPerson × liczba osób (koncert), w pozostałych przypadkach 0.
+   */
+  amount?: number | null;
+  payuOrderId?: string | null;
+  payuRefundId?: string | null;
+  /**
+   * Notatka obsługi (wewnętrzna).
+   */
+  adminNote?: string | null;
+  /**
+   * Ustawiane przez cron retencji — dane osobowe (imię/nazwisko/telefon/e-mail) zostały zanonimizowane 12 miesięcy po wydarzeniu. Rekord pozostaje dla statystyk/księgowości (§7).
+   */
+  anonymizedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Categories that group menu items (e.g. Nikaragua, Przystawki, Koktajle).
@@ -1645,6 +1754,10 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
+        relationTo: 'reservations';
+        value: number | Reservation;
+      } | null)
+    | ({
         relationTo: 'musicians';
         value: number | Musician;
       } | null)
@@ -2020,6 +2133,7 @@ export interface MenuSectionBlockSelect<T extends boolean = true> {
  */
 export interface SetMenuBlockSelect<T extends boolean = true> {
   heading?: T;
+  subtitle?: T;
   dateLabel?: T;
   menus?:
     | T
@@ -2045,6 +2159,7 @@ export interface SetMenuBlockSelect<T extends boolean = true> {
  */
 export interface PromoBandBlockSelect<T extends boolean = true> {
   heading?: T;
+  subtitle?: T;
   body?: T;
   image?: T;
   items?:
@@ -2110,6 +2225,7 @@ export interface EventsCalendarBlockSelect<T extends boolean = true> {
 export interface MusiciansGridBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
+  intro?: T;
   musicians?: T;
   id?: T;
   blockName?: T;
@@ -2361,6 +2477,7 @@ export interface EventsSelect<T extends boolean = true> {
   endTime?: T;
   price?: T;
   featured?: T;
+  showOnHomepage?: T;
   room?: T;
   recurringSeries?: T;
   genres?: T;
@@ -2380,6 +2497,59 @@ export interface EventsSelect<T extends boolean = true> {
   shareLabel?: T;
   showUpcoming?: T;
   upcomingHeading?: T;
+  reservationsEnabled?: T;
+  capacity?: T;
+  optionOpening?:
+    | T
+    | {
+        enabled?: T;
+        startTime?: T;
+        endTime?: T;
+      };
+  optionConcert?:
+    | T
+    | {
+        enabled?: T;
+        startTime?: T;
+        endTime?: T;
+        pricePerPerson?: T;
+      };
+  optionClub?:
+    | T
+    | {
+        enabled?: T;
+        startTime?: T;
+        endTime?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservations_select".
+ */
+export interface ReservationsSelect<T extends boolean = true> {
+  reservationNumber?: T;
+  event?: T;
+  date?: T;
+  option?: T;
+  slotStart?: T;
+  slotEnd?: T;
+  guests?: T;
+  firstName?: T;
+  lastName?: T;
+  phone?: T;
+  email?: T;
+  locale?: T;
+  consentTerms?: T;
+  consentNewsletter?: T;
+  status?: T;
+  paymentStatus?: T;
+  amount?: T;
+  payuOrderId?: T;
+  payuRefundId?: T;
+  adminNote?: T;
+  anonymizedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2785,32 +2955,9 @@ export interface Header {
    */
   address?: string | null;
   /**
-   * Navigation links shown to the left of the logo
+   * Navigation links shown in the header
    */
-  navItemsLeft?:
-    | {
-        link?: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label?: string | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Navigation links shown to the right of the logo
-   */
-  navItemsRight?:
+  navItems?:
     | {
         link?: {
           type?: ('reference' | 'custom') | null;
@@ -2954,13 +3101,109 @@ export interface OpeningHour {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservation-settings".
+ */
+export interface ReservationSetting {
+  id: number;
+  /**
+   * Domyślna pojemność w osobach. Używana, gdy wydarzenie nie ma własnej pojemności. Limit MIĘKKI.
+   */
+  defaultCapacity?: number | null;
+  /**
+   * Odbiorca powiadomień o nowych rezerwacjach (obsługa).
+   */
+  notificationEmail?: string | null;
+  /**
+   * E-mail kontaktowy podawany klientom (np. przy anulacji).
+   */
+  contactEmail?: string | null;
+  /**
+   * Telefon kontaktowy podawany klientom (np. przy anulacji).
+   */
+  contactPhone?: string | null;
+  /**
+   * Dwujęzyczne teksty pokazywane w kreatorze rezerwacji i na ekranach statusu. Przełącz locale (PL/EN) w prawym górnym rogu, aby edytować drugą wersję.
+   */
+  texts?: {
+    /**
+     * Opis opcji „Otwarcie wieczoru” (semantyka czasu).
+     */
+    openingInfo?: string | null;
+    /**
+     * Opis opcji „Koncert” (semantyka czasu).
+     */
+    concertInfo?: string | null;
+    /**
+     * Opis opcji „Wieczór klubowy” (semantyka czasu).
+     */
+    clubInfo?: string | null;
+    /**
+     * Ekran po wysłaniu darmowej rezerwacji (oczekuje na zatwierdzenie).
+     */
+    freePendingMessage?: string | null;
+    /**
+     * Ekran po opłaceniu (czeka na potwierdzenie obsługi).
+     */
+    paidAcceptedMessage?: string | null;
+    /**
+     * Ostrzeżenie przy zamykaniu popupu po wpisaniu danych.
+     */
+    closeWarning?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "legal".
  */
 export interface Legal {
   id: number;
-  regulamin?: string | null;
-  privacy?: string | null;
-  companyData?: string | null;
+  regulamin?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  privacy?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  companyData?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   age21Notice?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -2974,21 +3217,7 @@ export interface HeaderSelect<T extends boolean = true> {
   topBarText?: T;
   phone?: T;
   address?: T;
-  navItemsLeft?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-            };
-        id?: T;
-      };
-  navItemsRight?:
+  navItems?:
     | T
     | {
         link?:
@@ -3104,6 +3333,29 @@ export interface OpeningHoursSelect<T extends boolean = true> {
         openTime?: T;
         closeTime?: T;
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservation-settings_select".
+ */
+export interface ReservationSettingsSelect<T extends boolean = true> {
+  defaultCapacity?: T;
+  notificationEmail?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  texts?:
+    | T
+    | {
+        openingInfo?: T;
+        concertInfo?: T;
+        clubInfo?: T;
+        freePendingMessage?: T;
+        paidAcceptedMessage?: T;
+        closeWarning?: T;
       };
   updatedAt?: T;
   createdAt?: T;

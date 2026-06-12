@@ -2,6 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { PromoBandBlock as PromoBandBlockType, Media } from '@/payload-types'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { isReservationUrl } from '@/lib/reservation-url'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -14,7 +16,7 @@ export function PromoBandBlock({
   block: PromoBandBlockType
   locale: string
 }) {
-  const { heading, body, image, items, ctaLabel, ctaUrl, style } = block
+  const { heading, subtitle, body, image, items, ctaLabel, ctaUrl, style } = block
 
   if (!heading && !body && !items?.length && !ctaLabel) return null
 
@@ -49,6 +51,16 @@ export function PromoBandBlock({
           <div className={media?.url ? '' : 'md:col-span-2 max-w-2xl'}>
             {heading && (
               <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4">{heading}</h2>
+            )}
+
+            {subtitle && (
+              <p
+                className={`text-sm font-bold uppercase tracking-[0.12em] mb-4 ${
+                  isGold ? 'text-brand-navy/70' : 'text-brand-gold'
+                }`}
+              >
+                {subtitle}
+              </p>
             )}
 
             {body && (
@@ -89,18 +101,23 @@ export function PromoBandBlock({
               </ul>
             )}
 
-            {ctaLabel && ctaHref && (
-              <Link
-                href={ctaHref}
-                className={`inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full transition-colors ${
+            {ctaLabel &&
+              ctaHref &&
+              (() => {
+                const ctaClass = `inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full transition-colors ${
                   isGold
                     ? 'bg-brand-navy text-white hover:bg-brand-navy-royal'
                     : 'bg-brand-gold text-brand-navy hover:bg-brand-gold-dark'
-                }`}
-              >
-                {ctaLabel}
-              </Link>
-            )}
+                }`
+                // Reservation CTAs open the MyRest widget; other links navigate normally.
+                return isReservationUrl(ctaUrl) ? (
+                  <ReserveTrigger className={ctaClass}>{ctaLabel}</ReserveTrigger>
+                ) : (
+                  <Link href={ctaHref} className={ctaClass}>
+                    {ctaLabel}
+                  </Link>
+                )
+              })()}
           </div>
         </div>
       </div>

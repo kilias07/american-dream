@@ -1,8 +1,8 @@
 'use client'
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 
 export type TeaserEventCard = {
   id: number
@@ -11,7 +11,7 @@ export type TeaserEventCard = {
   endTime: string | null
   price: number | null
   image: { url: string; alt: string } | null
-  ticketUrl: string
+  ticketUrl: string | null
 }
 
 type Props = {
@@ -70,14 +70,12 @@ function EventCard({ card, locale }: { card: TeaserEventCard; locale: string }) 
           {card.price != null && <span>{card.price} PLN</span>}
         </div>
 
-        <Link
-          href={card.ticketUrl}
-          target={card.ticketUrl.startsWith('http') ? '_blank' : undefined}
-          rel={card.ticketUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+        <ReserveTrigger
+          ticketUrl={card.ticketUrl}
           className="inline-flex items-center gap-1 bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-brand-gold-dark transition-colors"
         >
           {ticketsLabel}
-        </Link>
+        </ReserveTrigger>
       </div>
     </div>
   )

@@ -7,7 +7,7 @@ export function SetMenuBlock({
   block: SetMenuBlockType
   locale: string
 }) {
-  const { heading, dateLabel, menus } = block
+  const { heading, subtitle, dateLabel, menus } = block
 
   if (!heading && !menus?.length) return null
 
@@ -18,6 +18,9 @@ export function SetMenuBlock({
         <div className="text-center mb-10">
           {heading && (
             <h2 className="font-serif text-white text-3xl md:text-5xl leading-tight">{heading}</h2>
+          )}
+          {subtitle && (
+            <p className="text-white/70 text-sm md:text-base mt-3">{subtitle}</p>
           )}
           {dateLabel && (
             <span className="inline-flex items-center mt-4 bg-brand-gold text-brand-navy text-sm font-bold uppercase tracking-[0.12em] px-4 py-1.5 rounded-full">

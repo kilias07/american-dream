@@ -3,6 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Media, Page } from '@/payload-types'
 import { CMSLink } from '@/components/Link'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { isReservationUrl } from '@/lib/reservation-url'
 import { Logo } from '@/Header/Logo'
 
 type HeroBannerData = Extract<NonNullable<Page['layout']>[number], { blockType: 'heroBanner' }>
@@ -126,16 +128,23 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
           </div>
         )}
 
-        {/* CTA gold button */}
-        {ctaLink?.label && (
-          <CMSLink
-            {...ctaLink}
-            locale={locale}
-            className="inline-flex items-center gap-2.5 bg-brand-gold text-white px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-brand-gold-dark transition-colors shadow-lg"
-          >
-            {ctaIcon && ctaIcon !== 'none' && <IconMap icon={ctaIcon} />}
-          </CMSLink>
-        )}
+        {/* CTA gold button — reservation CTAs open the MyRest widget; any other
+            configured link keeps its normal navigation behaviour. */}
+        {ctaLink?.label &&
+          (isReservationUrl(ctaLink.url) ? (
+            <ReserveTrigger className="inline-flex items-center gap-2.5 bg-brand-gold text-white px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-brand-gold-dark transition-colors shadow-lg">
+              {ctaLink.label}
+              {ctaIcon && ctaIcon !== 'none' && <IconMap icon={ctaIcon} />}
+            </ReserveTrigger>
+          ) : (
+            <CMSLink
+              {...ctaLink}
+              locale={locale}
+              className="inline-flex items-center gap-2.5 bg-brand-gold text-white px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-brand-gold-dark transition-colors shadow-lg"
+            >
+              {ctaIcon && ctaIcon !== 'none' && <IconMap icon={ctaIcon} />}
+            </CMSLink>
+          ))}
       </div>
     </section>
   )

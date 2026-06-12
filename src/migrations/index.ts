@@ -5,6 +5,12 @@ import * as migration_20260607_175554_add_event_detail_sections from './20260607
 import * as migration_20260607_201349_add_musician_bio_page from './20260607_201349_add_musician_bio_page';
 import * as migration_20260608_053135_sync_schema_drift from './20260608_053135_sync_schema_drift';
 import * as migration_20260608_062039_add_hero_background_video from './20260608_062039_add_hero_background_video';
+import * as migration_20260608_120923_add_show_on_homepage from './20260608_120923_add_show_on_homepage';
+import * as migration_20260608_132940_reservations from './20260608_132940_reservations';
+import * as migration_20260608_133322_reservation_settings from './20260608_133322_reservation_settings';
+import * as migration_20260608_143009_add_reservation_anonymized_at from './20260608_143009_add_reservation_anonymized_at';
+import * as migration_20260608_150000_merge_header_nav_items from './20260608_150000_merge_header_nav_items';
+import * as migration_20260612_084523_add_block_text_fields from './20260612_084523_add_block_text_fields';
 
 export const migrations = [
   {
@@ -40,6 +46,36 @@ export const migrations = [
   {
     up: migration_20260608_062039_add_hero_background_video.up,
     down: migration_20260608_062039_add_hero_background_video.down,
-    name: '20260608_062039_add_hero_background_video'
+    name: '20260608_062039_add_hero_background_video',
+  },
+  {
+    up: migration_20260608_120923_add_show_on_homepage.up,
+    down: migration_20260608_120923_add_show_on_homepage.down,
+    name: '20260608_120923_add_show_on_homepage',
+  },
+  {
+    up: migration_20260608_132940_reservations.up,
+    down: migration_20260608_132940_reservations.down,
+    name: '20260608_132940_reservations',
+  },
+  {
+    up: migration_20260608_133322_reservation_settings.up,
+    down: migration_20260608_133322_reservation_settings.down,
+    name: '20260608_133322_reservation_settings',
+  },
+  {
+    up: migration_20260608_143009_add_reservation_anonymized_at.up,
+    down: migration_20260608_143009_add_reservation_anonymized_at.down,
+    name: '20260608_143009_add_reservation_anonymized_at',
+  },
+  {
+    up: migration_20260608_150000_merge_header_nav_items.up,
+    down: migration_20260608_150000_merge_header_nav_items.down,
+    name: '20260608_150000_merge_header_nav_items',
+  },
+  {
+    up: migration_20260612_084523_add_block_text_fields.up,
+    down: migration_20260612_084523_add_block_text_fields.down,
+    name: '20260612_084523_add_block_text_fields'
   },
 ];

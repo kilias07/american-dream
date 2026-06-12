@@ -42,16 +42,14 @@ export async function SpecialEventsBlock({
       .map((p) => (isMusician(p.musician) ? p.musician.name : null))
       .filter((n): n is string => Boolean(n))
 
-    const fallbackReserve = `/${locale}/program/${event.id}`
-    const reserveUrl = event.ticketUrl || event.reservationUrl || fallbackReserve
-
     return {
       id: event.id,
       title: event.title ?? '',
       performers,
       dateISO: event.date ?? null,
       image: poster?.url ? { url: poster.url, alt: poster.alt || event.title || '' } : null,
-      reserveUrl,
+      // Only a real external ticket URL links out; otherwise the CTA opens MyRest.
+      ticketUrl: event.ticketUrl ?? null,
     }
   })
 

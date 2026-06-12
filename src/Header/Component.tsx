@@ -7,6 +7,7 @@ import { unstable_cache } from 'next/cache'
 import type { Header } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { CMSLink } from '@/components/Link'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { MobileMenu } from './MobileMenu'
 import { Logo } from './Logo'
 import { HeaderShell } from './HeaderShell'
@@ -94,14 +95,12 @@ export async function Header({ locale }: { locale: Locale }) {
     topBarText,
     phone,
     address,
-    navItemsLeft,
-    navItemsRight,
+    navItems,
     ctaButton,
     ctaEnabled,
   } = header || {}
 
-  // Połącz obie listy nav w jedną do wyświetlenia w środku
-  const allNavItems = [...(navItemsLeft || []), ...(navItemsRight || [])]
+  const allNavItems = navItems || []
 
   return (
     <HeaderShell
@@ -216,13 +215,11 @@ export async function Header({ locale }: { locale: Locale }) {
               </Link>
             </div>
 
-            {/* CTA — "Zarezerwuj" */}
-            {ctaEnabled && ctaButton && (
-              <CMSLink
-                {...ctaButton}
-                locale={locale}
-                className="bg-brand-gold text-brand-navy px-3.5 xl:px-5 py-2.5 rounded-full text-[11px] xl:text-[12px] font-bold uppercase tracking-[0.02em] xl:tracking-[0.06em] hover:brightness-110 transition-all whitespace-nowrap"
-              />
+            {/* CTA — "Zarezerwuj" → opens the MyRest booking widget */}
+            {ctaEnabled && ctaButton?.label && (
+              <ReserveTrigger className="bg-brand-gold text-brand-navy px-3.5 xl:px-5 py-2.5 rounded-full text-[11px] xl:text-[12px] font-bold uppercase tracking-[0.02em] xl:tracking-[0.06em] hover:brightness-110 transition-all whitespace-nowrap">
+                {ctaButton.label}
+              </ReserveTrigger>
             )}
           </div>
         </div>
@@ -233,8 +230,7 @@ export async function Header({ locale }: { locale: Locale }) {
             <Logo className="h-14 w-auto" />
           </Link>
           <MobileMenu
-            navItemsLeft={(navItemsLeft as Parameters<typeof MobileMenu>[0]['navItemsLeft']) || []}
-            navItemsRight={(navItemsRight as Parameters<typeof MobileMenu>[0]['navItemsRight']) || []}
+            navItems={(navItems as Parameters<typeof MobileMenu>[0]['navItems']) || []}
             socialLinks={(socialLinks as Parameters<typeof MobileMenu>[0]['socialLinks']) || []}
             ctaButton={ctaButton as Parameters<typeof MobileMenu>[0]['ctaButton']}
             ctaEnabled={ctaEnabled}

@@ -67,8 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Metropolis (body) is self-hosted — preload the primary weight to cut
             FOUT on first paint. Playfair Display (display headings) is loaded from
-            Google Fonts. Bank Gothic is self-hosted via @font-face in globals.css
-            and applied only where the `.font-display` class is explicitly used. */}
+            Google Fonts. */}
         <link
           rel="preload"
           as="font"

@@ -64,7 +64,7 @@ export async function RestaurantJsonLd() {
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'ul. Dominikańska 9',
-      postalCode: '61-456',
+      postalCode: '61-762',
       addressLocality: 'Poznań',
       addressCountry: 'PL',
     },

@@ -21,6 +21,14 @@ export const MusiciansGrid: Block = {
       },
     },
     {
+      name: 'intro',
+      type: 'textarea',
+      localized: true,
+      admin: {
+        description: 'Lead paragraph shown above the musicians grid.',
+      },
+    },
+    {
       name: 'musicians',
       type: 'relationship',
       relationTo: 'musicians',

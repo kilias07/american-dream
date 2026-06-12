@@ -40,27 +40,13 @@ export const Header: GlobalConfig = {
     // Social media links live in the "Site Settings" global (single source of
     // truth). The header reads them from there — edit them once, updates
     // everywhere (header, mobile menu, footer, SEO).
-    // Left navigation (before logo)
+    // Navigation links (logo sits on the left, links render after it)
     {
-      name: 'navItemsLeft',
+      name: 'navItems',
       type: 'array',
-      maxRows: 4,
+      maxRows: 8,
       admin: {
-        description: 'Navigation links shown to the left of the logo',
-        initCollapsed: true,
-        components: {
-          RowLabel: '@/globals/Header/RowLabel#RowLabel',
-        },
-      },
-      fields: [link({ appearances: false })],
-    },
-    // Right navigation (after logo)
-    {
-      name: 'navItemsRight',
-      type: 'array',
-      maxRows: 4,
-      admin: {
-        description: 'Navigation links shown to the right of the logo',
+        description: 'Navigation links shown in the header',
         initCollapsed: true,
         components: {
           RowLabel: '@/globals/Header/RowLabel#RowLabel',
