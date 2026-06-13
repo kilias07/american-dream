@@ -1,8 +1,9 @@
 import { renderHome, homeMetadata } from '@/views/HomeView'
 
-// ISR safety net (mirrors original [locale]/page.tsx). Tag invalidation
-// ('page-home' / 'pages') is the primary revalidation path.
-export const revalidate = 3600
+// Render at request time against the live D1 binding. On Cloudflare/OpenNext the
+// build-time D1 returns an empty result for this no-param prerender, which would
+// bake an empty home page; force-dynamic reads the real data per request.
+export const dynamic = 'force-dynamic'
 
 export default async function Page() {
   return renderHome('pl')
