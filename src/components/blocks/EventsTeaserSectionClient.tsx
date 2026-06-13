@@ -71,7 +71,7 @@ function EventCard({ card, locale }: { card: TeaserEventCard; locale: string }) 
         </div>
 
         <ReserveTrigger
-          ticketUrl={card.ticketUrl}
+          date={card.dateISO}
           className="inline-flex items-center gap-1 bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-brand-gold-dark transition-colors"
         >
           {ticketsLabel}

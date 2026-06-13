@@ -66,7 +66,7 @@ function PosterCard({ card, locale }: { card: SpecialEventCard; locale: string }
           <p className="text-white/70 text-sm leading-snug mb-4">{card.performers.join(', ')}</p>
         )}
         <ReserveTrigger
-          ticketUrl={card.ticketUrl}
+          date={card.dateISO}
           className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
         >
           {reserveLabel}

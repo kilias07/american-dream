@@ -2,6 +2,8 @@
 
 import React, { useEffect } from 'react'
 
+import { warsawDayKey } from '@/lib/recurring-events'
+
 // American Dream Club's MyRest restaurant-reservation code (cn). The remote
 // integration script wires up the booking modal (an iframe to widget.myrest.io)
 // and defines window.mrOpen(). Its own injected floating button is hidden via CSS
@@ -35,37 +37,35 @@ export function MyRestWidget(): React.ReactNode {
   return null
 }
 
-function openMyRest() {
+function openMyRest(date?: string) {
   if (typeof window !== 'undefined' && typeof window.mrOpen === 'function') {
-    window.mrOpen()
+    // MyRest's mrOpen accepts { date: 'YYYY-MM-DD' } and pre-selects that night
+    // in the booking widget; called without it, it opens the generic table flow.
+    window.mrOpen(date ? { date } : undefined)
   }
 }
 
 type ReserveTriggerProps = {
   /**
-   * Real external ticket URL (http…). When present, the CTA links out to buy
-   * tickets; otherwise it opens the MyRest table-reservation widget.
+   * Event date — an ISO instant (e.g. `event.date`) or `YYYY-MM-DD`. When set,
+   * the widget opens pre-selected to that night (Europe/Warsaw day, matching the
+   * date shown on the calendar). Omitted → the generic "book a table" flow.
    */
-  ticketUrl?: string | null
+  date?: string | null
   className?: string
   children: React.ReactNode
 }
 
 /**
- * Booking CTA used across the site. Opens the MyRest widget, except for events
- * that sell tickets through an external vendor (a real http ticket URL), which
- * keep linking out.
+ * The single booking CTA used across the whole site. Always opens the MyRest
+ * widget (the same system as the old site, cn=podpa2t) — generic when date-less,
+ * pre-selected to the event's night when a `date` is passed. We intentionally do
+ * NOT link out to any other ticketing system.
  */
-export function ReserveTrigger({ ticketUrl, className, children }: ReserveTriggerProps) {
-  if (ticketUrl && /^https?:\/\//.test(ticketUrl)) {
-    return (
-      <a href={ticketUrl} target="_blank" rel="noopener noreferrer" className={className}>
-        {children}
-      </a>
-    )
-  }
+export function ReserveTrigger({ date, className, children }: ReserveTriggerProps) {
+  const dayKey = date ? warsawDayKey(date) : undefined
   return (
-    <button type="button" onClick={openMyRest} className={className}>
+    <button type="button" onClick={() => openMyRest(dayKey)} className={className}>
       {children}
     </button>
   )

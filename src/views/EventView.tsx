@@ -104,17 +104,10 @@ export async function renderEvent(slug: string, locale: Locale) {
   const performers = (event.performers ?? []).filter((p) => isMusician(p.musician))
   const isSpecial = event.eventType === 'special'
 
-  // Reservation CTA: concerts that sell tickets through an external vendor keep
-  // their "Kup bilet" link (handled by ReserveTrigger when `ticketUrl` is a real
-  // http URL); everything else opens the MyRest table-booking widget.
-  const concertOn = Boolean(event.optionConcert?.enabled)
-  const ctaLabel = concertOn
-    ? locale === 'pl'
-      ? 'Kup bilet'
-      : 'Buy ticket'
-    : locale === 'pl'
-      ? 'Zarezerwuj stolik'
-      : 'Reserve a table'
+  // Every reservation CTA opens the MyRest widget (the old site's only booking
+  // system) — pre-selected to this event's night. We don't push any separate
+  // ticket vendor, so the label is always the table-reservation wording.
+  const ctaLabel = locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'
   const ctaClass =
     'inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-gold-dark transition-colors'
 
@@ -177,7 +170,7 @@ export async function renderEvent(slug: string, locale: Locale) {
             {event.price != null && (
               <span className="text-2xl font-bold text-white">{event.price} PLN</span>
             )}
-            <ReserveTrigger ticketUrl={event.ticketUrl} className={ctaClass}>
+            <ReserveTrigger date={event.date} className={ctaClass}>
               {ctaLabel}
             </ReserveTrigger>
             {event.date && (

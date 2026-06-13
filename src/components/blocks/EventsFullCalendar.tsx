@@ -331,7 +331,7 @@ function EventPopover({
 
           <div className="flex flex-wrap items-center gap-2">
             <ReserveTrigger
-              ticketUrl={occ.ticketUrl}
+              date={occ.dateISO}
               className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.1em] px-4 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
             >
               {reserveLabel}

@@ -117,13 +117,10 @@ function PhaseCard({
         )}
 
         <div className="flex flex-wrap gap-3">
-          {/* Primary CTA is the "reserve a table" action → opens the MyRest widget
-              (an external http ticket URL would still link out). */}
+          {/* Primary CTA is the date-less "reserve a table" action → opens the
+              generic MyRest table-booking flow (no specific night pre-selected). */}
           {phase.primaryCtaLabel && phase.primaryCtaUrl && (
-            <ReserveTrigger
-              ticketUrl={phase.primaryCtaUrl}
-              className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
-            >
+            <ReserveTrigger className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors">
               {phase.primaryCtaLabel}
             </ReserveTrigger>
           )}
