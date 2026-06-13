@@ -84,10 +84,13 @@ export function cloudflareEmailAdapter(opts: {
         return { skipped: true }
       }
 
-      // `cloudflare:email` is a workerd built-in — dynamic import keeps the
-      // bundler from trying to resolve it at build time.
+      // `cloudflare:email` is a workerd built-in. Build the specifier from parts
+      // so neither webpack NOR OpenNext's esbuild pass can statically resolve it
+      // at bundle time (a string literal makes esbuild error: "Could not resolve
+      // cloudflare:email"). At runtime workerd resolves it normally.
+      const cfEmailSpecifier = ['cloudflare', 'email'].join(':')
       const { EmailMessage } = (await import(
-        /* webpackIgnore: true */ 'cloudflare:email'
+        /* webpackIgnore: true */ /* @vite-ignore */ cfEmailSpecifier
       )) as { EmailMessage: new (from: string, to: string, raw: string) => unknown }
 
       for (const to of recipients) {

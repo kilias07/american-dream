@@ -32,6 +32,11 @@ const STATIC_SLUGS = [
  * Build the `alternates.languages` map for a given path suffix (without the
  * leading locale segment). PL is unprefixed (default), EN lives under `/en`.
  */
+// Render at request time against the live worker's D1 binding. Prerendering at
+// build time yields an empty dynamic section (build-time D1 has no rows for the
+// projected query), so the event/news/series URLs would be missing.
+export const dynamic = 'force-dynamic'
+
 function languageAlternates(pathAfterLocale: string): Record<string, string> {
   return {
     ...Object.fromEntries(locales.map((locale) => [locale, localeUrl(locale, pathAfterLocale)])),
@@ -57,55 +62,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...STATIC_SLUGS.flatMap((slug) => entry(slug)),
   ]
 
+  let payload
   try {
-    const payload = await getPayload({ config: configPromise })
-
-    const [posts, events, series] = await Promise.all([
-      payload.find({
-        collection: 'posts',
-        where: { _status: { equals: 'published' } },
-        pagination: false,
-        depth: 0,
-        select: { slug: true, updatedAt: true },
-      }),
-      payload.find({
-        collection: 'events',
-        pagination: false,
-        depth: 0,
-        select: { slug: true, updatedAt: true },
-      }),
-      payload.find({
-        collection: 'recurring-series',
-        pagination: false,
-        depth: 0,
-        select: { slug: true, updatedAt: true },
-      }),
-    ])
-
-    const postEntries = posts.docs
-      .filter((p) => p.slug)
-      .flatMap((p) =>
-        entry(`news/${p.slug}`, p.updatedAt ? new Date(p.updatedAt) : undefined),
-      )
-
-    const eventEntries = events.docs
-      .filter((ev) => ev.slug)
-      .flatMap((ev) =>
-        entry(`events/${ev.slug}`, ev.updatedAt ? new Date(ev.updatedAt) : undefined),
-      )
-
-    const seriesEntries = series.docs
-      .filter((s) => s.slug)
-      .flatMap((s) =>
-        entry(
-          `wydarzenia-cykliczne/${s.slug}`,
-          s.updatedAt ? new Date(s.updatedAt) : undefined,
-        ),
-      )
-
-    return [...staticEntries, ...postEntries, ...eventEntries, ...seriesEntries]
+    payload = await getPayload({ config: configPromise })
   } catch {
     // DB unavailable (e.g. at build time with ephemeral D1) — serve static routes only.
     return staticEntries
   }
+
+  // Query each collection independently so a single failing read (e.g. a row
+  // with legacy/drifted data) only drops that collection's entries instead of
+  // collapsing the whole dynamic section to the static fallback.
+  type Doc = { slug?: string | null; updatedAt?: string | null }
+  const safeFind = async (
+    collection: 'posts' | 'events' | 'recurring-series',
+    where?: Record<string, unknown>,
+  ): Promise<Doc[]> => {
+    try {
+      const res = await payload.find({
+        collection,
+        ...(where ? { where } : {}),
+        pagination: false,
+        depth: 0,
+        select: { slug: true, updatedAt: true },
+      })
+      return res.docs as Doc[]
+    } catch {
+      return []
+    }
+  }
+
+  const [posts, events, series] = await Promise.all([
+    safeFind('posts', { _status: { equals: 'published' } }),
+    safeFind('events'),
+    safeFind('recurring-series'),
+  ])
+
+  const toEntries = (docs: Doc[], prefix: string): MetadataRoute.Sitemap =>
+    docs
+      .filter((d) => d.slug)
+      .flatMap((d) => entry(`${prefix}/${d.slug}`, d.updatedAt ? new Date(d.updatedAt) : undefined))
+
+  return [
+    ...staticEntries,
+    ...toEntries(posts, 'news'),
+    ...toEntries(events, 'events'),
+    ...toEntries(series, 'wydarzenia-cykliczne'),
+  ]
 }
