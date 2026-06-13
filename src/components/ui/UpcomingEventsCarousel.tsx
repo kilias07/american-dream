@@ -20,7 +20,7 @@ function EventCard({ card }: { card: UpcomingCard }) {
     <Link
       href={card.href}
       data-card
-      className="group relative flex-shrink-0 w-[68vw] sm:w-[300px] rounded-xl overflow-hidden bg-brand-navy"
+      className="group relative flex-shrink-0 w-[68vw] sm:w-[300px] snap-start rounded-xl overflow-hidden bg-brand-navy"
       style={{ minHeight: 340 }}
     >
       {card.image?.url ? (
@@ -52,6 +52,11 @@ export function UpcomingEventsCarousel({ cards }: Props) {
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  // Number of reachable scroll stops ("pages"), derived from how far the track
+  // can actually scroll — NOT the number of cards. With several cards visible at
+  // once the last cards share the final scroll position, so one-dot-per-card left
+  // trailing dots permanently inactive. We size the dots to the real stops.
+  const [pageCount, setPageCount] = useState(1)
 
   const stepSize = useCallback(() => {
     const el = trackRef.current
@@ -63,9 +68,13 @@ export function UpcomingEventsCarousel({ cards }: Props) {
   const updateState = useCallback(() => {
     const el = trackRef.current
     if (!el) return
+    const step = stepSize()
+    const maxScroll = el.scrollWidth - el.clientWidth
     setCanPrev(el.scrollLeft > 4)
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
-    setActiveIndex(Math.round(el.scrollLeft / stepSize()))
+    setCanNext(el.scrollLeft < maxScroll - 4)
+    const pages = maxScroll <= 4 ? 1 : Math.ceil(maxScroll / step) + 1
+    setPageCount(pages)
+    setActiveIndex(Math.min(pages - 1, Math.round(el.scrollLeft / step)))
   }, [stepSize])
 
   useEffect(() => {
@@ -84,6 +93,13 @@ export function UpcomingEventsCarousel({ cards }: Props) {
     trackRef.current?.scrollBy({ left: dir * stepSize(), behavior: 'smooth' })
   }
 
+  const goToPage = (i: number) => {
+    const el = trackRef.current
+    if (!el) return
+    const maxScroll = el.scrollWidth - el.clientWidth
+    el.scrollTo({ left: Math.min(i * stepSize(), maxScroll), behavior: 'smooth' })
+  }
+
   return (
     <div>
       <div className="relative flex items-center gap-3">
@@ -100,7 +116,7 @@ export function UpcomingEventsCarousel({ cards }: Props) {
 
         <div
           ref={trackRef}
-          className="overflow-x-auto flex-1 pb-1"
+          className="overflow-x-auto flex-1 pb-1 snap-x snap-mandatory"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
         >
           <div className="flex gap-4">
@@ -122,12 +138,16 @@ export function UpcomingEventsCarousel({ cards }: Props) {
         </button>
       </div>
 
-      {cards.length > 1 && (
+      {pageCount > 1 && (
         <div className="flex justify-center gap-2 mt-6">
-          {cards.map((card, i) => (
-            <span
-              key={card.id}
-              className={`h-2 rounded-full transition-all ${i === activeIndex ? 'w-6 bg-brand-gold' : 'w-2 bg-white/30'}`}
+          {Array.from({ length: pageCount }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goToPage(i)}
+              aria-label={`Przejdź do pozycji ${i + 1}`}
+              aria-current={i === activeIndex}
+              className={`h-2 rounded-full transition-all ${i === activeIndex ? 'w-6 bg-brand-gold' : 'w-2 bg-white/30 hover:bg-white/50'}`}
             />
           ))}
         </div>
