@@ -1,29 +1,32 @@
 import { type Locale } from '@/config/locales'
 import { localizedAlternates } from '@/utilities/seo'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
-import { getReservationDict } from '@/components/reservations/dictionary'
+import { ReserveTrigger, AutoOpenMyRest } from '@/components/reservations/MyRest'
 
-const COPY: Record<Locale, { title: string; lead: string; cta: string }> = {
+const COPY: Record<Locale, { title: string; lead: string; cta: string; phone: string }> = {
   pl: {
     title: 'Rezerwacje',
-    lead: 'Zarezerwuj stolik na otwarcie wieczoru, kup bilet na koncert lub dołącz na wieczór klubowy. Wybierz opcję, termin i liczbę osób — resztą zajmiemy się my.',
-    cta: 'Rozpocznij rezerwację',
+    lead: 'Zarezerwuj stolik w American Dream Club. Okno rezerwacji otworzy się automatycznie — jeśli nie, kliknij przycisk poniżej.',
+    cta: 'Zarezerwuj stolik',
+    phone: 'Wolisz telefonicznie? Zadzwoń:',
   },
   en: {
     title: 'Reservations',
-    lead: 'Book a table for the evening opening, buy a concert ticket, or join us for a club night. Pick an option, a date and the number of guests — we will handle the rest.',
-    cta: 'Start a reservation',
+    lead: 'Book a table at American Dream Club. The booking window opens automatically — if it does not, use the button below.',
+    cta: 'Reserve a table',
+    phone: 'Prefer to call? Phone:',
   },
 }
 
 export async function renderReservation(locale: Locale) {
   const c = COPY[locale]
-  const dict = getReservationDict(locale)
 
   return (
     <div className="bg-brand-navy text-white min-h-screen">
+      {/* Booking runs entirely through the MyRest widget (the same system as the
+          old site). The page opens it on load and offers a manual trigger. */}
+      <AutoOpenMyRest />
       <section className="pt-36 md:pt-44 pb-20 md:pb-28">
-        <div className="max-w-[760px] mx-auto px-6 text-center">
+        <div className="max-w-[640px] mx-auto px-6 text-center">
           <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight">{c.title}</h1>
           <p className="mt-6 text-white/75 leading-relaxed">{c.lead}</p>
 
@@ -33,14 +36,12 @@ export async function renderReservation(locale: Locale) {
             </ReserveTrigger>
           </div>
 
-          <div className="mt-14 grid gap-4 sm:grid-cols-3 text-left">
-            {(['opening', 'concert', 'club'] as const).map((key) => (
-              <div key={key} className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-                <h3 className="font-semibold">{dict.options[key].label}</h3>
-                <p className="mt-2 text-sm text-white/60">{dict.options[key].info}</p>
-              </div>
-            ))}
-          </div>
+          <p className="mt-10 text-sm text-white/60">
+            {c.phone}{' '}
+            <a href="tel:+48500210333" className="text-brand-gold hover:underline">
+              +48 500 210 333
+            </a>
+          </p>
         </div>
       </section>
     </div>

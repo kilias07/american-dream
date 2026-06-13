@@ -45,6 +45,29 @@ function openMyRest(date?: string) {
   }
 }
 
+/**
+ * Opens the MyRest widget automatically once it has loaded. Used on the dedicated
+ * `/rezerwacja` page so landing there brings up the MyRest booking app directly
+ * (the old, custom reservation system is fully retired). Polls briefly because the
+ * integration script that defines `window.mrOpen` loads asynchronously.
+ */
+export function AutoOpenMyRest(): React.ReactNode {
+  useEffect(() => {
+    let tries = 0
+    const id = window.setInterval(() => {
+      tries += 1
+      if (typeof window.mrOpen === 'function') {
+        window.mrOpen()
+        window.clearInterval(id)
+      } else if (tries > 40) {
+        window.clearInterval(id) // give up after ~6s
+      }
+    }, 150)
+    return () => window.clearInterval(id)
+  }, [])
+  return null
+}
+
 type ReserveTriggerProps = {
   /**
    * Event date — an ISO instant (e.g. `event.date`) or `YYYY-MM-DD`. When set,
