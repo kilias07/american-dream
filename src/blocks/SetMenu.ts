@@ -24,6 +24,14 @@ export const SetMenu: Block = {
       },
     },
     {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Optional photo shown beside the heading/intro.',
+      },
+    },
+    {
       name: 'dateLabel',
       type: 'text',
       admin: {

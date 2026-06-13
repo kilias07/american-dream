@@ -47,6 +47,9 @@ export function NewsletterCTABlock({
     <section className="py-12 md:py-16 bg-brand-navy">
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
         <div className="bg-brand-navy-royal rounded-2xl p-8 md:p-12">
+          {/* Design: 2-column card — body text (left) | signup form (right). */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 md:items-center">
+            <div>
           {heading && (
             <h2 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-wide flex items-center gap-2 mb-3">
               {heading}
@@ -56,9 +59,10 @@ export function NewsletterCTABlock({
             </h2>
           )}
 
-          {body && <p className="text-white/70 text-base md:text-lg leading-relaxed mb-6">{body}</p>}
+          {body && <p className="text-white/70 text-base md:text-lg leading-relaxed">{body}</p>}
+            </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
@@ -103,6 +107,7 @@ export function NewsletterCTABlock({
               </p>
             )}
           </form>
+          </div>
         </div>
       </div>
     </section>

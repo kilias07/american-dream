@@ -5,6 +5,7 @@ import { getPaymentProvider, PaymentNotConfiguredError } from '@/lib/integration
 import { notifyStaffNewReservation } from '@/lib/integrations/notifications'
 import { subscribeToNewsletter } from '@/lib/integrations/mailerlite'
 import { getServerUrl } from '@/lib/integrations/env'
+import { localeHref } from '@/utilities/href'
 
 // Public reservation intake (spec §3/§4). Free reservations land as
 // `awaiting_approval`; paid (concert) reservations are created as
@@ -158,7 +159,7 @@ export async function POST(request: Request) {
         lastName: body.lastName,
         ip: request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || undefined,
       },
-      continueUrl: `${serverUrl}/${locale}/rezerwacja/status?id=${reservation.reservationNumber}`,
+      continueUrl: `${serverUrl}${localeHref(locale, '/rezerwacja/status')}?id=${reservation.reservationNumber}`,
       notifyUrl: `${serverUrl}/api/payu/notify`,
       locale,
     })

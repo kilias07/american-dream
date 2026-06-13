@@ -6,7 +6,9 @@ import { unstable_cache } from 'next/cache'
 
 import type { Header } from '@/payload-types'
 import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 import { CMSLink } from '@/components/Link'
+import { LocaleSwitcher } from '@/components/LocaleSwitcher'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { MobileMenu } from './MobileMenu'
 import { Logo } from './Logo'
@@ -53,7 +55,9 @@ const SocialIcon = ({ platform }: { platform: string }) => {
 async function getHeader(locale: Locale): Promise<Header | null> {
   try {
     const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'header', locale, depth: 1 })
+    // `await` so a rejected query is caught here (e.g. DB unreachable at build
+    // time) instead of escaping to the caller and aborting static generation.
+    return await payload.findGlobal({ slug: 'header', locale, depth: 1 })
   } catch {
     return null
   }
@@ -172,7 +176,7 @@ export async function Header({ locale }: { locale: Locale }) {
         <div className="container h-[90px] hidden lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-3 xl:gap-6">
 
           {/* LEWA: Logo */}
-          <Link href={`/${locale}`} className="flex-shrink-0">
+          <Link href={localeHref(locale, '/')} className="flex-shrink-0">
             <Logo className="h-14 xl:h-[68px] w-auto" />
           </Link>
 
@@ -190,30 +194,8 @@ export async function Header({ locale }: { locale: Locale }) {
 
           {/* PRAWA: Language switcher + CTA */}
           <div className="flex items-center gap-2 xl:gap-4 flex-shrink-0">
-            {/* Language switcher */}
-            <div className="flex items-center gap-1 text-[12px] font-bold tracking-wider">
-              <Link
-                href="/pl"
-                className={
-                  locale === 'pl'
-                    ? 'text-brand-gold'
-                    : 'text-white hover:text-brand-gold transition-colors'
-                }
-              >
-                PL
-              </Link>
-              <span className="text-white/40 mx-0.5">|</span>
-              <Link
-                href="/en"
-                className={
-                  locale === 'en'
-                    ? 'text-brand-gold'
-                    : 'text-white hover:text-brand-gold transition-colors'
-                }
-              >
-                EN
-              </Link>
-            </div>
+            {/* Language switcher — maps the current path to the other locale */}
+            <LocaleSwitcher currentLocale={locale} />
 
             {/* CTA — "Zarezerwuj" → opens the MyRest booking widget */}
             {ctaEnabled && ctaButton?.label && (
@@ -226,7 +208,7 @@ export async function Header({ locale }: { locale: Locale }) {
 
         {/* ── Mobile nav ── */}
         <div className="lg:hidden container flex items-center justify-between h-[70px]">
-          <Link href={`/${locale}`}>
+          <Link href={localeHref(locale, '/')}>
             <Logo className="h-14 w-auto" />
           </Link>
           <MobileMenu

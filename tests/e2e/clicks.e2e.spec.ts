@@ -1,6 +1,17 @@
 /**
  * American Dream Club — click & interaction tests.
  *
+ * URL scheme (SEO audit):
+ *   - Polish is the DEFAULT, served at UNPREFIXED URLs: `/`, `/restaurant`,
+ *     `/bar-and-cocktails`, `/cigar-lounge`, `/events`, `/events/[slug]`,
+ *     `/business`, `/business/[slug]`, `/news`, `/news/[slug]`,
+ *     `/news/pod-papugami`, `/contact`, `/privacy`, `/rezerwacje`,
+ *     `/kontakt-dla-artystow`.
+ *   - English mirrors everything under `/en/...`.
+ *   - The language switcher is a <button> pair (PL | EN), not <a href> links.
+ *   - Old URLs 301-redirect to the new ones; unknown pages redirect "up a level"
+ *     (no dedicated 404 page).
+ *
  * Every interactive element is exercised:
  *  1.  Header (desktop) — logo, topbar links, social icons, nav items, language switcher, CTA
  *  2.  Mobile menu — hamburger opens, close button, backdrop, nav items, language, CTA
@@ -8,15 +19,20 @@
  *  4.  Contact form — fill + validation + submit
  *  5.  Newsletter form — fill + submit
  *  6.  Artist application form — fill + submit
- *  7.  News (Aktualności) — article card click
- *  8.  Program — event card click
- *  9.  Language switching — full /pl → /en round-trip via header
- * 10.  Rezerwacje — page renders and CTA is clickable
+ *  7.  News — article card click (slug routing)
+ *  8.  Events — event card click (slug routing)
+ *  9.  Language switching — full PL → EN round-trip via header
+ * 10.  Rezerwacje — page renders and contact action is present
+ * 11.  Responsive nav
+ * 12.  Business (twoje-wydarzenie) — private-event page
+ * 13.  301 redirects — old URLs → new scheme
+ * 14.  No 404 — unknown paths redirect up a level
  */
 
 import { test, expect, type Page } from '@playwright/test'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
+const HOME = `${BASE}/`
 
 async function goto(page: Page, path: string) {
   await page.goto(`${BASE}${path}`)
@@ -36,16 +52,24 @@ async function mobile(page: Page, path: string) {
   await goto(page, path)
 }
 
+/** The visible header language-switcher button ("PL" or "EN"). */
+function langButton(page: Page, label: 'PL' | 'EN') {
+  return page
+    .locator('header button:visible')
+    .filter({ hasText: new RegExp(`^${label}$`) })
+    .first()
+}
+
 // ── 1. Header — Desktop ───────────────────────────────────────────────────────
 test.describe('Header — desktop clicks', () => {
-  test('logo click navigates to /pl homepage', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+  test('logo click navigates to the homepage', async ({ page }) => {
+    await desktop(page, '/contact')
     await page.locator('header a').filter({ has: page.locator('svg, img') }).first().click()
-    await expect(page).toHaveURL(/\/pl$/)
+    await expect(page).toHaveURL(HOME)
   })
 
   test('topbar phone link has correct tel: href', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const phoneLink = page.locator('header a[href^="tel:"]').first()
     await expect(phoneLink).toBeVisible()
     const href = await phoneLink.getAttribute('href')
@@ -53,7 +77,7 @@ test.describe('Header — desktop clicks', () => {
   })
 
   test('topbar address link opens Google Maps', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const addressLink = page.locator('header a[href*="google.com/maps"], header a[href*="maps.app"]').first()
     await expect(addressLink).toBeVisible()
     const href = await addressLink.getAttribute('href')
@@ -62,7 +86,7 @@ test.describe('Header — desktop clicks', () => {
   })
 
   test('social icon — Facebook has correct href', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const fbLink = page.locator('header a[href*="facebook.com"]').first()
     await expect(fbLink).toBeVisible()
     const href = await fbLink.getAttribute('href')
@@ -70,7 +94,7 @@ test.describe('Header — desktop clicks', () => {
   })
 
   test('social icon — Instagram has correct href', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const igLink = page.locator('header a[href*="instagram.com"]').first()
     await expect(igLink).toBeVisible()
     const href = await igLink.getAttribute('href')
@@ -78,15 +102,15 @@ test.describe('Header — desktop clicks', () => {
   })
 
   test('social icon — YouTube has correct href', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const ytLink = page.locator('header a[href*="youtube.com"]').first()
     await expect(ytLink).toBeVisible()
     const href = await ytLink.getAttribute('href')
     expect(href).toContain('youtube.com/@americandreamclub')
   })
 
-  test('left nav items link to correct locale-prefixed paths', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('left nav items link to unprefixed (or /en) paths — never legacy /pl', async ({ page }) => {
+    await desktop(page, '/')
     const navLinks = page.locator('header nav a')
     const count = await navLinks.count()
     expect(count).toBeGreaterThan(0)
@@ -98,46 +122,48 @@ test.describe('Header — desktop clicks', () => {
 
     for (const href of hrefs) {
       if (href.startsWith('/') && !href.startsWith('//')) {
-        expect(href).toMatch(/^\/(pl|en)/)
+        // PL is unprefixed; the legacy `/pl/...` prefix must be gone.
+        expect(href).not.toMatch(/^\/pl(\/|$)/)
       }
     }
   })
 
   test('clicking a nav item actually navigates', async ({ page }) => {
-    await desktop(page, '/pl')
-    // Find first internal nav link that is NOT the homepage
+    await desktop(page, '/')
+    // Find first internal nav link that is NOT the homepage / external / tel.
     const navLinks = page.locator('header nav a')
     const count = await navLinks.count()
     for (let i = 0; i < count; i++) {
       const href = await navLinks.nth(i).getAttribute('href')
-      if (href && href.startsWith('/pl/')) {
+      if (href && /^\/[a-z]/.test(href) && href !== '/') {
         await navLinks.nth(i).click()
         await expect(page).toHaveURL(`${BASE}${href}`)
         return
       }
     }
-    // If no subpage nav link found, skip (test still validates nav links exist)
+    // If no subpage nav link found, the test still validates nav links exist.
     expect(count).toBeGreaterThan(0)
   })
 
-  test('PL language link is highlighted and EN link navigates to /en', async ({ page }) => {
-    await desktop(page, '/pl')
-    const enLink = page.locator('header a[href="/en"]').first()
-    await expect(enLink).toBeVisible()
-    await enLink.click()
+  test('PL language button is active and EN button navigates to /en', async ({ page }) => {
+    await desktop(page, '/')
+    await expect(langButton(page, 'PL')).toHaveAttribute('aria-current', 'true')
+    const enBtn = langButton(page, 'EN')
+    await expect(enBtn).toBeVisible()
+    await enBtn.click()
     await expect(page).toHaveURL(`${BASE}/en`)
   })
 
-  test('from /en, PL language link navigates back to /pl', async ({ page }) => {
+  test('from /en, PL language button navigates back to the PL homepage', async ({ page }) => {
     await desktop(page, '/en')
-    const plLink = page.locator('header a[href="/pl"]').first()
-    await expect(plLink).toBeVisible()
-    await plLink.click()
-    await expect(page).toHaveURL(`${BASE}/pl`)
+    const plBtn = langButton(page, 'PL')
+    await expect(plBtn).toBeVisible()
+    await plBtn.click()
+    await expect(page).toHaveURL(HOME)
   })
 
   test('CTA "ZAREZERWUJ" button opens the MyRest booking widget (no navigation)', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const cta = page.locator('header').getByText(/zarezerwuj/i).first()
     await expect(cta).toBeVisible()
     // The reservation CTA opens the MyRest booking widget instead of navigating
@@ -145,7 +171,7 @@ test.describe('Header — desktop clicks', () => {
     // and the modal markup is appended to <body> (#mr-widget-handler).
     await expect(page.locator('#myrest-integration')).toHaveCount(1)
     await cta.click()
-    await expect(page).toHaveURL(/\/pl\/?$/) // stays on the homepage — no navigation
+    await expect(page).toHaveURL(HOME) // stays on the homepage — no navigation
     await expect(page.locator('#mr-widget-handler')).toHaveCount(1)
   })
 })
@@ -153,7 +179,7 @@ test.describe('Header — desktop clicks', () => {
 // ── 2. Mobile menu interactions ───────────────────────────────────────────────
 test.describe('Mobile menu — interactions', () => {
   test('hamburger button opens the drawer', async ({ page }) => {
-    await mobile(page, '/pl')
+    await mobile(page, '/')
     const hamburger = page.locator('button[aria-label="Open menu"]')
     await expect(hamburger).toBeVisible()
     await hamburger.click()
@@ -163,7 +189,7 @@ test.describe('Mobile menu — interactions', () => {
   })
 
   test('close button hides the drawer', async ({ page }) => {
-    await mobile(page, '/pl')
+    await mobile(page, '/')
     await page.locator('button[aria-label="Open menu"]').click()
     const closeBtn = page.locator('button[aria-label="Close menu"]')
     await expect(closeBtn).toBeVisible()
@@ -174,7 +200,7 @@ test.describe('Mobile menu — interactions', () => {
   })
 
   test('backdrop click closes the drawer', async ({ page }) => {
-    await mobile(page, '/pl')
+    await mobile(page, '/')
     await page.locator('button[aria-label="Open menu"]').click()
     await expect(page.locator('button[aria-label="Close menu"]')).toBeVisible()
 
@@ -186,7 +212,7 @@ test.describe('Mobile menu — interactions', () => {
   })
 
   test('tapping a nav link in mobile menu navigates and closes the menu', async ({ page }) => {
-    await mobile(page, '/pl')
+    await mobile(page, '/')
     await page.locator('button[aria-label="Open menu"]').click()
 
     // Find first link inside the nav drawer that goes to a subpage
@@ -200,16 +226,19 @@ test.describe('Mobile menu — interactions', () => {
   })
 
   test('mobile language switcher navigates to /en', async ({ page }) => {
-    await mobile(page, '/pl')
+    await mobile(page, '/')
     await page.locator('button[aria-label="Open menu"]').click()
-    const enLink = page.locator('.fixed.top-0.right-0 a[href="/en"]')
-    await expect(enLink).toBeVisible()
-    await enLink.click()
+    const enBtn = page
+      .locator('.fixed.top-0.right-0')
+      .getByRole('button', { name: 'EN', exact: true })
+      .first()
+    await expect(enBtn).toBeVisible()
+    await enBtn.click()
     await expect(page).toHaveURL(`${BASE}/en`)
   })
 
   test('mobile social icons are visible and have hrefs', async ({ page }) => {
-    await mobile(page, '/pl')
+    await mobile(page, '/')
     await page.locator('button[aria-label="Open menu"]').click()
     const socialLinks = page.locator('.fixed.top-0.right-0 a[href*="facebook.com"], .fixed.top-0.right-0 a[href*="instagram.com"], .fixed.top-0.right-0 a[href*="youtube.com"]')
     await expect(socialLinks.first()).toBeVisible()
@@ -220,23 +249,23 @@ test.describe('Mobile menu — interactions', () => {
 
 // ── 3. Footer interactions ────────────────────────────────────────────────────
 test.describe('Footer — clicks', () => {
-  test('footer logo click navigates to /pl homepage', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+  test('footer logo click navigates to the homepage', async ({ page }) => {
+    await desktop(page, '/contact')
     const footerLogo = page.locator('footer a').first()
     await footerLogo.click()
-    await expect(page).toHaveURL(/\/pl$/)
+    await expect(page).toHaveURL(HOME)
   })
 
   test('footer phone link has tel: href', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const phoneLink = page.locator('footer a[href^="tel:"]')
     await expect(phoneLink.first()).toBeVisible()
     const href = await phoneLink.first().getAttribute('href')
     expect(href).toMatch(/tel:\+?48500210333/)
   })
 
-  test('footer nav column links are clickable and locale-prefixed', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('footer nav column links are clickable and never legacy /pl', async ({ page }) => {
+    await desktop(page, '/')
     const footerLinks = page.locator('footer ul a')
     const count = await footerLinks.count()
     expect(count).toBeGreaterThan(3)
@@ -247,14 +276,14 @@ test.describe('Footer — clicks', () => {
     const internalLinks = hrefs.filter((h) => h.startsWith('/'))
     expect(internalLinks.length).toBeGreaterThan(0)
 
-    // All internal links should start with /pl or /en
+    // PL internal links are unprefixed; no legacy `/pl/...` links remain.
     for (const href of internalLinks) {
-      expect(href).toMatch(/^\/(pl|en)/)
+      expect(href).not.toMatch(/^\/pl(\/|$)/)
     }
   })
 
   test('footer Facebook social link is present and correct', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const fbLink = page.locator('footer a[href*="facebook.com"]').first()
     await expect(fbLink).toBeVisible()
     const href = await fbLink.getAttribute('href')
@@ -262,7 +291,7 @@ test.describe('Footer — clicks', () => {
   })
 
   test('footer Instagram social link is present and correct', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const igLink = page.locator('footer a[href*="instagram.com"]').first()
     await expect(igLink).toBeVisible()
     const href = await igLink.getAttribute('href')
@@ -270,7 +299,7 @@ test.describe('Footer — clicks', () => {
   })
 
   test('footer YouTube social link is present and correct', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const ytLink = page.locator('footer a[href*="youtube.com"]').first()
     await expect(ytLink).toBeVisible()
     const href = await ytLink.getAttribute('href')
@@ -278,7 +307,7 @@ test.describe('Footer — clicks', () => {
   })
 
   test('footer bottom-bar links are clickable', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const bottomBar = page.locator('footer .bg-brand-navy a')
     const count = await bottomBar.count()
     expect(count).toBeGreaterThan(0)
@@ -288,12 +317,11 @@ test.describe('Footer — clicks', () => {
 // ── 4. Contact form ───────────────────────────────────────────────────────────
 test.describe('Contact form — interactions', () => {
   test('contact form fields are focusable and accept input', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
 
     const nameInput = page.locator('input[name="name"], input[placeholder*="mię"], input[placeholder*="Imię"]').first()
-    const phoneInput = page.locator('input[name="phone"], input[type="tel"], input[placeholder*="elefon"]').first()
-    const emailInput = page.locator('input[type="email"], input[name="email"]').first()
     const messageInput = page.locator('textarea, input[name="message"]').first()
+    const emailInput = page.locator('input[type="email"], input[name="email"]').first()
 
     await expect(emailInput).toBeVisible()
     await emailInput.fill('test@example.com')
@@ -311,14 +339,14 @@ test.describe('Contact form — interactions', () => {
   })
 
   test('contact form has a submit button', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     const submitBtn = page.locator('button[type="submit"], input[type="submit"]').first()
     await expect(submitBtn).toBeVisible()
     await expect(submitBtn).toBeEnabled()
   })
 
   test('contact form submit with invalid email shows validation or response', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     const emailInput = page.locator('input[type="email"], input[name="email"]').first()
     await emailInput.fill('not-an-email')
 
@@ -332,7 +360,7 @@ test.describe('Contact form — interactions', () => {
   })
 
   test('privacy policy checkbox is present and checkable', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     const checkbox = page.locator('input[type="checkbox"]').first()
     if (await checkbox.isVisible()) {
       await checkbox.check()
@@ -344,7 +372,7 @@ test.describe('Contact form — interactions', () => {
 // ── 5. Newsletter form ────────────────────────────────────────────────────────
 test.describe('Newsletter form — interactions', () => {
   test('newsletter email input accepts an address', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const footer = page.locator('footer')
     const emailInput = footer.locator('input[type="email"]').first()
     await expect(emailInput).toBeVisible()
@@ -353,7 +381,7 @@ test.describe('Newsletter form — interactions', () => {
   })
 
   test('newsletter form has submit button', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const footer = page.locator('footer')
     const submitBtn = footer.locator('button[type="submit"], button').filter({ hasText: /zapisz|wyślij|subscribe|send/i }).first()
     if (await submitBtn.count() > 0) {
@@ -366,7 +394,7 @@ test.describe('Newsletter form — interactions', () => {
   })
 
   test('newsletter submit with valid email shows success or pending state', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const footer = page.locator('footer')
     const emailInput = footer.locator('input[type="email"]').first()
     await emailInput.fill('e2e-test@americandream.test')
@@ -385,7 +413,7 @@ test.describe('Newsletter form — interactions', () => {
 // ── 6. Artist form ────────────────────────────────────────────────────────────
 test.describe('Artist application form — interactions', () => {
   test('artist form renders with input fields', async ({ page }) => {
-    await desktop(page, '/pl/kontakt-dla-artystow')
+    await desktop(page, '/kontakt-dla-artystow')
     await expect(page.locator('form, [data-artist-form]').first()).toBeVisible()
     const inputs = page.locator('form input, form textarea, form select')
     const count = await inputs.count()
@@ -393,7 +421,7 @@ test.describe('Artist application form — interactions', () => {
   })
 
   test('artist form email field accepts input', async ({ page }) => {
-    await desktop(page, '/pl/kontakt-dla-artystow')
+    await desktop(page, '/kontakt-dla-artystow')
     const emailInput = page.locator('input[type="email"], input[name="email"]').first()
     await expect(emailInput).toBeVisible()
     await emailInput.fill('artist@band.pl')
@@ -401,29 +429,29 @@ test.describe('Artist application form — interactions', () => {
   })
 
   test('artist form has a submit button', async ({ page }) => {
-    await desktop(page, '/pl/kontakt-dla-artystow')
+    await desktop(page, '/kontakt-dla-artystow')
     const submitBtn = page.locator('button[type="submit"]').first()
     await expect(submitBtn).toBeVisible()
     await expect(submitBtn).toBeEnabled()
   })
 })
 
-// ── 7. Aktualności — article card click ──────────────────────────────────────
-test.describe('Aktualności — article navigation', () => {
+// ── 7. News — article card click (slug routing) ───────────────────────────────
+test.describe('News — article navigation', () => {
   test('news listing page renders article links', async ({ page }) => {
-    await desktop(page, '/pl/aktualnosci')
-    // Article cards should be links to detail pages
-    const articleLinks = page.locator('a[href*="/pl/aktualnosci/"]')
+    await desktop(page, '/news')
+    // Article cards should be slug-based links to detail pages
+    const articleLinks = page.locator('a[href^="/news/"]')
     const count = await articleLinks.count()
     if (count > 0) {
       const href = await articleLinks.first().getAttribute('href')
-      expect(href).toMatch(/\/pl\/aktualnosci\/[a-z0-9-]+/)
+      expect(href).toMatch(/^\/news\/[a-z0-9-]+$/)
     }
   })
 
   test('clicking an article link navigates to its detail page', async ({ page }) => {
-    await desktop(page, '/pl/aktualnosci')
-    const articleLinks = page.locator('a[href*="/pl/aktualnosci/"]')
+    await desktop(page, '/news')
+    const articleLinks = page.locator('a[href^="/news/"]')
     const count = await articleLinks.count()
     if (count > 0) {
       const href = await articleLinks.first().getAttribute('href')
@@ -434,21 +462,34 @@ test.describe('Aktualności — article navigation', () => {
   })
 })
 
-// ── 8. Program — event navigation ────────────────────────────────────────────
-test.describe('Program — event interaction', () => {
-  test('program page renders event/calendar content', async ({ page }) => {
-    await desktop(page, '/pl/program')
+// ── 8. Events — event navigation (slug routing) ──────────────────────────────
+test.describe('Events — event interaction', () => {
+  test('events page renders event/calendar content', async ({ page }) => {
+    await desktop(page, '/events')
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Internal Server Error')
   })
 
-  test('program page contains clickable event links', async ({ page }) => {
-    await desktop(page, '/pl/program')
-    const eventLinks = page.locator('a[href*="/pl/program/"]')
+  test('events page contains slug-based event links', async ({ page }) => {
+    await desktop(page, '/events')
+    const eventLinks = page.locator('a[href^="/events/"]')
     const count = await eventLinks.count()
     if (count > 0) {
       const href = await eventLinks.first().getAttribute('href')
-      expect(href).toMatch(/\/pl\/program\/[a-z0-9-]+/)
+      // Events are now addressed by SLUG, not by numeric id.
+      expect(href).toMatch(/^\/events\/[a-z0-9-]+$/)
+    }
+  })
+
+  test('clicking an event link opens its detail page by slug', async ({ page }) => {
+    await desktop(page, '/events')
+    const eventLinks = page.locator('a[href^="/events/"]')
+    const count = await eventLinks.count()
+    if (count > 0) {
+      const href = await eventLinks.first().getAttribute('href')
+      await eventLinks.first().click()
+      if (href) await expect(page).toHaveURL(`${BASE}${href}`)
+      await expect(page.locator('main')).toBeVisible()
     }
   })
 })
@@ -456,17 +497,25 @@ test.describe('Program — event interaction', () => {
 // ── 9. Language switching — full round-trip ───────────────────────────────────
 test.describe('Language switching — full round-trip', () => {
   test('PL→EN→PL round-trip via header language switcher', async ({ page }) => {
-    await desktop(page, '/pl')
-    await expect(page).toHaveURL(`${BASE}/pl`)
+    await desktop(page, '/')
+    await expect(page).toHaveURL(HOME)
 
     // Switch to EN
-    await page.locator('header a[href="/en"]').first().click()
+    await langButton(page, 'EN').click()
     await expect(page).toHaveURL(`${BASE}/en`)
     await expect(page.locator('header')).toBeVisible()
 
-    // Switch back to PL
-    await page.locator('header a[href="/pl"]').first().click()
-    await expect(page).toHaveURL(`${BASE}/pl`)
+    // Switch back to PL (unprefixed homepage)
+    await langButton(page, 'PL').click()
+    await expect(page).toHaveURL(HOME)
+  })
+
+  test('switching locale on a subpage keeps you on the same page', async ({ page }) => {
+    await desktop(page, '/restaurant')
+    await langButton(page, 'EN').click()
+    await expect(page).toHaveURL(`${BASE}/en/restaurant`)
+    await langButton(page, 'PL').click()
+    await expect(page).toHaveURL(`${BASE}/restaurant`)
   })
 
   test('/en homepage renders correct English content', async ({ page }) => {
@@ -477,17 +526,17 @@ test.describe('Language switching — full round-trip', () => {
   })
 })
 
-// ── 10. Rezerwacje page ───────────────────────────────────────────────────────
-test.describe('Rezerwacje — reservation page', () => {
-  test('/pl/rezerwacje renders without errors', async ({ page }) => {
-    await desktop(page, '/pl/rezerwacje')
+// ── 10. Rezerwacja page ───────────────────────────────────────────────────────
+test.describe('Rezerwacja — reservation page', () => {
+  test('/rezerwacja renders without errors', async ({ page }) => {
+    await desktop(page, '/rezerwacja')
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Internal Server Error')
     await expect(page.locator('body')).toContainText(/rezerwacj/i)
   })
 
-  test('/pl/rezerwacje contains a contact action (phone or form)', async ({ page }) => {
-    await desktop(page, '/pl/rezerwacje')
+  test('/rezerwacja contains a contact action (phone or form)', async ({ page }) => {
+    await desktop(page, '/rezerwacja')
     // Should have either a phone link, form, or email link
     const hasPhone = await page.locator('a[href^="tel:"]').count()
     const hasForm = await page.locator('form, input[type="email"]').count()
@@ -500,39 +549,122 @@ test.describe('Rezerwacje — reservation page', () => {
 test.describe('Responsive navigation', () => {
   test('hamburger button is hidden on desktop (≥1024px)', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
-    await goto(page, '/pl')
+    await goto(page, '/')
     const hamburger = page.locator('button[aria-label="Open menu"]')
     await expect(hamburger).toBeHidden()
   })
 
   test('hamburger button is visible on mobile (<1024px)', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await goto(page, '/pl')
+    await goto(page, '/')
     const hamburger = page.locator('button[aria-label="Open menu"]')
     await expect(hamburger).toBeVisible()
   })
 
   test('desktop nav links are hidden on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await goto(page, '/pl')
+    await goto(page, '/')
     // Desktop nav is inside a .hidden.lg:flex container
     const desktopNav = page.locator('header .hidden.lg\\:flex nav').first()
     await expect(desktopNav).toBeHidden()
   })
 })
 
-// ── 12. Twoje wydarzenie — event booking page ─────────────────────────────────
-test.describe('Twoje wydarzenie — private event page', () => {
-  test('/pl/twoje-wydarzenie renders without errors', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+// ── 12. Business (twoje-wydarzenie) — private event page ───────────────────────
+test.describe('Business — private/corporate event page', () => {
+  test('/business renders without errors', async ({ page }) => {
+    await desktop(page, '/business')
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Internal Server Error')
   })
 
-  test('/pl/twoje-wydarzenie has sales contact info', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+  test('/business has sales contact info', async ({ page }) => {
+    await desktop(page, '/business')
     // Should show contact info for event bookings
     const hasPhone = await page.locator('a[href^="tel:"]').count()
     expect(hasPhone).toBeGreaterThan(0)
+  })
+
+  test('business detail pages render by slug', async ({ page }) => {
+    await desktop(page, '/business/meetings')
+    await expect(page.locator('main')).toBeVisible()
+    await expect(page.locator('body')).not.toContainText('Internal Server Error')
+  })
+})
+
+// ── 13. 301 redirects — old URLs → new scheme ─────────────────────────────────
+test.describe('301 redirects — old URLs land on the new scheme', () => {
+  const cases: [string, string][] = [
+    // renamed Payload page slugs / dedicated routes
+    ['/restauracja', '/restaurant'],
+    ['/bar', '/bar-and-cocktails'],
+    ['/cigar-room', '/cigar-lounge'],
+    ['/twoje-wydarzenie', '/business'],
+    ['/kontakt', '/contact'],
+    ['/polityka-prywatnosci', '/privacy'],
+    ['/program', '/events'],
+    ['/aktualnosci', '/news'],
+    // old WordPress URLs → closest current section
+    ['/kuchnia', '/restaurant'],
+    ['/palarnia-cygar', '/cigar-lounge'],
+    ['/kalendarium', '/events'],
+    ['/wino', '/bar-and-cocktails'],
+    ['/oferta/spotkania-biznesowe', '/business/meetings'],
+    ['/oferta/urodziny', '/business/birthday'],
+    ['/oferta/wieczory-kawalerskie', '/business/stag'],
+    ['/oferta/wynajem-sali-na-imprezy', '/business/venue-hire'],
+    ['/spotkania-wigilijne', '/business/christmas'],
+    // legacy `/pl/...` prefix is stripped (then may chain to a renamed slug)
+    ['/pl', '/'],
+    ['/pl/kontakt', '/contact'],
+    ['/pl/restauracja', '/restaurant'],
+  ]
+
+  for (const [from, to] of cases) {
+    test(`${from} → ${to}`, async ({ page }) => {
+      await page.goto(`${BASE}${from}`)
+      await expect(page).toHaveURL(`${BASE}${to}`)
+    })
+  }
+
+  test('old URL replies with a permanent-redirect status (301/308)', async ({ request }) => {
+    const resp = await request.get(`${BASE}/restauracja`, { maxRedirects: 0 })
+    expect([301, 308]).toContain(resp.status())
+    const location = resp.headers()['location']
+    expect(location).toContain('/restaurant')
+  })
+
+  test('old article deep URL keeps its slug (/aktualnosci/:slug → /news/:slug)', async ({ request }) => {
+    const resp = await request.get(`${BASE}/aktualnosci/some-article`, { maxRedirects: 0 })
+    expect([301, 308]).toContain(resp.status())
+    expect(resp.headers()['location']).toContain('/news/some-article')
+  })
+})
+
+// ── 14. No 404 — unknown paths redirect "up a level" ──────────────────────────
+test.describe('No 404 page — unknown paths redirect up', () => {
+  test('unknown single-segment page redirects to the homepage', async ({ page }) => {
+    await page.goto(`${BASE}/this-page-does-not-exist`)
+    await expect(page).toHaveURL(HOME)
+    await expect(page.locator('main')).toBeVisible()
+  })
+
+  test('unknown event slug redirects up to /events', async ({ page }) => {
+    await page.goto(`${BASE}/events/no-such-event-xyz`)
+    await expect(page).toHaveURL(`${BASE}/events`)
+  })
+
+  test('unknown news slug redirects up to /news', async ({ page }) => {
+    await page.goto(`${BASE}/news/no-such-article-xyz`)
+    await expect(page).toHaveURL(`${BASE}/news`)
+  })
+
+  test('unknown business detail slug renders a shell, not a 404', async ({ page }) => {
+    // Business detail (`/business/[slug]`) never hard-404s — an unknown slug
+    // renders an empty shell within the site chrome.
+    await page.goto(`${BASE}/business/no-such-offer-xyz`)
+    await expect(page).toHaveURL(`${BASE}/business/no-such-offer-xyz`)
+    await expect(page.locator('header')).toBeVisible()
+    await expect(page.locator('body')).not.toContainText('Internal Server Error')
   })
 })

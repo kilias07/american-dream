@@ -27,46 +27,86 @@ const nextConfig = {
     unoptimized: true,
   },
 
-  // Redirect unprefixed page slugs → /pl/:slug so visitors can use
-  // /restauracja, /program etc. directly (without the locale prefix).
-  // The root / already detects locale and redirects to /pl or /en.
+  // SEO audit: 301 redirects from the old (Polish) WordPress URLs + the old
+  // Payload slugs to the new English canonical URLs (per the migration sheet;
+  // a few erroneous sheet targets were corrected, e.g. /kuchnia → /restaurant).
+  // PL is the default served at UNPREFIXED URLs; English lives under `/en`.
+  // The legacy `/pl/*` prefix is stripped separately by the `/pl/[...rest]`
+  // catch-all, and unknown paths fall through to the redirect-up not-found logic.
   async redirects() {
-    const pages = [
-      'restauracja',
-      'bar',
-      'cigar-room',
-      'program',
-      'twoje-wydarzenie',
-      'rezerwacje',
-      'kontakt',
-      'kontakt-dla-artystow',
-      'aktualnosci',
+    const p = (source: string, destination: string) => ({ source, destination, permanent: true })
+
+    const PL: [string, string][] = [
+      // renamed Payload page slugs / dedicated routes
+      ['/restauracja', '/restaurant'],
+      ['/bar', '/bar-and-cocktails'],
+      ['/cigar-room', '/cigar-lounge'],
+      ['/twoje-wydarzenie', '/business'],
+      ['/oferta', '/business'],
+      ['/kontakt', '/contact'],
+      ['/polityka-prywatnosci', '/privacy'],
+      ['/program', '/events'],
+      ['/aktualnosci', '/news'],
+      // old WordPress URLs → closest current section
+      ['/wino', '/bar-and-cocktails'],
+      ['/topowe-drinki-w-barach-i-klubach', '/bar-and-cocktails'],
+      ['/palarnia-cygar', '/cigar-lounge'],
+      ['/kuchnia', '/restaurant'], // sheet said /en/ (wrong) — corrected
+      ['/menu', '/restaurant'],
+      ['/wydarzenia', '/events'],
+      ['/kalendarium', '/events'],
+      ['/kwietniowy-przeglad-jazzowy', '/events'],
+      ['/category/wydarzenia', '/events'],
+      ['/category/blog', '/news'],
+      ['/spotkania-biznesowe', '/business'],
+      ['/oferta/imprezy-okolicznosciowe', '/business'],
+      ['/oferta/spotkania-biznesowe', '/business/meetings'],
+      ['/oferta/urodziny', '/business/birthday'],
+      ['/oferta/wieczory-kawalerskie', '/business/stag'],
+      ['/oferta/wynajem-sali-na-imprezy', '/business/venue-hire'],
+      ['/spotkania-wigilijne', '/business/christmas'],
+      ['/dlaczego-klub-to-swietne-miejsce-na-wyprawienie-urodzin', '/news'],
+      ['/o-czym-pamietac-przy-organizacji-imprezy-okolicznosciowej', '/news'],
+      // old blog posts with no migrated content → home
+      ['/jak-muzyka-na-zywo-uatrakcyjnia-doswiadczenie-klubowe', '/'],
+      ['/jak-wybrac-miejsce-na-spotkanie-firmowe', '/'],
+      ['/jak-zaznac-relaksu-w-rytmie-muzyki-poza-domem', '/'],
+      ['/kiedy-wyjscie-do-klubu-to-dobra-alternatywa-dla-domowki', '/'],
+      ['/z-czego-wynika-popularnosc-klubow-grajacych-muzyke-na-zywo', '/'],
+      ['/z-czego-wynika-popularnosc-klubow-muzycznych', '/'],
+      ['/atrakcje-polecane-wielbicielom-whisky', '/'],
     ]
+
+    const EN: [string, string][] = [
+      ['/en/bar', '/en/bar-and-cocktails'],
+      ['/en/wine', '/en'],
+      ['/en/menu', '/en'],
+      ['/en/home-page', '/en'],
+      ['/en/food', '/en/restaurant'],
+      ['/en/calendar', '/en/events'],
+      ['/en/category/events', '/en/events'],
+      ['/en/offer', '/en/business'],
+      ['/en/privacy-policy', '/en/privacy'],
+      // old EN slugs that mirror the renamed PL ones
+      ['/en/restauracja', '/en/restaurant'],
+      ['/en/cigar-room', '/en/cigar-lounge'],
+      ['/en/twoje-wydarzenie', '/en/business'],
+      ['/en/kontakt', '/en/contact'],
+      ['/en/polityka-prywatnosci', '/en/privacy'],
+      ['/en/aktualnosci', '/en/news'],
+      ['/en/program', '/en/events'],
+    ]
+
     return [
-      // Top-level page slugs → /pl/:slug
-      {
-        source: `/:slug(${pages.join('|')})`,
-        destination: '/pl/:slug',
-        permanent: false,
-      },
-      // /aktualnosci/:article → /pl/aktualnosci/:article
-      {
-        source: '/aktualnosci/:slug',
-        destination: '/pl/aktualnosci/:slug',
-        permanent: false,
-      },
-      // /program/:id → /pl/program/:id
-      {
-        source: '/program/:id',
-        destination: '/pl/program/:id',
-        permanent: false,
-      },
-      // /wydarzenia-cykliczne/:slug → /pl/wydarzenia-cykliczne/:slug
-      {
-        source: '/wydarzenia-cykliczne/:slug',
-        destination: '/pl/wydarzenia-cykliczne/:slug',
-        permanent: false,
-      },
+      ...PL.map(([s, d]) => p(s, d)),
+      ...EN.map(([s, d]) => p(s, d)),
+      // wildcard families
+      p('/mec-category/:slug*', '/events'),
+      // old article/event deep URLs keep their slug where possible
+      p('/aktualnosci/:slug', '/news/:slug'),
+      p('/en/aktualnosci/:slug', '/en/news/:slug'),
+      p('/program/:path*', '/events'),
+      p('/en/program/:path*', '/en/events'),
     ]
   },
 

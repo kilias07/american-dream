@@ -6,6 +6,8 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { EveningPhasesBlock as EveningPhasesBlockType, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 type Phase = NonNullable<EveningPhasesBlockType['phases']>[number]
 
@@ -63,17 +65,16 @@ async function getOpenDays(): Promise<OpeningDay[]> {
 
 function PhaseCard({
   phase,
-  index,
   locale,
 }: {
   phase: Phase
-  index: number
   locale: string
 }) {
   const image = isMedia(phase.image) ? phase.image : null
-  const reversed = index % 2 === 1
+  // Design keeps the image on the LEFT for every phase row (no alternating).
+  const reversed = false
 
-  const prefix = (url: string) => (url.startsWith('/') ? `/${locale}${url}` : url)
+  const prefix = (url: string) => (url.startsWith('/') ? localeHref(locale as Locale, url) : url)
 
   return (
     <div
@@ -194,7 +195,7 @@ export async function EveningPhasesBlock({
 
         <div className="flex flex-col gap-6">
           {phases.map((phase, i) => (
-            <PhaseCard key={phase.id ?? i} phase={phase} index={i} locale={locale} />
+            <PhaseCard key={phase.id ?? i} phase={phase} locale={locale} />
           ))}
         </div>
       </div>

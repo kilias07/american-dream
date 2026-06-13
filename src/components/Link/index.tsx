@@ -4,6 +4,8 @@ import Link from 'next/link'
 import React from 'react'
 
 import type { Page, Post } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { isReservationUrl } from '@/lib/reservation-url'
 
@@ -39,18 +41,24 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   let href: string | undefined
 
+  // `locale` flows in as a plain string from CMS configs; narrow to Locale for
+  // the href helper. Falls back to building an unprefixed path when absent.
+  const loc = (locale as Locale) ?? undefined
+
   if (type === 'reference' && typeof reference?.value === 'object' && reference.value.slug) {
     const slug = reference.value.slug as string
     if (reference.relationTo === 'posts') {
-      href = locale ? `/${locale}/posts/${slug}` : `/posts/${slug}`
+      href = loc ? localeHref(loc, `/news/${slug}`) : `/news/${slug}`
     } else {
-      href = locale ? `/${locale}/${slug === 'home' ? '' : slug}` : `/${slug === 'home' ? '' : slug}`
+      // Home slug maps to '/', everything else to '/<slug>'.
+      const path = slug === 'home' ? '/' : `/${slug}`
+      href = loc ? localeHref(loc, path) : path === '/' ? '/' : path
     }
   } else if (url) {
     // Prefix internal (relative) URLs with the locale so navigation never
     // goes through a 307 redirect. External URLs (http/https) are left as-is.
-    if (locale && url.startsWith('/') && !url.startsWith(`/${locale}/`) && url !== `/${locale}`) {
-      href = `/${locale}${url}`
+    if (loc && url.startsWith('/')) {
+      href = localeHref(loc, url)
     } else {
       href = url
     }

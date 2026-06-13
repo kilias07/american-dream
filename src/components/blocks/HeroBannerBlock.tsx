@@ -5,6 +5,8 @@ import type { Media, Page } from '@/payload-types'
 import { CMSLink } from '@/components/Link'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { isReservationUrl } from '@/lib/reservation-url'
+import { localeHref } from '@/utilities/href'
+import type { Locale } from '@/config/locales'
 import { Logo } from '@/Header/Logo'
 
 type HeroBannerData = Extract<NonNullable<Page['layout']>[number], { blockType: 'heroBanner' }>
@@ -44,8 +46,17 @@ const IconMap = ({ icon }: { icon: string }) => {
   }
 }
 
-export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; locale?: string }) {
+export function HeroBannerBlock({
+  block,
+  locale,
+  headingLevel = 'h1',
+}: {
+  block: HeroBannerData
+  locale?: string
+  headingLevel?: 'h1' | 'h2'
+}) {
   const { heading, subtext, backgroundImage } = block
+  const Heading = headingLevel
   const secondaryLinks = (block as any).secondaryLinks as Array<{ link: any; icon: string }> | undefined
   const ctaLink = (block as any).ctaLink as any
   const ctaIcon = (block as any).ctaIcon as string | undefined
@@ -96,14 +107,14 @@ export function HeroBannerBlock({ block, locale }: { block: HeroBannerData; loca
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center gap-6 px-6 max-w-3xl mx-auto">
         {/* Logo */}
-        <Link href={`/${locale ?? ''}`} className="block mb-2">
+        <Link href={localeHref((locale ?? 'pl') as Locale, '/')} className="block mb-2">
           <Logo className="h-24 w-auto" variant="white" />
         </Link>
 
         {/* Heading */}
-        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+        <Heading className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
           {heading}
-        </h1>
+        </Heading>
 
         {/* Subtext */}
         {subtext && (

@@ -6,10 +6,15 @@
  * Verifies that every feature and content piece from the old WordPress site
  * is present and correct in the new Next.js / Payload CMS implementation.
  *
+ * URL scheme (SEO audit): Polish is the DEFAULT served at UNPREFIXED URLs
+ * (`/`, `/restaurant`, `/events`, `/business`, `/news`, `/contact`, …) and
+ * English mirrors everything under `/en/...`. Events & news are addressed by
+ * SLUG. Old WordPress / legacy URLs 301-redirect to the new ones.
+ *
  * Sections:
  *  1.  Contact info  — phone, address, emails, manager
  *  2.  Opening hours — correct days and times
- *  3.  Navigation    — all old-site pages mapped to new routes
+ *  3.  Navigation    — old-site URLs 301 to the new routes; new routes load
  *  4.  Restaurant    — menu categories and dishes
  *  5.  Cocktail bar  — jazz-legend cocktails, ingredients, prices
  *  6.  Cigar room    — origin countries, items
@@ -39,37 +44,37 @@ async function desktop(page: Page, path: string) {
 // ── 1. Contact information ────────────────────────────────────────────────────
 test.describe('Contact info — matches old site', () => {
   test('phone +48 500 210 333 is present on homepage', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('+48 500 210 333')
   })
 
   test('address "Dominikańska 9" present on homepage', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('Dominikańska 9')
   })
 
   test('info@americandreamclub.pl visible on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     await expect(page.locator('body')).toContainText('info@americandreamclub.pl')
   })
 
   test('rezerwacja@americandreamclub.pl visible on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     await expect(page.locator('body')).toContainText('rezerwacja@americandreamclub.pl')
   })
 
   test('Poznań city name appears on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     await expect(page.locator('body')).toContainText('Poznań')
   })
 
-  test('manager Jacek Wieczorek present on event-booking page', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+  test('manager Jacek Wieczorek present on business event page', async ({ page }) => {
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText('Jacek Wieczorek')
   })
 
-  test('manager phone +48 508 090 575 present on event-booking page', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+  test('manager phone +48 508 090 575 present on business event page', async ({ page }) => {
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText('508 090 575')
   })
 })
@@ -77,26 +82,26 @@ test.describe('Contact info — matches old site', () => {
 // ── 2. Opening hours ──────────────────────────────────────────────────────────
 test.describe('Opening hours — match old site', () => {
   test('Tuesday–Thursday 17:00–23:00 appears on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     await expect(page.locator('body')).toContainText('17:00')
     await expect(page.locator('body')).toContainText('23:00')
   })
 
   test('Friday–Saturday closing at 00:00 or 24:00 present', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     // Old site shows Friday/Saturday until midnight
     const body = page.locator('body')
     await expect(body).toContainText(/00:00|24:00/)
   })
 
   test('Sunday 16:00–21:00 appears on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     await expect(page.locator('body')).toContainText('16:00')
     await expect(page.locator('body')).toContainText('21:00')
   })
 
   test('Monday is closed — indicated on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     // "poniedziałek" or "monday" with "closed / nieczynne / zamknięte"
     const body = page.locator('body')
     const hasClosed = await body.locator(':text-matches("nieczynne|zamknięte|closed|monday|poniedziałek", "i")').count()
@@ -104,109 +109,94 @@ test.describe('Opening hours — match old site', () => {
   })
 })
 
-// ── 3. Navigation — all old pages mapped to new routes ───────────────────────
+// ── 3. Navigation — old URLs 301 to new routes; new routes load ──────────────
 test.describe('Navigation parity — old → new', () => {
-  // Old: /kalendarium/  →  New: /pl/program
-  test('/pl/program loads (old: /kalendarium/)', async ({ page }) => {
-    await desktop(page, '/pl/program')
-    await expect(page).toHaveURL(`${BASE}/pl/program`)
-    await expect(page.locator('main')).toBeVisible()
-    await expect(page.locator('body')).not.toContainText('404')
-  })
+  // Old WordPress / legacy URLs must 301-redirect to the new canonical routes.
+  const redirects: [string, string][] = [
+    ['/kuchnia', '/restaurant'], // old: /kuchnia/
+    ['/restauracja', '/restaurant'],
+    ['/bar', '/bar-and-cocktails'],
+    ['/palarnia-cygar', '/cigar-lounge'], // old: /palarnia-cygar/
+    ['/cigar-room', '/cigar-lounge'],
+    ['/kalendarium', '/events'], // old: /kalendarium/
+    ['/program', '/events'],
+    ['/kontakt', '/contact'], // old: /kontakt/
+    ['/category/blog', '/news'], // old: /category/blog/
+    ['/aktualnosci', '/news'],
+    ['/oferta/imprezy-okolicznosciowe', '/business'], // old: /oferta/imprezy-okolicznosciowe/
+    ['/twoje-wydarzenie', '/business'],
+    ['/polityka-prywatnosci', '/privacy'],
+  ]
 
-  // Old: /kuchnia/  →  New: /pl/restauracja
-  test('/pl/restauracja loads (old: /kuchnia/)', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
-    await expect(page).toHaveURL(`${BASE}/pl/restauracja`)
-    await expect(page.locator('main')).toBeVisible()
-  })
+  for (const [from, to] of redirects) {
+    test(`old ${from} 301-redirects to ${to}`, async ({ page }) => {
+      await page.goto(`${BASE}${from}`)
+      await expect(page).toHaveURL(`${BASE}${to}`)
+      await expect(page.locator('main')).toBeVisible()
+      await expect(page.locator('body')).not.toContainText('Internal Server Error')
+    })
+  }
 
-  // Old: /bar/  →  New: /pl/bar
-  test('/pl/bar loads (old: /bar/)', async ({ page }) => {
-    await desktop(page, '/pl/bar')
-    await expect(page).toHaveURL(`${BASE}/pl/bar`)
-    await expect(page.locator('main')).toBeVisible()
-  })
+  // New canonical routes load directly.
+  const routes = [
+    '/restaurant',
+    '/bar-and-cocktails',
+    '/cigar-lounge',
+    '/events',
+    '/business',
+    '/news',
+    '/contact',
+    '/privacy',
+    '/rezerwacja',
+    '/kontakt-dla-artystow',
+  ]
 
-  // Old: /palarnia-cygar/  →  New: /pl/cigar-room
-  test('/pl/cigar-room loads (old: /palarnia-cygar/)', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
-    await expect(page).toHaveURL(`${BASE}/pl/cigar-room`)
-    await expect(page.locator('main')).toBeVisible()
-  })
-
-  // Old: /oferta/imprezy-okolicznosciowe/  →  New: /pl/twoje-wydarzenie
-  test('/pl/twoje-wydarzenie loads (old: /oferta/imprezy-okolicznosciowe/)', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
-    await expect(page).toHaveURL(`${BASE}/pl/twoje-wydarzenie`)
-    await expect(page.locator('main')).toBeVisible()
-  })
-
-  // Old: /kontakt/  →  New: /pl/kontakt
-  test('/pl/kontakt loads (old: /kontakt/)', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
-    await expect(page).toHaveURL(`${BASE}/pl/kontakt`)
-    await expect(page.locator('main')).toBeVisible()
-  })
-
-  // Old: /category/blog/  →  New: /pl/aktualnosci
-  test('/pl/aktualnosci loads (old: /category/blog/)', async ({ page }) => {
-    await desktop(page, '/pl/aktualnosci')
-    await expect(page).toHaveURL(`${BASE}/pl/aktualnosci`)
-    await expect(page.locator('main')).toBeVisible()
-  })
-
-  // New feature not on old site:
-  test('/pl/rezerwacje is a new reservation page (not on old site)', async ({ page }) => {
-    await desktop(page, '/pl/rezerwacje')
-    await expect(page).toHaveURL(`${BASE}/pl/rezerwacje`)
-    await expect(page.locator('main')).toBeVisible()
-  })
-
-  // New feature not on old site:
-  test('/pl/kontakt-dla-artystow is new (not on old site)', async ({ page }) => {
-    await desktop(page, '/pl/kontakt-dla-artystow')
-    await expect(page).toHaveURL(`${BASE}/pl/kontakt-dla-artystow`)
-    await expect(page.locator('main')).toBeVisible()
-  })
+  for (const route of routes) {
+    test(`new route ${route} loads`, async ({ page }) => {
+      await desktop(page, route)
+      await expect(page).toHaveURL(`${BASE}${route}`)
+      await expect(page.locator('main')).toBeVisible()
+      await expect(page.locator('body')).not.toContainText('404')
+    })
+  }
 })
 
 // ── 4. Restaurant — menu content ─────────────────────────────────────────────
 test.describe('Restaurant — menu content parity', () => {
   test('menu categories present: Przystawki, Dania główne, Desery', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     await expect(page.locator('body')).toContainText('Przystawki')
     await expect(page.locator('body')).toContainText('Dania główne')
     await expect(page.locator('body')).toContainText('Desery')
   })
 
   test('soups (Zupy) category present', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     await expect(page.locator('body')).toContainText('Zupy')
   })
 
   test('Burgers category present', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     await expect(page.locator('body')).toContainText('Burg')
   })
 
   test('specific dish: Texas Rib Eye Steak', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     await expect(page.locator('body')).toContainText('Texas Rib Eye Steak')
   })
 
   test('specific dish: Tatar wołowy', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     await expect(page.locator('body')).toContainText('Tatar')
   })
 
   test('steak price shown (119 zł)', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     await expect(page.locator('body')).toContainText('119')
   })
 
   test('Polish & international cuisine description', async ({ page }) => {
-    await desktop(page, '/pl/restauracja')
+    await desktop(page, '/restaurant')
     // The page should mention Polish/international tradition or similar
     await expect(page.locator('body')).toContainText(/kuchni|menu|dania/i)
   })
@@ -215,37 +205,37 @@ test.describe('Restaurant — menu content parity', () => {
 // ── 5. Cocktail bar ───────────────────────────────────────────────────────────
 test.describe('Cocktail bar — jazz legends menu', () => {
   test('Miles Davis cocktail present', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('Miles Davis')
   })
 
   test('Ella Fitzgerald cocktail present', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('Ella Fitzgerald')
   })
 
   test('Duke Ellington cocktail present', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('Duke Ellington')
   })
 
   test('Frank Sinatra cocktail present', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('Frank Sinatra')
   })
 
   test('Louis Armstrong cocktail present', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('Louis Armstrong')
   })
 
   test('cocktail price 39 zł shown', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('39')
   })
 
   test('bar description mentions whisky, rum or cocktails', async ({ page }) => {
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText(/whisky|rum|koktajl|cocktail/i)
   })
 })
@@ -253,92 +243,104 @@ test.describe('Cocktail bar — jazz legends menu', () => {
 // ── 6. Cigar room ─────────────────────────────────────────────────────────────
 test.describe('Cigar room — matches old palarnia cygar content', () => {
   test('Nikaragua / Nicaragua cigars present', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
+    await desktop(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText(/Nikaragua/i)
   })
 
   test('Dominikana / Dominican Republic cigars present', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
+    await desktop(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText(/Dominikan/i)
   })
 
   test('Kuba / Cuba cigars present', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
+    await desktop(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText(/Kuba/i)
   })
 
   test('specific cigar: Cohiba Siglo II (Cuban)', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
+    await desktop(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText('Cohiba')
   })
 
   test('specific cigar: Montecristo', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
+    await desktop(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText('Montecristo')
   })
 
   test('cigar prices in zł shown', async ({ page }) => {
-    await desktop(page, '/pl/cigar-room')
+    await desktop(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText('zł')
   })
 })
 
 // ── 7. Events (program / kalendarium) ────────────────────────────────────────
 test.describe('Events — program matches old site kalendarium', () => {
-  test('program page shows upcoming events', async ({ page }) => {
-    await desktop(page, '/pl/program')
+  test('events page shows upcoming events', async ({ page }) => {
+    await desktop(page, '/events')
     await expect(page.locator('body')).not.toContainText('Internal Server Error')
     // Should have some event content
     await expect(page.locator('main')).toBeVisible()
   })
 
   test('Miles Davis tribute event present', async ({ page }) => {
-    await desktop(page, '/pl/program')
+    await desktop(page, '/events')
     await expect(page.locator('body')).toContainText('Miles Davis')
   })
 
   test('event prices shown', async ({ page }) => {
-    await desktop(page, '/pl/program')
+    await desktop(page, '/events')
     // Events have prices; zł symbol should appear
     await expect(page.locator('body')).toContainText('zł')
   })
 
   test('recurring events (Jazzowe Wtorki etc.) listed', async ({ page }) => {
-    await desktop(page, '/pl/program')
+    await desktop(page, '/events')
     await expect(page.locator('body')).toContainText(/jazz|swing|blues/i)
+  })
+
+  test('events are addressed by slug (not numeric id)', async ({ page }) => {
+    await desktop(page, '/events')
+    const eventLinks = page.locator('a[href^="/events/"]')
+    const count = await eventLinks.count()
+    if (count > 0) {
+      const href = await eventLinks.first().getAttribute('href')
+      expect(href).toMatch(/^\/events\/[a-z0-9-]+$/)
+      // Old numeric `/program/123` style must be gone.
+      expect(href).not.toMatch(/^\/events\/\d+$/)
+    }
   })
 })
 
-// ── 8. Private events — twoje-wydarzenie ─────────────────────────────────────
-test.describe('Private events — twoje-wydarzenie matches old imprezy content', () => {
+// ── 8. Private events — business ─────────────────────────────────────────────
+test.describe('Private events — /business matches old imprezy content', () => {
   test('capacity "120" guests mentioned', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText('120')
   })
 
   test('VIP Room mentioned', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText('VIP')
   })
 
-  test('Cigar Room mentioned in event-booking page', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+  test('Cigar Room mentioned in business event page', async ({ page }) => {
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText(/Cigar Room|palarni/i)
   })
 
   test('EPSON projector equipment listed in VIP Room', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText('EPSON')
   })
 
   test('event types: imprezy prywatne + firmowe mentioned', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText(/prywat/i)
     await expect(page.locator('body')).toContainText(/firm/i)
   })
 
   test('room selector tabs are present', async ({ page }) => {
-    await desktop(page, '/pl/twoje-wydarzenie')
+    await desktop(page, '/business')
     // The room selector should have clickable room names
     const rooms = ['Sala Klubowa', 'VIP Room', 'Cigar Room']
     let found = 0
@@ -348,31 +350,37 @@ test.describe('Private events — twoje-wydarzenie matches old imprezy content',
     }
     expect(found).toBeGreaterThanOrEqual(2)
   })
+
+  test('business detail sub-pages load by slug', async ({ page }) => {
+    // Old dedicated offer pages consolidated under /business/[slug].
+    for (const slug of ['meetings', 'birthday', 'venue-hire']) {
+      await desktop(page, `/business/${slug}`)
+      await expect(page.locator('main')).toBeVisible()
+      await expect(page.locator('body')).not.toContainText('Internal Server Error')
+    }
+  })
 })
 
 // ── 9. Social links — real ADC URLs ──────────────────────────────────────────
 test.describe('Social links — correct real ADC URLs', () => {
-  test('Facebook link points to americandreamclubpoznan', async ({ page }) => {
-    await desktop(page, '/pl')
-    const fbLink = page.locator('a[href*="facebook.com/americandreamclubpoznan"]').first()
-    // Note: requires re-seeding with updated seed-adc.ts
-    // If seed not run yet, test verifies a Facebook link at minimum exists
+  test('Facebook link points to americandreamclub', async ({ page }) => {
+    await desktop(page, '/')
     const anyFb = page.locator('a[href*="facebook.com"]').first()
     await expect(anyFb).toBeVisible()
     const href = await anyFb.getAttribute('href')
     expect(href).toContain('facebook.com')
   })
 
-  test('Instagram link points to americandreamclubpoznan', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('Instagram link points to americandreamclub', async ({ page }) => {
+    await desktop(page, '/')
     const igLink = page.locator('a[href*="instagram.com"]').first()
     await expect(igLink).toBeVisible()
     const href = await igLink.getAttribute('href')
     expect(href).toContain('instagram.com')
   })
 
-  test('YouTube link points to americandreamclubpoznan channel', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('YouTube link points to americandreamclub channel', async ({ page }) => {
+    await desktop(page, '/')
     const ytLink = page.locator('a[href*="youtube.com"]').first()
     await expect(ytLink).toBeVisible()
     const href = await ytLink.getAttribute('href')
@@ -380,7 +388,7 @@ test.describe('Social links — correct real ADC URLs', () => {
   })
 
   test('social links open in new tab', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const socialLinks = page.locator('header a[href*="facebook.com"], header a[href*="instagram.com"], header a[href*="youtube.com"]')
     const count = await socialLinks.count()
     if (count > 0) {
@@ -393,17 +401,17 @@ test.describe('Social links — correct real ADC URLs', () => {
 // ── 10. 21+ age gate ──────────────────────────────────────────────────────────
 test.describe('21+ age restriction — matches old site', () => {
   test('21+ badge visible in footer', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('footer')).toContainText('21+')
   })
 
   test('21+ notice present on contact page', async ({ page }) => {
-    await desktop(page, '/pl/kontakt')
+    await desktop(page, '/contact')
     await expect(page.locator('body')).toContainText('21')
   })
 
-  test('21+ notice or policy mentioned on /pl', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('21+ notice or policy mentioned on homepage', async ({ page }) => {
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('21')
   })
 })
@@ -411,14 +419,14 @@ test.describe('21+ age restriction — matches old site', () => {
 // ── 11. Newsletter ────────────────────────────────────────────────────────────
 test.describe('Newsletter — matches old site signup', () => {
   test('newsletter section with email input in footer', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const footer = page.locator('footer')
     await expect(footer.locator('input[type="email"]')).toBeVisible()
     await expect(footer).toContainText(/newsletter/i)
   })
 
   test('newsletter email placeholder present', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     const emailInput = page.locator('footer input[type="email"]').first()
     await expect(emailInput).toBeVisible()
     // Either has placeholder text or aria-label
@@ -430,8 +438,8 @@ test.describe('Newsletter — matches old site signup', () => {
 
 // ── 12. Multilingual — PL + EN ────────────────────────────────────────────────
 test.describe('Multilingual — PL and EN available', () => {
-  test('/pl homepage has lang="pl"', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('PL homepage has lang="pl"', async ({ page }) => {
+    await desktop(page, '/')
     await expect(page.locator('html')).toHaveAttribute('lang', 'pl')
   })
 
@@ -447,35 +455,34 @@ test.describe('Multilingual — PL and EN available', () => {
     await expect(page.locator('header')).toBeVisible()
   })
 
-  test('/en/restauracja (or /en/{slug}) loads in English', async ({ page }) => {
-    const resp = await page.goto(`${BASE}/en/restauracja`)
+  test('/en/restaurant loads in English', async ({ page }) => {
+    const resp = await page.goto(`${BASE}/en/restaurant`)
     expect(resp?.status()).not.toBe(500)
-    if (resp?.status() === 200) {
-      await expect(page.locator('main')).toBeVisible()
-    }
+    await expect(page).toHaveURL(`${BASE}/en/restaurant`)
+    await expect(page.locator('main')).toBeVisible()
   })
 })
 
 // ── 13. SEO ───────────────────────────────────────────────────────────────────
 test.describe('SEO parity — meta tags and structured data', () => {
-  test('/pl has <title> set', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('homepage has <title> set', async ({ page }) => {
+    await desktop(page, '/')
     const title = await page.title()
     expect(title.length).toBeGreaterThan(5)
     expect(title).toMatch(/american dream|jazz|poznań/i)
   })
 
-  test('/pl has meta description', async ({ page }) => {
-    await desktop(page, '/pl')
+  test('homepage has meta description', async ({ page }) => {
+    await desktop(page, '/')
     const desc = await page.locator('meta[name="description"]').getAttribute('content')
     expect(desc).toBeTruthy()
     expect(desc!.length).toBeGreaterThan(20)
   })
 
-  test('sitemap.xml contains /pl/restauracja', async ({ request }) => {
+  test('sitemap contains the new /restaurant URL', async ({ request }) => {
     const resp = await request.get(`${BASE}/sitemap.xml`)
     const body = await resp.text()
-    expect(body).toContain('restauracja')
+    expect(body).toContain('restaurant')
   })
 
   test('robots.txt allows crawlers', async ({ request }) => {
@@ -487,15 +494,15 @@ test.describe('SEO parity — meta tags and structured data', () => {
 
 // ── 14. Feature comparison: new vs old ───────────────────────────────────────
 test.describe('New features not on old site', () => {
-  test('NEW: individual reservation page /pl/rezerwacje', async ({ page }) => {
-    await desktop(page, '/pl/rezerwacje')
-    await expect(page).toHaveURL(`${BASE}/pl/rezerwacje`)
+  test('NEW: dedicated reservation page /rezerwacja', async ({ page }) => {
+    await desktop(page, '/rezerwacja')
+    await expect(page).toHaveURL(`${BASE}/rezerwacja`)
     await expect(page.locator('main')).toBeVisible()
   })
 
-  test('NEW: artist contact page /pl/kontakt-dla-artystow', async ({ page }) => {
-    await desktop(page, '/pl/kontakt-dla-artystow')
-    await expect(page).toHaveURL(`${BASE}/pl/kontakt-dla-artystow`)
+  test('NEW: artist contact page /kontakt-dla-artystow', async ({ page }) => {
+    await desktop(page, '/kontakt-dla-artystow')
+    await expect(page).toHaveURL(`${BASE}/kontakt-dla-artystow`)
     await expect(page.locator('form, [data-artist-form]').first()).toBeVisible()
   })
 
@@ -506,19 +513,18 @@ test.describe('New features not on old site', () => {
   })
 
   test('NEW: news article detail page with slug routing', async ({ page }) => {
-    await desktop(page, '/pl/aktualnosci')
-    // Check there are article links (new: slug-based routing vs old: WordPress-style)
-    const links = page.locator('a[href*="/pl/aktualnosci/"]')
+    await desktop(page, '/news')
+    // Check there are slug-based article links (new: slug routing vs old: WordPress-style)
+    const links = page.locator('a[href^="/news/"]')
     const count = await links.count()
     // News exist if seeded; otherwise the listing still renders
     await expect(page.locator('main')).toBeVisible()
     expect(count).toBeGreaterThanOrEqual(0)
   })
 
-  test('NEW: recurring event series pages', async ({ page }) => {
-    await desktop(page, '/pl/program')
-    // Recurring series have detail pages under /pl/wydarzenia-cykliczne/
-    // Check program page renders without error
+  test('NEW: dedicated /news/pod-papugami route', async ({ page }) => {
+    await desktop(page, '/news/pod-papugami')
+    await expect(page).toHaveURL(`${BASE}/news/pod-papugami`)
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Internal Server Error')
   })
@@ -527,37 +533,37 @@ test.describe('New features not on old site', () => {
 // ── 15. Homepage key sections ─────────────────────────────────────────────────
 test.describe('Homepage — all key sections from old site', () => {
   test('"Nowy Jork w centrum Poznania" intro heading', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('Nowy Jork w centrum Poznania')
   })
 
   test('American Dream Club name in header or hero', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('American Dream')
   })
 
   test('IMPREZY PRYWATNE section present', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('IMPREZY PRYWATNE')
   })
 
   test('IMPREZY FIRMOWE section present', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText('IMPREZY FIRMOWE')
   })
 
   test('footer address "Dominikańska 9" present', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('footer')).toContainText('Dominikańska')
   })
 
   test('footer phone +48 500 210 333 present', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('footer')).toContainText('+48 500 210 333')
   })
 
   test('RESTAURACJA & JAZZ CLUB description in topbar or hero', async ({ page }) => {
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('body')).toContainText(/restauracja|jazz club/i)
   })
 })
@@ -565,28 +571,28 @@ test.describe('Homepage — all key sections from old site', () => {
 // ── 16. Missing on new site (known gaps vs old site) ──────────────────────────
 test.describe('Known gaps vs old site — tracked for future implementation', () => {
   test.skip('OLD only: separate /oferta/wieczory-kawalerskie/ page', async ({ page }) => {
-    // Old site had a dedicated page; new site consolidates into /twoje-wydarzenie
+    // Old site had a dedicated page; new site consolidates into /business
     // Marked skip — this is a known intentional consolidation
-    await desktop(page, '/pl/twoje-wydarzenie')
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText(/kawalersk|bachelor/i)
   })
 
   test.skip('OLD only: separate /oferta/spotkania-biznesowe/ page', async ({ page }) => {
-    // Old site had a dedicated page; new site consolidates into /twoje-wydarzenie
-    await desktop(page, '/pl/twoje-wydarzenie')
+    // Old site had a dedicated page; new site consolidates into /business
+    await desktop(page, '/business')
     await expect(page.locator('body')).toContainText(/biznesow|business/i)
   })
 
   test.skip('OLD only: separate /wino/ wine page', async ({ page }) => {
-    // Old site had a dedicated wine page; new site includes wine in /bar
+    // Old site had a dedicated wine page; new site includes wine in /bar-and-cocktails
     // Marked skip until a dedicated wine section is implemented
-    await desktop(page, '/pl/bar')
+    await desktop(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText(/wino|wine/i)
   })
 
   test.skip('OLD only: TripAdvisor link in footer', async ({ page }) => {
     // Old site linked to TripAdvisor; not yet in new site footer
-    await desktop(page, '/pl')
+    await desktop(page, '/')
     await expect(page.locator('footer a[href*="tripadvisor"]')).toBeVisible()
   })
 })

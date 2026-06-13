@@ -1,7 +1,9 @@
 'use client'
-import React, { useState } from 'react'
-import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CMSLink } from '@/components/Link'
+import { LocaleSwitcher } from '@/components/LocaleSwitcher'
+import type { Locale } from '@/config/locales'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 
 type NavItem = {
@@ -38,7 +40,7 @@ type Props = {
   socialLinks: SocialLink[]
   ctaButton: CtaButton | null | undefined
   ctaEnabled: boolean | null | undefined
-  locale: string
+  locale: Locale
 }
 
 const SocialIconMobile = ({ platform }: { platform: string }) => {
@@ -87,21 +89,38 @@ export const MobileMenu: React.FC<Props> = ({
   locale,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const allNavItems = navItems
 
-  return (
-    <div className="lg:hidden">
-      {/* Hamburger button */}
-      <button
-        className="text-white p-2 flex flex-col gap-1.5"
-        onClick={() => setIsOpen(true)}
-        aria-label="Open menu"
-      >
-        <span className="block w-6 h-0.5 bg-white" />
-        <span className="block w-6 h-0.5 bg-white" />
-        <span className="block w-6 h-0.5 bg-white" />
-      </button>
+  // Portal musi działać dopiero po stronie klienta (potrzebuje `document`).
+  useEffect(() => setMounted(true), [])
 
+  // Gdy menu jest otwarte: zablokuj scroll strony pod spodem i pozwól zamknąć
+  // klawiszem Escape. Bez tego (oraz bez portalu poniżej) tło przewijało się za
+  // otwartym menu — nagłówek ma `transform` (animacja Motion), który czynił
+  // `position: fixed` względem nagłówka zamiast viewportu.
+  useEffect(() => {
+    if (!isOpen) return
+    // Elementem przewijanym strony jest <html> (document.scrollingElement),
+    // dlatego blokadę nakładamy na <html>, nie na <body>.
+    const scroller = (document.scrollingElement as HTMLElement) ?? document.documentElement
+    const prevOverflow = scroller.style.overflow
+    scroller.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      scroller.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [isOpen])
+
+  // Backdrop + drawer renderujemy PRZEZ PORTAL do <body>, aby uciec spod
+  // transformowanego nagłówka — dzięki temu `fixed` jest liczone względem
+  // viewportu (pełna wysokość ekranu, tło realnie zakryte).
+  const overlay = (
+    <div className="lg:hidden">
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[99] bg-black/60 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
@@ -149,24 +168,13 @@ export const MobileMenu: React.FC<Props> = ({
             </div>
           )}
 
-          {/* Language switcher */}
-          <div className="flex items-center gap-2 text-[13px] font-bold tracking-wider">
-            <Link
-              href="/pl"
-              className={locale === 'pl' ? 'text-brand-gold' : 'text-white hover:text-brand-gold transition-colors'}
-              onClick={() => setIsOpen(false)}
-            >
-              PL
-            </Link>
-            <span className="text-white/40">|</span>
-            <Link
-              href="/en"
-              className={locale === 'en' ? 'text-brand-gold' : 'text-white hover:text-brand-gold transition-colors'}
-              onClick={() => setIsOpen(false)}
-            >
-              EN
-            </Link>
-          </div>
+          {/* Language switcher — maps the current path to the other locale */}
+          <LocaleSwitcher
+            currentLocale={locale}
+            className="flex items-center gap-2 text-[13px] font-bold tracking-wider"
+            separatorClassName="text-white/40"
+            onNavigate={() => setIsOpen(false)}
+          />
 
           {/* Social links */}
           {socialLinks.length > 0 && (
@@ -187,6 +195,23 @@ export const MobileMenu: React.FC<Props> = ({
           )}
         </div>
       </div>
+    </div>
+  )
+
+  return (
+    <div className="lg:hidden">
+      {/* Hamburger button */}
+      <button
+        className="text-white p-2 flex flex-col gap-1.5"
+        onClick={() => setIsOpen(true)}
+        aria-label="Open menu"
+      >
+        <span className="block w-6 h-0.5 bg-white" />
+        <span className="block w-6 h-0.5 bg-white" />
+        <span className="block w-6 h-0.5 bg-white" />
+      </button>
+
+      {mounted && createPortal(overlay, document.body)}
     </div>
   )
 }

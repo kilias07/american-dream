@@ -2,7 +2,10 @@ import React from 'react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { MusiciansGridBlock as MusiciansGridBlockType, Media, Musician } from '@/payload-types'
-import { MusiciansCarouselClient } from './MusiciansCarouselClient'
+import Image from 'next/image'
+import Link from 'next/link'
+import { localeHref } from '@/utilities/href'
+import type { Locale } from '@/config/locales'
 import type { MusicianCardData } from './MusiciansCarouselClient'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
@@ -78,7 +81,48 @@ export async function MusiciansGridBlock({
           </div>
         )}
 
-        <MusiciansCarouselClient cards={cards} locale={locale} />
+        {/* Design: static grid with all musicians visible (no carousel). */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
+          {cards.map((card) => {
+            const href = card.slug ? localeHref(locale as Locale, `/muzycy/${card.slug}`) : null
+            const inner = (
+              <div className="group">
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-navy-royal mb-3">
+                  {card.image?.url ? (
+                    <Image
+                      src={card.image.url}
+                      alt={card.image.alt || card.name}
+                      fill
+                      className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-brand-navy" />
+                  )}
+                </div>
+                <h3 className="text-white text-base font-bold uppercase tracking-wide leading-tight">
+                  {card.name}
+                </h3>
+                {card.instrument && (
+                  <p className="text-brand-gold text-[11px] font-bold uppercase tracking-[0.12em] mt-1">
+                    {card.instrument}
+                  </p>
+                )}
+              </div>
+            )
+            return href ? (
+              <Link
+                key={card.id}
+                href={href}
+                className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
+              >
+                {inner}
+              </Link>
+            ) : (
+              <div key={card.id}>{inner}</div>
+            )
+          })}
+        </div>
       </div>
     </section>
   )

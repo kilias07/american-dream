@@ -15,6 +15,8 @@ import {
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { isReservationUrl } from '@/lib/reservation-url'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 type Props = {
   occurrences: EventOccurrence[]
@@ -348,7 +350,7 @@ function EventPopover({
           </div>
 
           <Link
-            href={`/${locale}/program/${occ.eventId}`}
+            href={localeHref(locale as Locale, `/events/${occ.eventSlug}`)}
             className="inline-block mt-4 text-brand-navy/60 text-[12px] font-semibold uppercase tracking-[0.1em] hover:text-brand-navy"
           >
             {detailsLabel} ›

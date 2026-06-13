@@ -13,14 +13,14 @@ import { test, expect, type Page } from '@playwright/test'
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
 
 async function openWizard(page: Page) {
-  await page.goto(`${BASE}/pl/rezerwacja`)
+  await page.goto(`${BASE}/rezerwacja`)
   await page.getByRole('button', { name: 'Rozpocznij rezerwację' }).click()
   return page.getByRole('dialog', { name: 'Rezerwacja' })
 }
 
 test.describe('Reservation wizard', () => {
   test('reservations page renders (PL)', async ({ page }) => {
-    await page.goto(`${BASE}/pl/rezerwacja`)
+    await page.goto(`${BASE}/rezerwacja`)
     await expect(page.getByRole('heading', { level: 1, name: 'Rezerwacje' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Rozpocznij rezerwację' })).toBeVisible()
   })
@@ -74,7 +74,7 @@ test.describe('Reservation wizard', () => {
 
 test.describe('Reservation status page', () => {
   test('unknown id shows the not-found card (PL)', async ({ page }) => {
-    await page.goto(`${BASE}/pl/rezerwacja/status?id=ADC-000000-9999`)
+    await page.goto(`${BASE}/rezerwacja/status?id=ADC-000000-9999`)
     await expect(page.getByRole('heading', { name: 'Nie znaleziono rezerwacji' })).toBeVisible()
   })
 

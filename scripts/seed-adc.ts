@@ -263,11 +263,11 @@ async function run() {
     address: 'ul. Dominikańska 9, 61-762 Poznań',
     // Social links live in the `site-settings` global (single source of truth).
     navItems: [
-      { link: { type: 'custom', label: 'RESTAURACJA', url: '/restauracja' } },
-      { link: { type: 'custom', label: 'PROGRAM', url: '/program' } },
-      { link: { type: 'custom', label: 'TWOJE WYDARZENIE', url: '/twoje-wydarzenie' } },
-      { link: { type: 'custom', label: 'BAR & CIGAR', url: '/bar' } },
-      { link: { type: 'custom', label: 'KONTAKT', url: '/kontakt' } },
+      { link: { type: 'custom', label: 'RESTAURACJA', url: '/restaurant' } },
+      { link: { type: 'custom', label: 'PROGRAM', url: '/events' } },
+      { link: { type: 'custom', label: 'TWOJE WYDARZENIE', url: '/business' } },
+      { link: { type: 'custom', label: 'BAR & CIGAR', url: '/bar-and-cocktails' } },
+      { link: { type: 'custom', label: 'KONTAKT', url: '/contact' } },
     ],
     ctaEnabled: true,
     ctaButton: { type: 'custom', label: 'ZAREZERWUJ', url: '/rezerwacje' },
@@ -297,26 +297,26 @@ async function run() {
         {
           heading: 'OFERTA',
           links: [
-            { label: 'Wydarzenia muzyczne', url: '/program' },
-            { label: 'Restauracja', url: '/restauracja' },
-            { label: 'Cocktail Bar & Wino', url: '/bar' },
-            { label: 'Cygara', url: '/cigar-room' },
+            { label: 'Wydarzenia muzyczne', url: '/events' },
+            { label: 'Restauracja', url: '/restaurant' },
+            { label: 'Cocktail Bar & Wino', url: '/bar-and-cocktails' },
+            { label: 'Cygara', url: '/cigar-lounge' },
           ],
         },
         {
           heading: 'REZERWACJE',
           links: [
             { label: 'Rezerwacje indywidualne', url: '/rezerwacje' },
-            { label: 'Imprezy prywatne', url: '/twoje-wydarzenie' },
-            { label: 'Imprezy firmowe', url: '/twoje-wydarzenie' },
-            { label: 'Kontakt', url: '/kontakt' },
+            { label: 'Imprezy prywatne', url: '/business' },
+            { label: 'Imprezy firmowe', url: '/business' },
+            { label: 'Kontakt', url: '/contact' },
           ],
         },
       ],
       bottomBarLinks: [
         { label: 'AMERICAN DREAM CLUB® 2026 Wszelkie prawa zastrzeżone', url: '/' },
         { label: 'Regulamin klubu', url: '/regulamin' },
-        { label: 'Polityka prywatności', url: '/polityka-prywatnosci' },
+        { label: 'Polityka prywatności', url: '/privacy' },
         { label: 'Dane firmy', url: '/dane-firmy' },
       ],
       // Social links live in the `site-settings` global (single source of truth).
@@ -1104,16 +1104,16 @@ async function run() {
 
   const venueCards = async () => [
     // CTAs match the PDF: section name (not "SPRAWDŹ MENU") + › arrow
-    { image: await img.program(), colSpan: 'full', label: 'Codziennie muzyka na żywo w weekendy.', title: 'KONCERTY I WYDARZENIA', ctaLabel: 'PROGRAM ›', ctaUrl: '/program' },
-    { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'RESTAURACJA ›', ctaUrl: '/restauracja' },
-    { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar' },
-    { image: await img.cigar(), colSpan: 'full', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-room' },
+    { image: await img.program(), colSpan: 'full', label: 'Codziennie muzyka na żywo w weekendy.', title: 'KONCERTY I WYDARZENIA', ctaLabel: 'PROGRAM ›', ctaUrl: '/events' },
+    { image: await img.restauracja(), colSpan: 'full', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'RESTAURACJA ›', ctaUrl: '/restaurant' },
+    { image: await img.bar(), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
+    { image: await img.cigar(), colSpan: 'full', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-lounge' },
   ]
   const venueCardsEn = async () => [
-    { image: await img.program(), colSpan: 'full', label: 'Live music every weekend.', title: 'CONCERTS & EVENTS', ctaLabel: 'PROGRAM ›', ctaUrl: '/program' },
-    { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes in a modern style.', title: 'RESTAURANT', ctaLabel: 'RESTAURANT ›', ctaUrl: '/restauracja' },
-    { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails and a selection of wines and spirits.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar' },
-    { image: await img.cigar(), colSpan: 'full', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-room' },
+    { image: await img.program(), colSpan: 'full', label: 'Live music every weekend.', title: 'CONCERTS & EVENTS', ctaLabel: 'PROGRAM ›', ctaUrl: '/events' },
+    { image: await img.restauracja(), colSpan: 'full', label: 'A kitchen inspired by the culture of different US states. Signature dishes in a modern style.', title: 'RESTAURANT', ctaLabel: 'RESTAURANT ›', ctaUrl: '/restaurant' },
+    { image: await img.bar(), colSpan: 'full', label: 'Signature cocktails and a selection of wines and spirits.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
+    { image: await img.cigar(), colSpan: 'full', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-lounge' },
   ]
   // EN text for the testimonial items embedded in page blocks
   // (the [, , en] element of each `testis` tuple).
@@ -1124,52 +1124,50 @@ async function run() {
     { blockType: 'heroBanner', heading: 'Restauracja & Jazz Club', subtext: 'Kolacja i drinki w trakcie koncertu na żywo', backgroundImage: await img.home(), backgroundVideo: await heroVideo(),
       ctaLink: { type: 'custom', label: 'ZAREZERWUJ STOLIK', url: '/rezerwacje' }, ctaIcon: 'ticket',
       secondaryLinks: [
-        { link: { type: 'custom', label: 'MENU', url: '/restauracja' }, icon: 'fork' },
-        { link: { type: 'custom', label: 'PROGRAM', url: '/program' }, icon: 'music' },
+        { link: { type: 'custom', label: 'MENU', url: '/restaurant' }, icon: 'fork' },
+        { link: { type: 'custom', label: 'PROGRAM', url: '/events' }, icon: 'music' },
       ] },
     { blockType: 'aboutIntro', eyebrow: 'American Dream Club®', heading: 'Nowy Jork w centrum Poznania',
       body: 'Przyjdź, poczuj atmosferę miejsca stworzonego dla muzyki, kolacji i rozmów. Tutaj w dobrym towarzystwie spędzisz cały wieczór: zjesz kolację, zapalisz cygaro i posłuchasz muzyki na żywo.',
       pullQuote: 'To jest świetne miejsce, będę tu wracać!' },
-    { blockType: 'eventsTeaser', eyebrow: 'Nadchodzące wydarzenia', heading: 'PROGRAM', viewAllLabel: 'SPRAWDŹ PEŁEN PROGRAM', viewAllUrl: '/program', limit: 6 },
+    { blockType: 'eventsTeaser', eyebrow: 'Nadchodzące wydarzenia', heading: 'PROGRAM', viewAllLabel: 'SPRAWDŹ PEŁEN PROGRAM', viewAllUrl: '/events', limit: 6 },
     { blockType: 'bentoSection', subheading: 'Zorganizuj z nami', heading: 'AMERICAN DREAM CLUB', items: await venueCards() },
     { blockType: 'offerCards', eyebrow: 'Zorganizuj z nami', heading: 'TWOJE WYDARZENIE', cards: [
       { tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA',
         body: 'Ty przychodzisz z Gośćmi, my zajmiemy się organizacją, oprawą i przebiegiem imprezy.',
-        ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/twoje-wydarzenie' },
+        ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/business' },
       { tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE',
         body: 'Eleganckie przestrzenie z dobrym wyposażeniem technicznym i full gastro na życzenie.',
-        ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/twoje-wydarzenie' },
+        ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/business' },
     ] },
     { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google',
       items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
-    { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Zapisz się i bądź na bieżąco z programem.', placeholder: 'Adres email', buttonLabel: 'ZAPISZ SIĘ', consentText: 'Akceptuję politykę prywatności' },
   ], 'Home', [
     { blockType: 'heroBanner', heading: 'Restaurant & Jazz Club', subtext: 'Dinner and drinks during a live concert', backgroundImage: await img.home(), backgroundVideo: await heroVideo(),
       ctaLink: { type: 'custom', label: 'ZAREZERWUJ STOLIK', url: '/rezerwacje' }, ctaIcon: 'ticket',
       secondaryLinks: [
-        { link: { type: 'custom', label: 'MENU', url: '/restauracja' }, icon: 'fork' },
-        { link: { type: 'custom', label: 'PROGRAM', url: '/program' }, icon: 'music' },
+        { link: { type: 'custom', label: 'MENU', url: '/restaurant' }, icon: 'fork' },
+        { link: { type: 'custom', label: 'PROGRAM', url: '/events' }, icon: 'music' },
       ] },
     { blockType: 'aboutIntro', eyebrow: 'American Dream Club®', heading: 'New York in the heart of Poznań',
       body: 'Come in and soak up the atmosphere of a place made for music, dinner and conversation. Here, in good company, you can spend a whole evening: have dinner, light a cigar and enjoy live music.',
       pullQuote: "This is a great place — I'll keep coming back!" },
-    { blockType: 'eventsTeaser', eyebrow: 'Upcoming events', heading: 'PROGRAM', viewAllLabel: 'SEE THE FULL PROGRAM', viewAllUrl: '/program', limit: 6 },
+    { blockType: 'eventsTeaser', eyebrow: 'Upcoming events', heading: 'PROGRAM', viewAllLabel: 'SEE THE FULL PROGRAM', viewAllUrl: '/events', limit: 6 },
     { blockType: 'bentoSection', subheading: 'Plan it with us', heading: 'AMERICAN DREAM CLUB', items: await venueCardsEn() },
     { blockType: 'offerCards', eyebrow: 'Plan it with us', heading: 'YOUR EVENT', cards: [
       { tag: 'PRIVATE EVENTS', title: 'BIRTHDAYS & ANNIVERSARIES IN THE HEART OF POZNAŃ',
         body: 'Bring your guests — we take care of the organisation, entertainment and running of the evening.',
-        ctaLabel: 'FIND OUT MORE', ctaUrl: '/twoje-wydarzenie' },
+        ctaLabel: 'FIND OUT MORE', ctaUrl: '/business' },
       { tag: 'CORPORATE EVENTS', title: 'CORPORATE GATHERINGS IN A CLUB ATMOSPHERE',
         body: 'Elegant spaces with excellent technical equipment and full catering on request.',
-        ctaLabel: 'FIND OUT MORE', ctaUrl: '/twoje-wydarzenie' },
+        ctaLabel: 'FIND OUT MORE', ctaUrl: '/business' },
     ] },
     { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google',
       items: testiItemsEn },
-    { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Sign up and stay up to date with the program.', placeholder: 'Email address', buttonLabel: 'SIGN UP', consentText: 'I accept the privacy policy' },
   ])
 
   // RESTAURACJA
-  await page('restauracja', 'Restauracja', [
+  await page('restaurant', 'Restauracja', [
     { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
     { blockType: 'aboutIntro', eyebrow: 'Nasza kuchnia', heading: 'Dania inspirowane kulturą różnych stanów USA', body: 'Karta dań nawiązuje do kuchni amerykańskiej z akcentami europejskimi. Menu stanowi dopełnienie wieczoru — tworząc wraz z muzyką i rozmową jedną spójną, klubową całość. Dania i napoje możesz zamówić przed koncertem lub w jego trakcie — obsługa pozostaje do pełnej dyspozycji. W karcie oferta wegetariańska oraz starannie dobrane wina i koktajle.' },
     { blockType: 'menuSection', sectionTag: 'MENU', heading: 'Nasze dania', menuType: 'food', layout: 'cardGrid', groupByCategory: true },
@@ -1179,7 +1177,7 @@ async function run() {
       { label: 'JAZZ CLUB SPECIAL', sub: 'American Dream Club Sandwich + piwo BUD (330 ml) lub lemoniada (330 ml)', price: 60 },
       { label: 'AMERICAN DREAM', sub: '2× aperitif (Bellini lub Americano) + przekąski dla dwojga (deska made in USA lub selekcja serów i wędlin) + 2× deser (brownie)', price: 147 },
     ], ctaLabel: 'ZAREZERWUJ STOLIK', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: '3-daniowa kolacja degustacyjna w stałej cenie', menus: [
+    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: '3-daniowa kolacja degustacyjna w stałej cenie', image: await img.program(), menus: [
       { name: 'MENU A', price: 69, courses: [
         { courseLabel: 'PRZYSTAWKA', dish: 'Tatar wołowy', description: 'wołowina 65 g, ogórek konserwowy, szalotka, borowik, musztarda francuska, kapary, oliwa z oliwek, sos worcestershire, papryka, żółtko' },
         { courseLabel: 'DANIE GŁÓWNE', dish: 'Polik wołowy', description: 'polik wołowy 100 g, puree z pasternaku, burak, sos z węgielka' },
@@ -1193,7 +1191,7 @@ async function run() {
     ] },
     { blockType: 'promoBand', heading: 'Towarzyska Niedziela', subtitle: 'Specjalne menu i relaksująca atmosfera', body: 'Zakończ tydzień razem z nami! Towarzyska Niedziela to wyjątkowy wieczór w klubowej atmosferze — od 16:00 do 21:00. W godzinach 17:00 – 20:00 tańce przy największych przebojach muzycznych XX wieku.', ctaLabel: 'ZAREZERWUJ STOLIK', ctaUrl: '/rezerwacje', style: 'gold' },
     { blockType: 'bentoSection', items: [
-      { image: await img.bar(), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar' },
+      { image: await img.bar(), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ], 'Restaurant', [
     { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
@@ -1204,7 +1202,7 @@ async function run() {
       { label: 'JAZZ CLUB SPECIAL', sub: 'American Dream Club Sandwich + BUD beer (330 ml) or lemonade (330 ml)', price: 60 },
       { label: 'AMERICAN DREAM', sub: '2× aperitif (Bellini or Americano) + snacks for two (made-in-USA board or a selection of cheeses and cold cuts) + 2× dessert (brownie)', price: 147 },
     ], ctaLabel: 'BOOK A TABLE', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: 'A three-course tasting dinner at a fixed price', menus: [
+    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: 'A three-course tasting dinner at a fixed price', image: await img.program(), menus: [
       { name: 'MENU A', price: 69, courses: [
         { courseLabel: 'STARTER', dish: 'Beef Tartare', description: 'beef 65 g, pickled cucumber, shallot, porcini, French mustard, capers, olive oil, Worcestershire sauce, paprika, egg yolk' },
         { courseLabel: 'MAIN COURSE', dish: 'Beef Cheek', description: 'beef cheek 100 g, parsnip purée, beetroot, charcoal sauce' },
@@ -1218,47 +1216,53 @@ async function run() {
     ] },
     { blockType: 'promoBand', heading: 'Social Sunday', subtitle: 'A special menu and a relaxed atmosphere', body: 'End the week together with us! Social Sunday is a special evening in a club atmosphere — from 4 pm to 9 pm. Between 5 pm and 8 pm, dancing to the greatest musical hits of the 20th century.', ctaLabel: 'BOOK A TABLE', ctaUrl: '/rezerwacje', style: 'gold' },
     { blockType: 'bentoSection', items: [
-      { image: await img.bar(), colSpan: 'full', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar' },
+      { image: await img.bar(), colSpan: 'full', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ])
 
   // BAR
-  await page('bar', 'Cocktail Bar', [
+  await page('bar-and-cocktails', 'Cocktail Bar', [
     { blockType: 'pageHero', eyebrow: 'Starannie dobrana selekcja win oraz autorskie koktajle', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await img.bar() },
     { blockType: 'aboutIntro', heading: 'Przestrzeń spotkań z wyjątkowym smakiem', subheading: 'Dopełnienie klubowego charakteru wieczoru', body: 'Oferujemy starannie dobraną selekcję win oraz autorskie koktajle przygotowywane przez doświadczonych barmanów. Wina, drinki i koktajle serwowane są zarówno przy barze, jak i bezpośrednio do stolików, tak aby goście mogli swobodnie rozmawiać, słuchać muzyki i pozostać przy stole przez cały wieczór. W karcie znajdują się wina, alkohole premium oraz klasyczne i autorskie koktajle — skomponowane z myślą o klubowym charakterze wieczoru.' },
     { blockType: 'menuSection', sectionTag: 'KOKTAJLE AUTORSKIE', heading: 'Koktajle', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
     { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restauracja' },
-      { image: await img.cigar(), colSpan: 'half', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-room' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restaurant' },
+      { image: await img.cigar(), colSpan: 'half', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-lounge' },
     ] },
   ], 'Cocktail Bar', [
     { blockType: 'pageHero', eyebrow: 'A carefully curated wine selection and signature cocktails', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await img.bar() },
     { blockType: 'aboutIntro', heading: 'A meeting space with exceptional flavour', subheading: 'The finishing touch to the club character of the evening', body: 'We offer a carefully curated selection of wines and signature cocktails prepared by experienced bartenders. Wines, drinks and cocktails are served both at the bar and directly to the tables, so guests can chat freely, listen to the music and stay at their table all evening long. The menu features wines, premium spirits and classic and signature cocktails — composed with the club character of the evening in mind.' },
     { blockType: 'menuSection', sectionTag: 'SIGNATURE COCKTAILS', heading: 'Cocktails', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
     { blockType: 'bentoSection', heading: 'MORE', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restauracja' },
-      { image: await img.cigar(), colSpan: 'half', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'SEE THE MENU', ctaUrl: '/cigar-room' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restaurant' },
+      { image: await img.cigar(), colSpan: 'half', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'SEE THE MENU', ctaUrl: '/cigar-lounge' },
     ] },
   ])
 
   // CIGAR ROOM
-  await page('cigar-room', 'Cigar Room', [
+  await page('cigar-lounge', 'Cigar Room', [
     { blockType: 'pageHero', eyebrow: 'Uzupełnienie wieczoru w otoczeniu klubowej elegancji', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await img.cigar() },
     { blockType: 'aboutIntro', heading: 'Profesjonalna przestrzeń dla miłośników cygar', subheading: 'Starannie dobrana oferta cygar i alkoholi', body: 'Palarnia cygar w American Dream Club to przestrzeń stworzona z myślą o gościach, którzy cenią spokojną rozmowę i kulturę celebrowania cygara czy fajki. Zapewnia komfortowe warunki oraz atmosferę sprzyjającą dłuższemu pobytowi. Oferujemy starannie dobraną selekcję cygar, przechowywanych w odpowiednich warunkach i podawanych z należytą dbałością. Do wyboru starannie dobrane trunki, szlachetne whisky i koniaki naturalnie wpisujące się w charakter tego miejsca. Palarnia stanowi uzupełnienie wieczoru — przed koncertem, w przerwie lub po jego zakończeniu. Dedykowana dla osób, które oczekują dyskrecji, spokoju i poczucia bezpieczeństwa, w otoczeniu klubowej elegancji.' },
-    { blockType: 'menuSection', sectionTag: 'CYGARA', heading: 'Cygara', menuType: 'cigars', layout: 'pricedList', groupByCategory: true },
-    // imageGallery omitted — add after uploading real lounge photos via CMS
+    { blockType: 'menuSection', sectionTag: 'CYGARA', heading: 'Cygara', menuType: 'cigars', layout: 'pricedList', groupByCategory: true, image: await img.cigar() },
+    { blockType: 'imageGallery', images: [
+      { image: await img.cigar() }, { image: await img.bar() }, { image: await img.restauracja() },
+      { image: await img.program() }, { image: await img.special() }, { image: await img.gallery() },
+    ] },
     { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restauracja' },
-      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restaurant' },
+      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ], 'Cigar Room', [
     { blockType: 'pageHero', eyebrow: 'A perfect close to the evening amid club elegance', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await img.cigar() },
     { blockType: 'aboutIntro', heading: 'A professional space for cigar lovers', subheading: 'A carefully curated selection of cigars and spirits', body: 'The cigar lounge at American Dream Club is a space created for guests who value calm conversation and the culture of savouring a fine cigar or pipe. It offers comfortable conditions and an atmosphere that invites a longer stay. We offer a carefully curated selection of cigars, stored in the right conditions and served with due care. To go with them, a selection of fine spirits, noble whiskies and cognacs that naturally fit the character of this place. The lounge is a complement to the evening — before the concert, during the interval or after it ends. Dedicated to those who expect discretion, calm and a sense of security, amid club elegance.' },
-    { blockType: 'menuSection', sectionTag: 'CIGARS', heading: 'Cigars', menuType: 'cigars', layout: 'pricedList', groupByCategory: true },
-    // imageGallery omitted — add after uploading real lounge photos via CMS
+    { blockType: 'menuSection', sectionTag: 'CIGARS', heading: 'Cigars', menuType: 'cigars', layout: 'pricedList', groupByCategory: true, image: await img.cigar() },
+    { blockType: 'imageGallery', images: [
+      { image: await img.cigar() }, { image: await img.bar() }, { image: await img.restauracja() },
+      { image: await img.program() }, { image: await img.special() }, { image: await img.gallery() },
+    ] },
     { blockType: 'bentoSection', heading: 'MORE', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restauracja' },
-      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar' },
+      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restaurant' },
+      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ])
 
@@ -1269,9 +1273,8 @@ async function run() {
     { blockType: 'eventsCalendar', variant: 'full', heading: 'KALENDARZ', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: 'Nie przegap', heading: 'WYDARZENIA SPECJALNE', limit: 4 },
     { blockType: 'musiciansGrid', eyebrow: 'Poznaj', heading: 'NASI MUZYCY', intro: 'Na scenie występują wykształceni i zdolni poznańscy muzycy — artyści związani ze środowiskami akademickimi oraz sceną koncertową. Grają dla Twojej radości z autentycznym zaangażowaniem i osobistą interpretacją, bez estradowego patosu, ale z prawdziwą muzyczną energią. Tutaj znajdziesz się blisko muzyków, poczujesz ich emocje i staniesz się częścią wydarzenia.' },
-    { blockType: 'recurringSeriesTeaser', eyebrow: 'Powtarzające się', heading: 'WYDARZENIA CYKLICZNE', description: 'Stałe punkty w naszym kalendarzu — wieczory, które wracają regularnie.', series: seriesIds },
-    // PDF: cross-sell bento with Towarzyska Niedziela + Klub x Muzy at bottom
-    { blockType: 'bentoSection', heading: 'ZAPLANUJ SWÓJ WIECZÓR', items: [
+    // Design: "WYDARZENIA CYKLICZNE" heading sits directly above the two cards (no separate teaser).
+    { blockType: 'bentoSection', subheading: 'Powtarzające się', heading: 'WYDARZENIA CYKLICZNE', items: [
       { colSpan: 'half', label: 'Niedziela w doborowym towarzystwie! Spotkaj się przy dobrym koktajlu, a to wszystko od godziny 18:00.', title: 'TOWARZYSKA NIEDZIELA', ctaLabel: 'TOWARZYSKA NIEDZIELA ›', ctaUrl: '/wydarzenia-cykliczne/towarzyska-niedziela' },
       { colSpan: 'half', label: 'Wieczory kina niemego z akompaniamentem fortepianu na żywo. Poczuj klimat dawnych lat!', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
     ] },
@@ -1281,20 +1284,19 @@ async function run() {
     { blockType: 'eventsCalendar', variant: 'full', heading: 'CALENDAR', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: "Don't miss", heading: 'SPECIAL EVENTS', limit: 4 },
     { blockType: 'musiciansGrid', eyebrow: 'Meet', heading: 'OUR MUSICIANS', intro: 'On stage you will find skilled, well-trained Poznań musicians — artists connected with academic circles and the concert scene. They play for your joy with genuine commitment and personal interpretation, without stage pomp but with real musical energy. Here you are close to the musicians, you feel their emotions and become part of the event.' },
-    { blockType: 'recurringSeriesTeaser', eyebrow: 'Recurring', heading: 'RECURRING EVENTS', description: 'The regular fixtures in our calendar — evenings that come back again and again.', series: seriesIds },
-    { blockType: 'bentoSection', heading: 'PLAN YOUR EVENING', items: [
+    { blockType: 'bentoSection', subheading: 'Recurring', heading: 'RECURRING EVENTS', items: [
       { colSpan: 'half', label: 'Sunday in fine company! Meet over a good cocktail, all from 6 pm.', title: 'SOCIAL SUNDAY', ctaLabel: 'SOCIAL SUNDAY ›', ctaUrl: '/wydarzenia-cykliczne/towarzyska-niedziela' },
       { colSpan: 'half', label: 'Silent-film evenings with live piano accompaniment. Feel the spirit of bygone years!', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
     ] },
   ])
 
   // TWOJE WYDARZENIE
-  await page('twoje-wydarzenie', 'Twoje wydarzenie', [
+  await page('business', 'Twoje wydarzenie', [
     { blockType: 'pageHero', eyebrow: 'Codziennie ktoś u nas świętuje', title: 'Twoje wydarzenie', titleStyle: 'serif', backgroundImage: await img.twoje() },
     { blockType: 'aboutIntro', heading: 'Urodziny. Rocznice. Imprezy firmowe.', subheading: 'Zaproś Gości — my zajmiemy się resztą!', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my wszystko zorganizujemy. Przygotujemy ofertę dopasowaną do Twoich potrzeb i charakteru wydarzenia. Zadbamy o menu, serwis, oprawę muzyczną, atrakcje wieczoru i dekoracje. Wszystkie szczegóły ustalimy z Tobą indywidualnie.' },
-    { blockType: 'offerCards', eyebrow: 'Zorganizuj z nami', heading: 'OFERTA', cards: [
-      { image: await img.twoje(), tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA', body: 'Nasz klub to idealne miejsce, jeśli chcesz świętować spokojnie, z bliską rodziną i muzyką w tle. Ty przychodzisz z Gośćmi — my zajmiemy się organizacją, oprawą i przebiegiem wieczoru. Wszystkie szczegóły organizacyjne — menu, układ sali oraz oprawę wieczoru — ustalimy indywidualnie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/kontakt' },
-      { image: await img.gallery(), tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE', body: 'Eleganckie sale, muzyka na żywo, pełna obsługa — Ty jesteś gościem, my zajmiemy się resztą. Oferujemy przestrzeń dla grup od kilku do 120 osób. Korzystamy z menu à la carte albo uzgodnionego menu grupowego w stałej, z góry określonej cenie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/kontakt' },
+    { blockType: 'offerCards', eyebrow: 'Zorganizuj z nami', heading: 'OFERTA', style: 'framed', cards: [
+      { image: await img.twoje(), tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA', body: 'Nasz klub to idealne miejsce, jeśli chcesz świętować spokojnie, z bliską rodziną i muzyką w tle. Ty przychodzisz z Gośćmi — my zajmiemy się organizacją, oprawą i przebiegiem wieczoru. Wszystkie szczegóły organizacyjne — menu, układ sali oraz oprawę wieczoru — ustalimy indywidualnie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/contact' },
+      { image: await img.gallery(), tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE', body: 'Eleganckie sale, muzyka na żywo, pełna obsługa — Ty jesteś gościem, my zajmiemy się resztą. Oferujemy przestrzeń dla grup od kilku do 120 osób. Korzystamy z menu à la carte albo uzgodnionego menu grupowego w stałej, z góry określonej cenie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/contact' },
     ] },
     { blockType: 'roomSelector', heading: 'DOSTĘPNE STREFY', rooms: roomIds, equipmentHeading: 'WYPOSAŻENIE', offerHeading: 'CO PRZYGOTUJEMY DLA CIEBIE', offerItems: [
       { item: 'Możliwość rezerwacji całego lokalu na wyłączność lub jego części' },
@@ -1308,14 +1310,17 @@ async function run() {
       { item: 'Maksymalna liczba uczestników: 120 osób' },
       { item: 'Rezerwację dla grup przyjmujemy z wyprzedzeniem do 1 miesiąca' },
     ] },
+    { blockType: 'imageGallery', images: [
+      { image: await img.program() }, { image: await img.twoje() }, { image: await img.restauracja() },
+    ] },
     { blockType: 'salesContact', heading: 'POROZMAWIAJMY O TWOIM WYDARZENIU!', teamMember: managerId, callLabel: 'ZADZWOŃ', emailLabel: 'ZAPYTAJ MAILOWO', style: 'gold' },
     { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google', items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
   ], 'Your event', [
     { blockType: 'pageHero', eyebrow: 'Every day someone is celebrating with us', title: 'Your event', titleStyle: 'serif', backgroundImage: await img.twoje() },
     { blockType: 'aboutIntro', heading: 'Birthdays. Anniversaries. Corporate events.', subheading: "Invite your guests — we'll take care of the rest!", body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll organise everything. We'll prepare an offer tailored to your needs and the character of the event. We'll take care of the menu, service, music, evening attractions and decorations. We'll agree on every detail with you individually." },
-    { blockType: 'offerCards', eyebrow: 'Plan it with us', heading: 'WHAT WE OFFER', cards: [
-      { image: await img.twoje(), tag: 'PRIVATE PARTIES', title: 'BIRTHDAYS AND ANNIVERSARIES IN THE HEART OF POZNAŃ', body: "Our club is the perfect place if you want to celebrate calmly, with close family and music in the background. You arrive with your guests — we'll handle the organisation, the setting and the running of the evening. We'll agree on every organisational detail — the menu, the room layout and the evening's setting — individually.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/kontakt' },
-      { image: await img.gallery(), tag: 'CORPORATE EVENTS', title: 'COMPANY GATHERINGS IN A CLUB ATMOSPHERE', body: "Elegant rooms, live music, full service — you are the guest, we'll take care of the rest. We offer space for groups from a few to 120 people. We work from an à la carte menu or an agreed group menu at a fixed, predetermined price.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/kontakt' },
+    { blockType: 'offerCards', eyebrow: 'Plan it with us', heading: 'WHAT WE OFFER', style: 'framed', cards: [
+      { image: await img.twoje(), tag: 'PRIVATE PARTIES', title: 'BIRTHDAYS AND ANNIVERSARIES IN THE HEART OF POZNAŃ', body: "Our club is the perfect place if you want to celebrate calmly, with close family and music in the background. You arrive with your guests — we'll handle the organisation, the setting and the running of the evening. We'll agree on every organisational detail — the menu, the room layout and the evening's setting — individually.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/contact' },
+      { image: await img.gallery(), tag: 'CORPORATE EVENTS', title: 'COMPANY GATHERINGS IN A CLUB ATMOSPHERE', body: "Elegant rooms, live music, full service — you are the guest, we'll take care of the rest. We offer space for groups from a few to 120 people. We work from an à la carte menu or an agreed group menu at a fixed, predetermined price.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/contact' },
     ] },
     { blockType: 'roomSelector', heading: 'AVAILABLE SPACES', rooms: roomIds, equipmentHeading: 'EQUIPMENT', offerHeading: "WHAT WE'LL PREPARE FOR YOU", offerItems: [
       { item: 'Option to book the entire venue exclusively or just part of it' },
@@ -1329,6 +1334,9 @@ async function run() {
       { item: 'Maximum number of participants: 120 people' },
       { item: 'We accept group reservations up to 1 month in advance' },
     ] },
+    { blockType: 'imageGallery', images: [
+      { image: await img.program() }, { image: await img.twoje() }, { image: await img.restauracja() },
+    ] },
     { blockType: 'salesContact', heading: "LET'S TALK ABOUT YOUR EVENT!", teamMember: managerId, callLabel: 'CALL US', emailLabel: 'ASK BY EMAIL', style: 'gold' },
     { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google', items: testiItemsEn },
   ])
@@ -1339,25 +1347,25 @@ async function run() {
     { blockType: 'aboutIntro', heading: 'Zaplanuj swój wieczór', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my zajmiemy się pełną organizacją.' },
     { blockType: 'eveningPhases', heading: 'ZAPLANUJ SWÓJ WIECZÓR', phases: [
       { image: await img.restauracja(), title: 'OTWARCIE WIECZORU', timeLabel: 'od 17:00', body: 'Zapraszamy do rozpoczęcia wieczoru w spokojnej, klubowej atmosferze. Rezerwacja stolika jest bezpłatna. Planujesz zostać na koncert? Prosimy o wcześniejszy zakup biletu.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
-      { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo. Subtelne brzmienia fortepianu i saksofonu, elegancka improwizacja oraz klimat klasycznego jazzu tworzą niezapomniane doświadczenie muzyczne.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
+      { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo. Subtelne brzmienia fortepianu i saksofonu, elegancka improwizacja oraz klimat klasycznego jazzu tworzą niezapomniane doświadczenie muzyczne.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/events' },
       { image: await img.bar(), title: 'WIECZÓR KLUBOWY', timeLabel: '21:00–23:00', body: 'Po części koncertowej zapraszamy do dalszego spędzenia czasu w naszej przestrzeni. Na gości czeka projekcja koncertu na dużym ekranie oraz starannie przygotowana oferta kuchni i baru. Rezerwacja stolika pozostaje bezpłatna.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'REZERWACJA', teamMember: reservationContactId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
-    { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/kontakt' },
+    { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/contact' },
   ], 'Reservation', [
     { blockType: 'pageHero', eyebrow: 'Plan your evening', title: 'Reservation', titleStyle: 'serif', backgroundImage: await img.restauracja() },
     { blockType: 'aboutIntro', heading: 'Plan your evening', body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll take care of the full organisation." },
     { blockType: 'eveningPhases', heading: 'PLAN YOUR EVENING', phases: [
       { image: await img.restauracja(), title: 'START OF THE EVENING', timeLabel: 'od 17:00', body: 'Start your evening in a calm, club atmosphere. Booking a table is free of charge. Planning to stay for the concert? Please buy a ticket in advance.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
-      { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', timeLabel: 'od 19:00', body: 'A special evening of live music. The subtle sounds of piano and saxophone, elegant improvisation and the atmosphere of classic jazz create an unforgettable musical experience.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/program' },
+      { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', timeLabel: 'od 19:00', body: 'A special evening of live music. The subtle sounds of piano and saxophone, elegant improvisation and the atmosphere of classic jazz create an unforgettable musical experience.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/events' },
       { image: await img.bar(), title: 'CLUB NIGHT', timeLabel: '21:00–23:00', body: 'After the concert, stay on and enjoy more time in our space. Guests can watch the concert on a large screen and enjoy a carefully prepared food and bar offering. Booking a table remains free of charge.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'RESERVATION', teamMember: reservationContactId, callLabel: 'CALL US', emailLabel: 'WRITE TO US', style: 'gold' },
-    { blockType: 'notice21Plus', heading: 'Dear Guests', body: 'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over.', ctaLabel: 'CLUB RULES 21+', ctaUrl: '/kontakt' },
+    { blockType: 'notice21Plus', heading: 'Dear Guests', body: 'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over.', ctaLabel: 'CLUB RULES 21+', ctaUrl: '/contact' },
   ])
 
   // KONTAKT
-  await page('kontakt', 'Kontakt', [
+  await page('contact', 'Kontakt', [
     { blockType: 'pageHero', title: 'Kontakt', titleStyle: 'serif', backgroundImage: await img.bar() },
     { blockType: 'contactInfo', showForm: true, formHeading: 'SKONTAKTUJ SIĘ Z NAMI', showMap: true },
     { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Zapisz się i bądź na bieżąco.', placeholder: 'Adres email', buttonLabel: 'ZAPISZ SIĘ', consentText: 'Akceptuję politykę prywatności' },

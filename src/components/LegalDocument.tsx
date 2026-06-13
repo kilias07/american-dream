@@ -12,7 +12,9 @@ type LegalDocField = 'regulamin' | 'privacy' | 'companyData'
 async function getLegal(locale: Locale): Promise<Legal | null> {
   try {
     const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({
+    // `await` so a rejected query is caught here (e.g. DB unreachable at build
+    // time) instead of escaping to the caller and aborting static generation.
+    return await payload.findGlobal({
       slug: 'legal',
       locale,
       fallbackLocale: defaultLocale,

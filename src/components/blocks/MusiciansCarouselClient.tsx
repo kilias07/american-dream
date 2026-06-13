@@ -2,6 +2,8 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 export type MusicianCardData = {
   id: number
@@ -17,7 +19,7 @@ type Props = {
 }
 
 function MusicianCard({ card, locale }: { card: MusicianCardData; locale: string }) {
-  const href = card.slug ? `/${locale}/muzycy/${card.slug}` : null
+  const href = card.slug ? localeHref(locale as Locale, `/muzycy/${card.slug}`) : null
 
   const inner = (
     <div className="group">

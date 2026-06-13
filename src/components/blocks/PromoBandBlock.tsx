@@ -2,6 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { PromoBandBlock as PromoBandBlockType, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { isReservationUrl } from '@/lib/reservation-url'
 
@@ -24,7 +26,7 @@ export function PromoBandBlock({
   const media = isMedia(image) ? image : null
   const ctaHref = ctaUrl
     ? ctaUrl.startsWith('/')
-      ? `/${locale}${ctaUrl}`
+      ? localeHref(locale as Locale, ctaUrl)
       : ctaUrl
     : null
 

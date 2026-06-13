@@ -2,6 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { OfferCardsBlock as OfferCardsBlockType, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 type OfferCard = NonNullable<OfferCardsBlockType['cards']>[number]
 
@@ -13,7 +15,7 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
   const media = isMedia(card.image) ? card.image : null
   const ctaHref = card.ctaUrl
     ? card.ctaUrl.startsWith('/')
-      ? `/${locale}${card.ctaUrl}`
+      ? localeHref(locale as Locale, card.ctaUrl)
       : card.ctaUrl
     : null
 
@@ -67,6 +69,40 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
   )
 }
 
+function FramedOfferCard({ card, locale }: { card: OfferCard; locale: string }) {
+  const ctaHref = card.ctaUrl
+    ? card.ctaUrl.startsWith('/')
+      ? localeHref(locale as Locale, card.ctaUrl)
+      : card.ctaUrl
+    : null
+
+  return (
+    <div className="flex flex-col items-center text-center rounded-2xl border border-brand-gold/40 bg-white/[0.02] p-8 md:p-10">
+      {card.tag && (
+        <span className="bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full mb-4">
+          {card.tag}
+        </span>
+      )}
+      {card.title && (
+        <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide mb-4">
+          {card.title}
+        </h3>
+      )}
+      {card.body && (
+        <p className="text-white/70 text-sm md:text-base leading-relaxed mb-7">{card.body}</p>
+      )}
+      {card.ctaLabel && ctaHref && (
+        <Link
+          href={ctaHref}
+          className="mt-auto inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors"
+        >
+          {card.ctaLabel}
+        </Link>
+      )}
+    </div>
+  )
+}
+
 export function OfferCardsBlock({
   block,
   locale,
@@ -74,7 +110,8 @@ export function OfferCardsBlock({
   block: OfferCardsBlockType
   locale: string
 }) {
-  const { eyebrow, heading, cards } = block
+  const { eyebrow, heading, cards, style } = block
+  const framed = style === 'framed'
 
   if (!cards?.length) return null
 
@@ -98,10 +135,14 @@ export function OfferCardsBlock({
         )}
 
         {/* Cards grid */}
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-          {cards.map((card, i) => (
-            <OfferCard key={card.id || i} card={card} locale={locale} />
-          ))}
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 items-stretch">
+          {cards.map((card, i) =>
+            framed ? (
+              <FramedOfferCard key={card.id || i} card={card} locale={locale} />
+            ) : (
+              <OfferCard key={card.id || i} card={card} locale={locale} />
+            ),
+          )}
         </div>
       </div>
     </section>

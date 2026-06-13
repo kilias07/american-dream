@@ -41,11 +41,12 @@ export async function ContactInfoBlock({
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* LEFT — contact info */}
+        {/* Row A — contact details (left) | form (right). Design = 2×2 quadrant. */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          {/* LEFT — contact details */}
           <div>
             {/* Emblem + address + serif headings, centered (per design) */}
-            <div className="text-center mb-10">
+            <div className="text-center">
               <Logo className="h-20 w-auto mx-auto mb-4" />
               {address && (
                 <a
@@ -102,56 +103,65 @@ export async function ContactInfoBlock({
               )}
             </div>
 
-            {days.length > 0 && (
-              <div>
-                <p className="text-brand-gold text-xs font-bold uppercase tracking-[0.18em] mb-3">
-                  {locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours'}
-                </p>
-                <ul className="space-y-2">
-                  {days.map((d) => {
-                    const dayName = d.day ? DAY_LABELS[d.day]?.[locale === 'pl' ? 'pl' : 'en'] ?? d.day : ''
-                    const hours = d.closed
-                      ? closedLabel
-                      : d.openTime && d.closeTime
-                        ? `${d.openTime} – ${d.closeTime}`
-                        : closedLabel
-                    return (
-                      <li
-                        key={d.id}
-                        className="flex items-center justify-between gap-4 bg-brand-navy-royal rounded-full px-5 py-2.5"
-                      >
-                        <span className="text-white text-sm font-medium">{dayName}</span>
-                        <span
-                          className={`text-sm font-bold ${d.closed ? 'text-white/40' : 'text-brand-gold'}`}
-                        >
-                          {hours}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
           </div>
 
-          {/* RIGHT — form + map */}
+          {/* RIGHT — contact form */}
           <div>
             {block.showForm && <ContactFormClient formHeading={formHeading} locale={locale} />}
-
-            {block.showMap && mapUrl && (
-              <div className={`overflow-hidden rounded-2xl ${block.showForm ? 'mt-10' : ''}`}>
-                <iframe
-                  src={mapUrl}
-                  title={locale === 'pl' ? 'Mapa' : 'Map'}
-                  className="w-full h-[320px] border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  allowFullScreen
-                />
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Row B — opening hours (left) | map (right). Forms the bottom of the 2×2 quadrant. */}
+        {(days.length > 0 || (block.showMap && mapUrl)) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12 md:mt-16 items-start">
+            <div>
+              {days.length > 0 && (
+                <div>
+                  <p className="text-brand-gold text-xs font-bold uppercase tracking-[0.18em] mb-3">
+                    {locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours'}
+                  </p>
+                  <ul className="space-y-2">
+                    {days.map((d) => {
+                      const dayName = d.day ? DAY_LABELS[d.day]?.[locale === 'pl' ? 'pl' : 'en'] ?? d.day : ''
+                      const hours = d.closed
+                        ? closedLabel
+                        : d.openTime && d.closeTime
+                          ? `${d.openTime} – ${d.closeTime}`
+                          : closedLabel
+                      return (
+                        <li
+                          key={d.id}
+                          className="flex items-center justify-between gap-4 bg-brand-navy-royal rounded-full px-5 py-2.5"
+                        >
+                          <span className="text-white text-sm font-medium">{dayName}</span>
+                          <span
+                            className={`text-sm font-bold ${d.closed ? 'text-white/40' : 'text-brand-gold'}`}
+                          >
+                            {hours}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div>
+              {block.showMap && mapUrl && (
+                <div className="overflow-hidden rounded-2xl h-full min-h-[320px]">
+                  <iframe
+                    src={mapUrl}
+                    title={locale === 'pl' ? 'Mapa' : 'Map'}
+                    className="w-full h-full min-h-[320px] border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )

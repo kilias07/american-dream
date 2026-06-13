@@ -648,6 +648,10 @@ export interface MenuSectionBlock {
    * ZOBACZ CAŁE MENU (PDF)
    */
   pdfDownload?: (number | null) | Media;
+  /**
+   * Optional side photo shown next to a priced list (e.g. the cigar lounge).
+   */
+  image?: (number | null) | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'menuSection';
@@ -659,6 +663,10 @@ export interface MenuSectionBlock {
 export interface SetMenuBlock {
   heading?: string | null;
   subtitle?: string | null;
+  /**
+   * Optional photo shown beside the heading/intro.
+   */
+  image?: (number | null) | Media;
   dateLabel?: string | null;
   menus?:
     | {
@@ -713,6 +721,11 @@ export interface PromoBandBlock {
 export interface Event {
   id: number;
   title?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
   /**
    * Controls badge/styling on the program + detail pages
    */
@@ -1146,6 +1159,10 @@ export interface RoomSelectorBlock {
 export interface OfferCardsBlock {
   eyebrow?: string | null;
   heading?: string | null;
+  /**
+   * Visual style of the cards.
+   */
+  style?: ('photo' | 'framed') | null;
   cards?:
     | {
         image?: (number | null) | Media;
@@ -2124,6 +2141,7 @@ export interface MenuSectionBlockSelect<T extends boolean = true> {
   layout?: T;
   groupByCategory?: T;
   pdfDownload?: T;
+  image?: T;
   id?: T;
   blockName?: T;
 }
@@ -2134,6 +2152,7 @@ export interface MenuSectionBlockSelect<T extends boolean = true> {
 export interface SetMenuBlockSelect<T extends boolean = true> {
   heading?: T;
   subtitle?: T;
+  image?: T;
   dateLabel?: T;
   menus?:
     | T
@@ -2280,6 +2299,7 @@ export interface RoomSelectorBlockSelect<T extends boolean = true> {
 export interface OfferCardsBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
+  style?: T;
   cards?:
     | T
     | {
@@ -2468,6 +2488,8 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   title?: T;
+  generateSlug?: T;
+  slug?: T;
   eventType?: T;
   leadTitle?: T;
   description?: T;

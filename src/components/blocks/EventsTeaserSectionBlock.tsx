@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { EventsTeaserBlock as EventsTeaserBlockType, Event, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 import { EventsTeaserSectionClient } from './EventsTeaserSectionClient'
 import type { TeaserEventCard } from './EventsTeaserSectionClient'
 
@@ -55,7 +57,7 @@ export async function EventsTeaserSectionBlock({
   const heading = block.heading || (locale === 'pl' ? 'PROGRAM' : 'PROGRAM')
   const viewAllHref = block.viewAllUrl
     ? block.viewAllUrl.startsWith('/')
-      ? `/${locale}${block.viewAllUrl}`
+      ? localeHref(locale as Locale, block.viewAllUrl)
       : block.viewAllUrl
     : null
 

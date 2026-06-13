@@ -1,6 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import type { Notice21PlusBlock as Notice21PlusBlockType } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 export function Notice21PlusBlock({
   block,
@@ -15,7 +17,7 @@ export function Notice21PlusBlock({
 
   const ctaHref = ctaUrl
     ? ctaUrl.startsWith('/')
-      ? `/${locale}${ctaUrl}`
+      ? localeHref(locale as Locale, ctaUrl)
       : ctaUrl
     : null
 

@@ -2,6 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ArtistCtaBlock as ArtistCTABlockType, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -21,7 +23,7 @@ export function ArtistCTABlock({
   const image = isMedia(backgroundImage) ? backgroundImage : null
   const ctaHref = ctaUrl
     ? ctaUrl.startsWith('/')
-      ? `/${locale}${ctaUrl}`
+      ? localeHref(locale as Locale, ctaUrl)
       : ctaUrl
     : null
 

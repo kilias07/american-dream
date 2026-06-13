@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { NewsCarouselBlock as NewsCarouselBlockType, Post, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 import { NewsCarouselClient } from './NewsCarouselClient'
 import type { NewsCard } from './NewsCarouselClient'
 
@@ -61,7 +63,7 @@ export async function NewsCarouselBlock({
 
           {block.viewAllLabel && block.viewAllUrl && (
             <Link
-              href={block.viewAllUrl.startsWith('/') ? `/${locale}${block.viewAllUrl}` : block.viewAllUrl}
+              href={block.viewAllUrl.startsWith('/') ? localeHref(locale as Locale, block.viewAllUrl) : block.viewAllUrl}
               className="hidden md:inline-flex flex-shrink-0 items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors whitespace-nowrap"
             >
               {block.viewAllLabel}
@@ -74,7 +76,7 @@ export async function NewsCarouselBlock({
         {block.viewAllLabel && block.viewAllUrl && (
           <div className="mt-6 flex justify-center md:hidden">
             <Link
-              href={block.viewAllUrl.startsWith('/') ? `/${locale}${block.viewAllUrl}` : block.viewAllUrl}
+              href={block.viewAllUrl.startsWith('/') ? localeHref(locale as Locale, block.viewAllUrl) : block.viewAllUrl}
               className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
             >
               {block.viewAllLabel}

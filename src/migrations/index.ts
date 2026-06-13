@@ -11,6 +11,10 @@ import * as migration_20260608_133322_reservation_settings from './20260608_1333
 import * as migration_20260608_143009_add_reservation_anonymized_at from './20260608_143009_add_reservation_anonymized_at';
 import * as migration_20260608_150000_merge_header_nav_items from './20260608_150000_merge_header_nav_items';
 import * as migration_20260612_084523_add_block_text_fields from './20260612_084523_add_block_text_fields';
+import * as migration_20260612_103801_add_event_slug from './20260612_103801_add_event_slug';
+import * as migration_20260612_151806_add_offercards_style from './20260612_151806_add_offercards_style';
+import * as migration_20260612_152457_add_menusection_image from './20260612_152457_add_menusection_image';
+import * as migration_20260612_153252_add_setmenu_image from './20260612_153252_add_setmenu_image';
 
 export const migrations = [
   {
@@ -76,6 +80,26 @@ export const migrations = [
   {
     up: migration_20260612_084523_add_block_text_fields.up,
     down: migration_20260612_084523_add_block_text_fields.down,
-    name: '20260612_084523_add_block_text_fields'
+    name: '20260612_084523_add_block_text_fields',
+  },
+  {
+    up: migration_20260612_103801_add_event_slug.up,
+    down: migration_20260612_103801_add_event_slug.down,
+    name: '20260612_103801_add_event_slug',
+  },
+  {
+    up: migration_20260612_151806_add_offercards_style.up,
+    down: migration_20260612_151806_add_offercards_style.down,
+    name: '20260612_151806_add_offercards_style',
+  },
+  {
+    up: migration_20260612_152457_add_menusection_image.up,
+    down: migration_20260612_152457_add_menusection_image.down,
+    name: '20260612_152457_add_menusection_image',
+  },
+  {
+    up: migration_20260612_153252_add_setmenu_image.up,
+    down: migration_20260612_153252_add_setmenu_image.down,
+    name: '20260612_153252_add_setmenu_image'
   },
 ];

@@ -37,11 +37,16 @@ import { ArtistFormBlock } from './blocks/ArtistFormBlock'
 type PageBlock = NonNullable<Page['layout']>[number]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderBlock(block: any, i: number, locale?: string): React.ReactNode {
+function renderBlock(
+  block: any,
+  i: number,
+  locale?: string,
+  headingLevel: 'h1' | 'h2' = 'h1',
+): React.ReactNode {
   const loc = locale ?? 'en'
   switch (block.blockType) {
     case 'heroBanner':
-      return <HeroBannerBlock key={i} block={block} locale={locale} />
+      return <HeroBannerBlock key={i} block={block} locale={locale} headingLevel={headingLevel} />
     case 'richText':
       return <RichTextBlock key={i} block={block} />
     case 'imageGallery':
@@ -73,7 +78,7 @@ function renderBlock(block: any, i: number, locale?: string): React.ReactNode {
         />
       )
     case 'pageHero':
-      return <PageHeroBlock key={i} block={block} locale={loc} />
+      return <PageHeroBlock key={i} block={block} locale={loc} headingLevel={headingLevel} />
     case 'aboutIntro':
       return <AboutIntroBlock key={i} block={block} locale={loc} />
     case 'promoBand':
@@ -120,10 +125,18 @@ function renderBlock(block: any, i: number, locale?: string): React.ReactNode {
 export function BlockRenderer({
   blocks,
   locale,
+  demoteHeroHeading = false,
 }: {
   blocks: PageBlock[] | null | undefined
   locale?: string
+  /**
+   * When the page already renders its own (audit) <h1> (e.g. an sr-only SEO
+   * heading), set this so the hero block's visible heading drops to <h2> and
+   * the page keeps exactly one <h1>.
+   */
+  demoteHeroHeading?: boolean
 }) {
   if (!blocks || blocks.length === 0) return null
-  return <>{blocks.map((block, i) => renderBlock(block, i, locale))}</>
+  const headingLevel: 'h1' | 'h2' = demoteHeroHeading ? 'h2' : 'h1'
+  return <>{blocks.map((block, i) => renderBlock(block, i, locale, headingLevel))}</>
 }

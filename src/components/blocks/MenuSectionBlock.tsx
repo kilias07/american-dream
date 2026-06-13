@@ -82,7 +82,66 @@ function PricedList({ groups }: { groups: Group[] }) {
   )
 }
 
-function CardGrid({ groups }: { groups: Group[] }) {
+function CocktailCard({ item, reversed }: { item: MenuItem; reversed: boolean }) {
+  const media = isMedia(item.image) ? item.image : null
+  const price = formatPrice(item.price, item.currency)
+  return (
+    <div
+      className={`flex flex-col ${
+        reversed ? 'md:flex-row-reverse' : 'md:flex-row'
+      } bg-brand-navy-royal rounded-2xl overflow-hidden`}
+    >
+      <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto md:min-h-[320px] flex-shrink-0">
+        {media?.url ? (
+          <Image
+            src={media.url}
+            alt={media.alt || item.name}
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#3a1f0a] via-brand-navy-royal to-brand-navy" />
+        )}
+        {item.tag && (
+          <span className="absolute top-5 left-5 bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full">
+            {item.tag}
+          </span>
+        )}
+      </div>
+      <div className="flex-1 flex flex-col justify-center p-6 md:p-10">
+        <h3 className="font-serif text-white text-2xl md:text-4xl leading-tight mb-3">{item.name}</h3>
+        {item.ingredients && (
+          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-4">{item.ingredients}</p>
+        )}
+        {price && (
+          <span className="self-start border border-brand-gold/60 text-brand-gold text-sm font-bold px-4 py-1.5 rounded-full">
+            {price}
+          </span>
+        )}
+        {item.description && item.description !== item.ingredients && (
+          <p className="text-white/55 text-sm leading-relaxed border-t border-white/10 pt-4 mt-5">
+            {item.description}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function CardGrid({ groups, cocktails }: { groups: Group[]; cocktails?: boolean }) {
+  // Cocktail bar: full-width alternating split cards (image one side, details the
+  // other), with ingredient list + a separate description below — matches the design.
+  if (cocktails) {
+    const items = groups.flatMap((g) => g.items)
+    return (
+      <div className="space-y-6 md:space-y-8">
+        {items.map((item, i) => (
+          <CocktailCard key={item.id} item={item} reversed={i % 2 === 1} />
+        ))}
+      </div>
+    )
+  }
   return (
     <div className="space-y-10">
       {groups.map((group) => (
@@ -174,6 +233,7 @@ export async function MenuSectionBlock({
   const groupByCategory = block.groupByCategory !== false
   const groups = groupItems(items, groupByCategory)
   const pdf = isMedia(block.pdfDownload) ? block.pdfDownload : null
+  const sideImage = isMedia(block.image) ? block.image : null
   // Convention: /menu/<name>.pdf served from public/menu (e.g. /menu/menu-pl.pdf).
   const pdfHref = pdf?.url || `/menu/menu-${locale}.pdf`
 
@@ -196,7 +256,23 @@ export async function MenuSectionBlock({
         )}
 
         {block.layout === 'cardGrid' ? (
-          <CardGrid groups={groups} />
+          <CardGrid groups={groups} cocktails={block.menuType === 'cocktails'} />
+        ) : sideImage ? (
+          // Design: priced list with a tall photo on the left (e.g. the cigar lounge).
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-start">
+            <div className="relative aspect-[3/4] lg:aspect-auto lg:min-h-[520px] rounded-2xl overflow-hidden">
+              <Image
+                src={sideImage.url || ''}
+                alt={sideImage.alt || block.heading || ''}
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+            <div>
+              <PricedList groups={groups} />
+            </div>
+          </div>
         ) : (
           <PricedList groups={groups} />
         )}

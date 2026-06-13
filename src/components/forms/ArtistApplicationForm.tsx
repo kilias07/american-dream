@@ -102,11 +102,13 @@ export function ArtistApplicationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-12">
+    <form onSubmit={handleSubmit}>
+      {/* Design: the form groups sit in two side-by-side columns. */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-12 items-start">
       {/* Dane kontaktowe */}
       <fieldset>
         <legend className={sectionHeadingClass}>Dane kontaktowe</legend>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className={`${fieldWrapClass} md:col-span-2`}>
             <label htmlFor="fullName" className={labelClass}>
               Imię i nazwisko *
@@ -137,7 +139,7 @@ export function ArtistApplicationForm() {
       {/* Profil muzyczny */}
       <fieldset>
         <legend className={sectionHeadingClass}>Profil muzyczny</legend>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className={fieldWrapClass}>
             <label htmlFor="instrument" className={labelClass}>
               Instrument
@@ -194,7 +196,7 @@ export function ArtistApplicationForm() {
       {/* Wykształcenie i doświadczenie */}
       <fieldset>
         <legend className={sectionHeadingClass}>Wykształcenie i doświadczenie</legend>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className={fieldWrapClass}>
             <label htmlFor="musicEducation" className={labelClass}>
               Wykształcenie muzyczne
@@ -267,7 +269,7 @@ export function ArtistApplicationForm() {
       {/* Media społecznościowe */}
       <fieldset>
         <legend className={sectionHeadingClass}>Media społecznościowe</legend>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className={fieldWrapClass}>
             <label htmlFor="facebook" className={labelClass}>
               Facebook
@@ -294,8 +296,10 @@ export function ArtistApplicationForm() {
         </div>
       </fieldset>
 
-      {/* Consent + submit */}
-      <div className="space-y-5">
+      </div>
+
+      {/* Consent + submit — full width under the two columns */}
+      <div className="space-y-5 mt-12">
         <label className="flex items-start gap-3 text-white/70 text-sm cursor-pointer">
           <input
             type="checkbox"

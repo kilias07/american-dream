@@ -57,4 +57,4 @@ node_modules/
 .claude/worktrees/
 
 # Large local seed assets — served from R2 in production, not stored in git
-scripts/assets/*.mp4
+scripts/assets/*.mp4d1-backup-pre-seo.sql

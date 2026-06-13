@@ -5,6 +5,7 @@ import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Footer as FooterType } from '@/payload-types'
 import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 import { Logo } from '@/Header/Logo'
 import { NewsletterForm } from './NewsletterForm'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
@@ -13,7 +14,9 @@ import { isReservationUrl } from '@/lib/reservation-url'
 async function getFooter(locale: Locale): Promise<FooterType | null> {
   try {
     const payload = await getPayload({ config: configPromise })
-    return payload.findGlobal({ slug: 'footer', locale, depth: 0 })
+    // `await` so a rejected query is caught here (e.g. DB unreachable at build
+    // time) instead of escaping to the caller and aborting static generation.
+    return await payload.findGlobal({ slug: 'footer', locale, depth: 0 })
   } catch {
     return null
   }
@@ -128,7 +131,7 @@ export async function Footer({ locale }: { locale: Locale }) {
 
           {/* Logo + contact */}
           <div className="flex flex-col gap-4">
-            <Link href={`/${locale}`} aria-label="American Dream Club">
+            <Link href={localeHref(locale, '/')} aria-label="American Dream Club">
               <Logo variant="navy" className="w-48 h-auto" />
             </Link>
             <div className="flex flex-col gap-1.5 mt-2">
@@ -195,7 +198,7 @@ export async function Footer({ locale }: { locale: Locale }) {
                       </ReserveTrigger>
                     ) : (
                       <Link
-                        href={link.url.startsWith('/') ? `/${locale}${link.url}` : link.url}
+                        href={link.url.startsWith('/') ? localeHref(locale, link.url) : link.url}
                         target={link.newTab ? '_blank' : undefined}
                         className="text-brand-navy text-sm hover:opacity-60 transition-opacity"
                       >
@@ -230,7 +233,7 @@ export async function Footer({ locale }: { locale: Locale }) {
           {bottomBarLinks.map((link) => (
             <Link
               key={link.id}
-              href={link.url.startsWith('/') ? `/${locale}${link.url}` : link.url}
+              href={link.url.startsWith('/') ? localeHref(locale, link.url) : link.url}
               className="hover:text-white transition-colors whitespace-nowrap"
             >
               {link.label}

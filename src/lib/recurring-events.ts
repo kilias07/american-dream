@@ -11,6 +11,7 @@ export const TIME_ZONE = 'Europe/Warsaw'
 
 export type EventDoc = {
   id: string | number
+  slug?: string | null
   title?: string | null
   description?: string | null
   leadTitle?: string | null
@@ -37,6 +38,7 @@ export type OccurrencePerformer = { name: string; instrument?: string | null }
 export type EventOccurrence = {
   id: string
   eventId: string | number
+  eventSlug?: string | null
   title: string
   description?: string | null
   leadTitle?: string | null
@@ -80,6 +82,7 @@ function makeOccurrence(event: EventDoc): EventOccurrence {
   return {
     id: String(event.id),
     eventId: event.id,
+    eventSlug: event.slug ?? null,
     title: event.title ?? '',
     description: event.description,
     leadTitle: event.leadTitle ?? null,

@@ -4,14 +4,23 @@
  * Run against local dev server:  pnpm test:e2e
  * Run against live Cloudflare:   BASE_URL=https://american-dream.kilias07.workers.dev pnpm test:e2e
  *
+ * URL scheme (SEO audit):
+ *   - Polish is the DEFAULT, served at UNPREFIXED URLs: `/`, `/restaurant`,
+ *     `/bar-and-cocktails`, `/cigar-lounge`, `/events`, `/events/[slug]`,
+ *     `/business`, `/news`, `/news/[slug]`, `/contact`, `/privacy`,
+ *     `/rezerwacja`, `/kontakt-dla-artystow`.
+ *   - English mirrors everything under `/en/...`.
+ *   - Old `/pl/...` URLs and old Polish slugs 301-redirect to the new scheme.
+ *   - There is NO 404 page — unknown paths redirect "up a level".
+ *
  * Tests cover:
- *  1. Locale routing (redirects, prefix preservation)
+ *  1. Locale routing (unprefixed PL default, /en prefix)
  *  2. All public pages return 200 with key content
- *  3. Nav links use locale-prefixed hrefs (no redirect round-trip)
+ *  3. Nav links use the new unprefixed (or /en) hrefs (no legacy /pl)
  *  4. Language switcher (PL ↔ EN)
  *  5. Menu PDF convention (/menu/*.pdf accessible without locale)
- *  6. Unprefixed slugs redirect to /pl/ (QR-code scenario)
- *  7. Detail routes: event, article, recurring series
+ *  6. Old slugs redirect to the new scheme (QR-code / legacy-link scenario)
+ *  7. Detail routes: event (by slug), article
  *  8. Blocks: menu items present, BIG BEAT, offerCards visible
  *  9. Admin login page is accessible
  * 10. robots.txt + sitemap.xml
@@ -28,16 +37,15 @@ async function goto(page: Page, path: string) {
 
 // ── 1. Locale routing ────────────────────────────────────────────────────────
 test.describe('Locale routing', () => {
-  test('/ redirects to a locale-prefixed URL', async ({ page }) => {
+  test('/ renders the Polish homepage at the unprefixed root', async ({ page }) => {
     await goto(page, '/')
-    await page.waitForURL(/\/(pl|en)$/)
-    expect(page.url()).toMatch(/\/(pl|en)$/)
+    await expect(page).toHaveURL(`${BASE}/`)
+    await expect(page.locator('header')).toBeVisible()
   })
 
-  test('/pl renders the Polish homepage', async ({ page }) => {
-    await goto(page, '/pl')
-    await expect(page).toHaveURL(`${BASE}/pl`)
-    await expect(page.locator('header')).toBeVisible()
+  test('/ has <html lang="pl">', async ({ page }) => {
+    await goto(page, '/')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'pl')
   })
 
   test('/en renders the English homepage', async ({ page }) => {
@@ -50,17 +58,17 @@ test.describe('Locale routing', () => {
 // ── 2. All main pages return 200 with identifiable content ───────────────────
 test.describe('Main pages', () => {
   const pages: Array<[string, string, string]> = [
-    // [locale path, expected heading text, element selector]
-    ['/pl',                     'American Dream',    'header'],
-    ['/pl/restauracja',         'Restauracja',       'h1, h2'],
-    ['/pl/bar',                 'Cocktail Bar',      'h1, h2'],
-    ['/pl/cigar-room',          'Cigar Room',        'h1, h2'],
-    ['/pl/program',             'Program',           'h1, h2'],
-    ['/pl/twoje-wydarzenie',    'Twoje wydarzenie',  'h1, h2'],
-    ['/pl/rezerwacje',          'Rezerwacja',        'h1, h2'],
-    ['/pl/kontakt',             'Kontakt',           'h1, h2'],
-    ['/pl/kontakt-dla-artystow','Kontakt',           'h1, h2'],
-    ['/pl/aktualnosci',         'AKTUALNOŚCI',       'h1, h2, p'],
+    // [path, expected keyword, element selector]
+    ['/',                      'American Dream',    'header'],
+    ['/restaurant',            'Restauracja',       'h1, h2'],
+    ['/bar-and-cocktails',     'Cocktail Bar',      'h1, h2'],
+    ['/cigar-lounge',          'Cigar Room',        'h1, h2'],
+    ['/events',                'Program',           'h1, h2'],
+    ['/business',              'Twoje wydarzenie',  'h1, h2'],
+    ['/rezerwacja',            'Rezerwacj',         'h1, h2'],
+    ['/contact',               'Kontakt',           'h1, h2'],
+    ['/kontakt-dla-artystow',  'Kontakt',           'h1, h2'],
+    ['/news',                  'AKTUALNOŚCI',       'h1, h2, p'],
   ]
 
   for (const [path, keyword, selector] of pages) {
@@ -74,41 +82,52 @@ test.describe('Main pages', () => {
   }
 })
 
-// ── 3. Unprefixed slugs redirect to /pl/ (QR-code scenario) ─────────────────
-test.describe('Unprefixed slug redirects', () => {
-  const slugs = ['restauracja', 'bar', 'cigar-room', 'program', 'kontakt', 'rezerwacje', 'aktualnosci']
+// ── 3. Old slugs redirect to the new scheme (QR-code / legacy-link scenario) ──
+test.describe('Old slug redirects → new scheme', () => {
+  const redirects: Array<[string, string]> = [
+    ['/restauracja', '/restaurant'],
+    ['/bar', '/bar-and-cocktails'],
+    ['/cigar-room', '/cigar-lounge'],
+    ['/program', '/events'],
+    ['/kontakt', '/contact'],
+    ['/aktualnosci', '/news'],
+    // legacy `/pl/...` prefix is stripped (and may chain to a renamed slug)
+    ['/pl', '/'],
+    ['/pl/restauracja', '/restaurant'],
+    ['/pl/kontakt', '/contact'],
+  ]
 
-  for (const slug of slugs) {
-    test(`/${slug} redirects to /pl/${slug}`, async ({ page }) => {
-      await goto(page, `/${slug}`)
-      await page.waitForURL(`${BASE}/pl/${slug}`)
-      expect(page.url()).toBe(`${BASE}/pl/${slug}`)
+  for (const [from, to] of redirects) {
+    test(`${from} redirects to ${to}`, async ({ page }) => {
+      await goto(page, from)
+      await page.waitForURL(`${BASE}${to}`)
+      expect(page.url()).toBe(`${BASE}${to}`)
     })
   }
 })
 
-// ── 4. Nav links are locale-prefixed (no redirect) ───────────────────────────
+// ── 4. Nav links are on the new scheme (no legacy /pl prefix) ─────────────────
 test.describe('Navigation links', () => {
-  test('header nav links on /pl contain /pl/ prefix', async ({ page }) => {
-    await goto(page, '/pl')
+  test('header nav links never use the legacy /pl prefix', async ({ page }) => {
+    await goto(page, '/')
     const navLinks = page.locator('header a[href]')
     const hrefs = await navLinks.evaluateAll((els) =>
       els.map((el) => el.getAttribute('href') ?? '')
     )
-    // Every internal link should be either /pl/..., /en/..., or an anchor/external
+    // Every internal link should be either unprefixed PL, /en/..., or an anchor/external
     const internalLinks = hrefs.filter(
       (h) => h.startsWith('/') && !h.startsWith('//') && !h.startsWith('/_next')
     )
     for (const href of internalLinks) {
-      // Should not be an unprefixed page slug that would trigger a redirect
-      expect(href).not.toMatch(/^\/(restauracja|bar|cigar-room|program|twoje-wydarzenie|rezerwacje|kontakt|aktualnosci)$/)
+      // The legacy `/pl/...` prefix must be gone.
+      expect(href).not.toMatch(/^\/pl(\/|$)/)
     }
   })
 
   test('ZAREZERWUJ button is visible in the header', async ({ page }) => {
-    await goto(page, '/pl')
     // The reserve button may be hidden on mobile viewport — check desktop
     await page.setViewportSize({ width: 1280, height: 800 })
+    await goto(page, '/')
     const reserveBtn = page.locator('header').getByText(/zarezerwuj/i)
     await expect(reserveBtn).toBeVisible()
   })
@@ -116,21 +135,25 @@ test.describe('Navigation links', () => {
 
 // ── 5. Language switcher ──────────────────────────────────────────────────────
 test.describe('Language switcher', () => {
-  test('language switcher PL and EN links are visible', async ({ page }) => {
+  test('language switcher PL and EN are visible', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
-    await goto(page, '/pl')
+    await goto(page, '/')
     // Both PL and EN should be visible in the header on desktop
     await expect(page.locator('header').getByText(/^pl$/i).first()).toBeVisible()
     await expect(page.locator('header').getByText(/^en$/i).first()).toBeVisible()
   })
 
-  test('EN link navigates to /en', async ({ page }) => {
+  test('EN switch navigates to /en', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
-    await goto(page, '/pl')
-    const enLink = page.locator('header a[href*="/en"]').first()
-    await expect(enLink).toBeVisible()
-    const href = await enLink.getAttribute('href')
-    expect(href).toContain('/en')
+    await goto(page, '/')
+    // The language switcher is a <button> pair (PL | EN).
+    const enBtn = page
+      .locator('header button:visible')
+      .filter({ hasText: /^EN$/ })
+      .first()
+    await expect(enBtn).toBeVisible()
+    await enBtn.click()
+    await expect(page).toHaveURL(`${BASE}/en`)
   })
 })
 
@@ -149,7 +172,7 @@ test.describe('Menu PDFs', () => {
   })
 
   test('"Zobacz całe menu (PDF)" button links to /menu/*.pdf', async ({ page }) => {
-    await goto(page, '/pl/cigar-room')
+    await goto(page, '/cigar-lounge')
     const pdfLink = page.locator('a').filter({ hasText: /menu.*pdf|pdf.*menu/i })
     await expect(pdfLink.first()).toBeVisible()
     const href = await pdfLink.first().getAttribute('href')
@@ -159,40 +182,49 @@ test.describe('Menu PDFs', () => {
 
 // ── 7. Detail routes ──────────────────────────────────────────────────────────
 test.describe('Detail routes', () => {
-  test('/pl/aktualnosci/swing-rytm-ktory-zmienil-swiat renders an article', async ({ page }) => {
-    const resp = await page.goto(`${BASE}/pl/aktualnosci/swing-rytm-ktory-zmienil-swiat`)
-    // Accept 200 (article exists) or 404 (slug not seeded yet); never a 500
+  test('/news/:slug renders an article (or redirects up to /news if missing)', async ({ page }) => {
+    const resp = await page.goto(`${BASE}/news/swing-rytm-ktory-zmienil-swiat`)
+    // Never a 500. Either the article renders, or — for an unseeded slug — the
+    // no-404 behaviour redirects "up a level" to /news.
     expect(resp?.status()).not.toBe(500)
-    if (resp?.status() === 200) {
-      await expect(page.locator('main')).toBeVisible()
-    }
+    await expect(page).toHaveURL(/\/news(\/swing-rytm-ktory-zmienil-swiat)?$/)
+    await expect(page.locator('main')).toBeVisible()
   })
 
-  test('/pl/program/1 renders an event detail page', async ({ page }) => {
-    await goto(page, '/pl/program/1')
-    // Should show an event title (not 404)
-    await expect(page.locator('main')).toBeVisible()
-    await expect(page.locator('body')).not.toContainText('404')
+  test('/events/:slug renders an event detail page', async ({ page }) => {
+    // Events are addressed by SLUG now (not by numeric id). Visit the listing and
+    // click the first event card so the test is robust to whatever is seeded.
+    await goto(page, '/events')
+    const eventLinks = page.locator('a[href^="/events/"]')
+    const count = await eventLinks.count()
+    if (count > 0) {
+      const href = await eventLinks.first().getAttribute('href')
+      expect(href).toMatch(/^\/events\/[a-z0-9-]+$/)
+      await eventLinks.first().click()
+      await expect(page).toHaveURL(/\/events\/[a-z0-9-]+$/)
+      await expect(page.locator('main')).toBeVisible()
+      await expect(page.locator('body')).not.toContainText('Internal Server Error')
+    }
   })
 })
 
 // ── 8. Key content blocks ────────────────────────────────────────────────────
 test.describe('Content blocks', () => {
-  test('/pl/restauracja: menu categories are shown', async ({ page }) => {
-    await goto(page, '/pl/restauracja')
+  test('/restaurant: menu categories are shown', async ({ page }) => {
+    await goto(page, '/restaurant')
     await expect(page.locator('body')).toContainText('Przystawki')
     await expect(page.locator('body')).toContainText('Dania główne')
     await expect(page.locator('body')).toContainText('Desery')
   })
 
-  test('/pl/restauracja: BIG BEAT! promo block is shown', async ({ page }) => {
-    await goto(page, '/pl/restauracja')
+  test('/restaurant: BIG BEAT! promo block is shown', async ({ page }) => {
+    await goto(page, '/restaurant')
     await expect(page.locator('body')).toContainText('BIG BEAT')
     await expect(page.locator('body')).toContainText('B.B. KING')
   })
 
-  test('/pl/cigar-room: cigar menu with categories', async ({ page }) => {
-    await goto(page, '/pl/cigar-room')
+  test('/cigar-lounge: cigar menu with categories', async ({ page }) => {
+    await goto(page, '/cigar-lounge')
     await expect(page.locator('body')).toContainText('Nikaragua')
     await expect(page.locator('body')).toContainText('Dominikana')
     await expect(page.locator('body')).toContainText('Kuba')
@@ -200,48 +232,48 @@ test.describe('Content blocks', () => {
     await expect(page.locator('body')).toContainText('zł')
   })
 
-  test('/pl/bar: cocktail cards with jazz musician names', async ({ page }) => {
-    await goto(page, '/pl/bar')
+  test('/bar-and-cocktails: cocktail cards with jazz musician names', async ({ page }) => {
+    await goto(page, '/bar-and-cocktails')
     await expect(page.locator('body')).toContainText('Miles Davis')
     await expect(page.locator('body')).toContainText('Ella Fitzgerald')
     await expect(page.locator('body')).toContainText('39 zł')
   })
 
-  test('/pl: homepage shows "Nowy Jork w centrum Poznania" intro', async ({ page }) => {
-    await goto(page, '/pl')
+  test('/: homepage shows "Nowy Jork w centrum Poznania" intro', async ({ page }) => {
+    await goto(page, '/')
     await expect(page.locator('body')).toContainText('Nowy Jork w centrum Poznania')
   })
 
-  test('/pl: IMPREZY PRYWATNE + IMPREZY FIRMOWE on homepage', async ({ page }) => {
-    await goto(page, '/pl')
+  test('/: IMPREZY PRYWATNE + IMPREZY FIRMOWE on homepage', async ({ page }) => {
+    await goto(page, '/')
     await expect(page.locator('body')).toContainText('IMPREZY PRYWATNE')
     await expect(page.locator('body')).toContainText('IMPREZY FIRMOWE')
   })
 
-  test('/pl/twoje-wydarzenie: VIP Room equipment list', async ({ page }) => {
-    await goto(page, '/pl/twoje-wydarzenie')
+  test('/business: VIP Room equipment list', async ({ page }) => {
+    await goto(page, '/business')
     await expect(page.locator('body')).toContainText('EPSON')
     await expect(page.locator('body')).toContainText('1920')
   })
 
-  test('/pl/program: special events carousel shows tributes', async ({ page }) => {
-    await goto(page, '/pl/program')
+  test('/events: special events carousel shows tributes', async ({ page }) => {
+    await goto(page, '/events')
     await expect(page.locator('body')).toContainText('Miles Davis')
   })
 })
 
 // ── 9. Footer ─────────────────────────────────────────────────────────────────
 test.describe('Footer', () => {
-  test('footer renders with 21+ badge and opening hours', async ({ page }) => {
-    await goto(page, '/pl')
+  test('footer renders with 21+ badge and newsletter', async ({ page }) => {
+    await goto(page, '/')
     const footer = page.locator('footer')
     await expect(footer).toBeVisible()
     await expect(footer).toContainText('21+')
-    await expect(footer).toContainText('NEWSLETTER')
+    await expect(footer).toContainText(/newsletter/i)
   })
 
   test('footer contains contact info', async ({ page }) => {
-    await goto(page, '/pl')
+    await goto(page, '/')
     await expect(page.locator('footer')).toContainText('+48 500 210 333')
   })
 })
@@ -267,16 +299,17 @@ test.describe('SEO', () => {
     expect(body.toLowerCase()).toContain('sitemap')
   })
 
-  test('sitemap.xml is accessible and contains /pl entries', async ({ request }) => {
+  test('sitemap.xml is accessible and contains new-scheme entries', async ({ request }) => {
     const resp = await request.get(`${BASE}/sitemap.xml`)
     expect(resp.status()).toBe(200)
     const body = await resp.text()
     expect(body).toContain('<loc>')
-    expect(body).toContain('/pl')
+    // New unprefixed scheme: the canonical restaurant URL should be present.
+    expect(body).toContain('restaurant')
   })
 
-  test('/pl has proper <html lang="pl">', async ({ page }) => {
-    await goto(page, '/pl')
+  test('/ has proper <html lang="pl">', async ({ page }) => {
+    await goto(page, '/')
     const lang = await page.locator('html').getAttribute('lang')
     expect(lang).toBe('pl')
   })
@@ -284,19 +317,19 @@ test.describe('SEO', () => {
 
 // ── 12. Forms ────────────────────────────────────────────────────────────────
 test.describe('Forms', () => {
-  test('/pl/kontakt renders a contact form', async ({ page }) => {
-    await goto(page, '/pl/kontakt')
+  test('/contact renders a contact form', async ({ page }) => {
+    await goto(page, '/contact')
     // Form should have an email input
     await expect(page.locator('input[type="email"], input[name="email"]').first()).toBeVisible()
   })
 
-  test('/pl/kontakt-dla-artystow renders the artist application form', async ({ page }) => {
-    await goto(page, '/pl/kontakt-dla-artystow')
+  test('/kontakt-dla-artystow renders the artist application form', async ({ page }) => {
+    await goto(page, '/kontakt-dla-artystow')
     await expect(page.locator('form, [data-artist-form]').first()).toBeVisible()
   })
 
   test('newsletter form is in the footer', async ({ page }) => {
-    await goto(page, '/pl')
+    await goto(page, '/')
     const footer = page.locator('footer')
     await expect(footer.locator('input[type="email"]').first()).toBeVisible()
   })

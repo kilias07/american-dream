@@ -18,6 +18,16 @@ export const OfferCards: Block = {
       localized: true,
     },
     {
+      name: 'style',
+      type: 'select',
+      defaultValue: 'photo',
+      options: [
+        { label: 'Photo cards (image background)', value: 'photo' },
+        { label: 'Framed cards (bordered, centered)', value: 'framed' },
+      ],
+      admin: { description: 'Visual style of the cards.' },
+    },
+    {
       name: 'cards',
       type: 'array',
       fields: [

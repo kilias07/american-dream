@@ -2,6 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { PageHeroBlock as PageHeroBlockType, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -10,18 +12,22 @@ function isMedia(value: number | Media | null | undefined): value is Media {
 export function PageHeroBlock({
   block,
   locale,
+  headingLevel = 'h1',
 }: {
   block: PageHeroBlockType
   locale: string
+  headingLevel?: 'h1' | 'h2'
 }) {
   const { eyebrow, title, titleStyle, backgroundImage, inlineLinkLabel, inlineLinkUrl } = block
 
   if (!title) return null
 
+  const Heading = headingLevel
+
   const image = isMedia(backgroundImage) ? backgroundImage : null
   const inlineHref = inlineLinkUrl
     ? inlineLinkUrl.startsWith('/')
-      ? `/${locale}${inlineLinkUrl}`
+      ? localeHref(locale as Locale, inlineLinkUrl)
       : inlineLinkUrl
     : null
 
@@ -53,7 +59,7 @@ export function PageHeroBlock({
           </p>
         )}
 
-        <h1
+        <Heading
           className={
             titleStyle === 'serif'
               ? 'font-serif text-white text-4xl md:text-6xl leading-tight'
@@ -61,7 +67,7 @@ export function PageHeroBlock({
           }
         >
           {title}
-        </h1>
+        </Heading>
 
         {inlineLinkLabel && inlineHref && (
           <Link

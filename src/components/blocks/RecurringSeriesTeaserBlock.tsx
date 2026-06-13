@@ -8,6 +8,8 @@ import type {
   Media,
   RecurringSery,
 } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeHref } from '@/utilities/href'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -53,7 +55,7 @@ function SeriesCard({ series, locale }: { series: RecurringSery; locale: string 
 
   return (
     <Link
-      href={`/${locale}/wydarzenia-cykliczne/${series.slug}`}
+      href={localeHref(locale as Locale, `/wydarzenia-cykliczne/${series.slug}`)}
       className="group relative flex flex-col justify-end rounded-2xl overflow-hidden min-h-[280px] md:min-h-[320px]"
     >
       {/* Background */}

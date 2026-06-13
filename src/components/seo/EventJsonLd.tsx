@@ -1,4 +1,6 @@
 import type { Event, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { localeUrl } from '@/utilities/seo'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
@@ -9,9 +11,9 @@ function mediaUrl(value: number | null | Media | undefined): string | null {
   return null
 }
 
-export function EventJsonLd({ event, locale }: { event: Event; locale: string }) {
+export function EventJsonLd({ event, locale }: { event: Event; locale: Locale }) {
   const image = mediaUrl(event.image) ?? mediaUrl(event.posterImage)
-  const url = `${SITE_URL}/${locale}/program/${event.id}`
+  const url = localeUrl(locale, `events/${event.slug}`)
   const offerUrl = event.ticketUrl || event.reservationUrl || url
 
   const jsonLd = {

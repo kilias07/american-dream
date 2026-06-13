@@ -1,4 +1,5 @@
 import type { CollectionConfig, Validate } from 'payload'
+import { slugField } from 'payload'
 import { revalidateTag } from 'next/cache'
 import { warsawDayKey, warsawParts } from '@/lib/recurring-events'
 
@@ -81,6 +82,9 @@ export const Events: CollectionConfig = {
       localized: true,
       admin: { placeholder: 'Chicago – Szalone Lata Dwudzieste' },
     },
+    // SEO audit: events are addressed by slug (/events/[slug]/) instead of the
+    // numeric id. Auto-generated from the title, editable.
+    slugField(),
     {
       type: 'row',
       fields: [

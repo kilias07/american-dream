@@ -57,5 +57,13 @@ export const MenuSection: Block = {
         description: 'ZOBACZ CAŁE MENU (PDF)',
       },
     },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Optional side photo shown next to a priced list (e.g. the cigar lounge).',
+      },
+    },
   ],
 }
