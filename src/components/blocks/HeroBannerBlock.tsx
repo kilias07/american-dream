@@ -87,7 +87,7 @@ export function HeroBannerBlock({
       {/* Background video — autoplay, muted, looped. Hidden for prefers-reduced-motion (photo/gradient shows). */}
       {videoUrl && (
         <video
-          className="absolute inset-0 h-full w-full object-cover object-center motion-reduce:hidden"
+          className="absolute inset-0 h-full w-full object-contain object-center motion-reduce:hidden"
           autoPlay
           muted
           loop
