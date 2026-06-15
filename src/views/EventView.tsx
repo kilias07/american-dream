@@ -177,6 +177,7 @@ export async function renderEvent(slug: string, locale: Locale) {
               <AddToCalendar
                 theme="light"
                 locale={locale}
+                triggerClassName="text-sm tracking-[0.12em] px-7 py-3"
                 event={{
                   id: event.id,
                   title: event.title ?? '',
