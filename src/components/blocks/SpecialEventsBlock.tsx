@@ -1,9 +1,15 @@
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { SpecialEventsBlock as SpecialEventsBlockType, Event, Media, Musician } from '@/payload-types'
+import type {
+  SpecialEventsBlock as SpecialEventsBlockType,
+  Event,
+  Media,
+  Musician,
+  SiteSetting,
+} from '@/payload-types'
 import { SpecialEventsClient } from './SpecialEventsClient'
-import type { SpecialEventCard } from './SpecialEventsClient'
+import type { SpecialEventCard, SpecialContact } from './SpecialEventsClient'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -24,34 +30,61 @@ export async function SpecialEventsBlock({
 
   const { docs } = await payload.find({
     collection: 'events',
-    where: {
-      eventType: { equals: 'special' },
-    },
+    where: { eventType: { equals: 'special' } },
     sort: 'date',
-    limit: block.limit || 4,
+    limit: block.limit || 6,
     locale: locale as 'pl' | 'en' | 'all',
     depth: 1,
   })
+
+  let settings: SiteSetting | null = null
+  try {
+    settings = (await payload.findGlobal({
+      slug: 'site-settings',
+      locale: locale as 'pl' | 'en',
+      depth: 0,
+    })) as SiteSetting
+  } catch {
+    settings = null
+  }
 
   const events = docs as Event[]
   if (events.length === 0) return null
 
   const cards: SpecialEventCard[] = events.map((event) => {
-    const poster = isMedia(event.posterImage) ? event.posterImage : isMedia(event.image) ? event.image : null
+    const poster = isMedia(event.posterImage)
+      ? event.posterImage
+      : isMedia(event.image)
+        ? event.image
+        : null
     const performers = (event.performers ?? [])
-      .map((p) => (isMusician(p.musician) ? p.musician.name : null))
-      .filter((n): n is string => Boolean(n))
+      .map((p) => {
+        const name = isMusician(p.musician) ? p.musician.name : null
+        return name ? { name, instrument: p.instrument ?? null } : null
+      })
+      .filter((p): p is { name: string; instrument: string | null } => Boolean(p))
 
     return {
       id: event.id,
+      slug: event.slug ?? null,
       title: event.title ?? '',
+      leadTitle: event.leadTitle ?? null,
       performers,
       dateISO: event.date ?? null,
+      endTime: event.endTime ?? null,
+      price: event.price ?? null,
       image: poster?.url ? { url: poster.url, alt: poster.alt || event.title || '' } : null,
-      // Only a real external ticket URL links out; otherwise the CTA opens MyRest.
-      ticketUrl: event.ticketUrl ?? null,
     }
   })
+
+  const contact: SpecialContact = {
+    phone: settings?.phones?.[0]?.number ?? '+48 500 210 333',
+    email:
+      settings?.emails?.find((e) => /rezerw/i.test(e.label ?? ''))?.email ??
+      settings?.emails?.[0]?.email ??
+      'rezerwacja@americandreamclub.pl',
+    address: (settings?.address as string) ?? 'American Dream Club · ul. Dominikańska 9 · Poznań',
+  }
 
   const heading = block.heading || (locale === 'pl' ? 'WYDARZENIA SPECJALNE' : 'SPECIAL EVENTS')
 
@@ -67,7 +100,7 @@ export async function SpecialEventsBlock({
           <h2 className="font-serif text-white text-3xl md:text-5xl leading-tight">{heading}</h2>
         </div>
 
-        <SpecialEventsClient cards={cards} locale={locale} />
+        <SpecialEventsClient cards={cards} contact={contact} locale={locale} />
       </div>
     </section>
   )
