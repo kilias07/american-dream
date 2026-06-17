@@ -604,7 +604,7 @@ export function EventsFullCalendar({
                     onFocus={() => setActiveKey(cell.key)}
                     className={`flex flex-col gap-1 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold ${
                       cell.inMonth ? '' : 'opacity-40'
-                    } ${cell.isPast ? 'opacity-50' : ''}`}
+                    } ${cell.isToday ? 'ring-2 ring-brand-gold' : ''}`}
                     style={{ minHeight: 150 }}
                   >
                     {hasEvents ? (
@@ -616,12 +616,18 @@ export function EventsFullCalendar({
                     ) : (
                       <div
                         className={`h-full rounded-xl flex items-start p-2 ${
-                          cell.isToday ? 'bg-brand-gold/15 ring-1 ring-brand-gold/40' : 'bg-gray-50'
+                          cell.isToday ? 'bg-brand-gold/10' : 'bg-gray-50'
                         }`}
                       >
-                        <span className="text-brand-navy/30 text-[13px] font-medium">
-                          {cell.date.getDate()}
-                        </span>
+                        {cell.isToday ? (
+                          <span className="bg-brand-gold text-brand-navy text-[12px] font-bold px-2 py-0.5 rounded-md leading-none">
+                            {cell.date.getDate()}
+                          </span>
+                        ) : (
+                          <span className="text-brand-navy/30 text-[13px] font-medium">
+                            {cell.date.getDate()}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

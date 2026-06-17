@@ -30,7 +30,7 @@ export function ShareBar({ label }: { label: string }) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-white/70 text-[12px] font-bold uppercase tracking-[0.14em]">{label}</span>
+      <span className="text-white/70 text-[13px] tracking-wide">{label}:</span>
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => shareTo('facebook')} className={btn} aria-label="Facebook">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
