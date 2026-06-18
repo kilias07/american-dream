@@ -1166,57 +1166,166 @@ async function run() {
       items: testiItemsEn },
   ])
 
-  // RESTAURACJA
+  // RESTAURACJA — hero + intro + banners stay as components; the menu itself is
+  // simple image tiles. The client uploads ready-made menu graphics (two tiles per
+  // row, "Cover" fit, one fixed shape) and can add as many rows as needed via the CMS.
+  const rest = await img.restauracja()
+  const prog = await img.program()
+  const bar = await img.bar()
+  const twoje = await img.twoje() // social-event crowd — Towarzyska Niedziela banner
+  // Placeholder tiles (same image for now) — the client replaces each with a real
+  // menu graphic in /admin. Structure mirrors the PDF: the cards area is two-column
+  // (split) rows; the Dinner Time / Menu A / Menu B / recap banners are full-width.
+  // Keep every row's key set identical (left/right/full on all) — D1 caps bound
+  // params at 100/statement and Payload sizes insert batches from the first row's
+  // keys, so heterogeneous rows overflow ("too many SQL variables").
+  type GalleryRow = { layout: string; left: number | null; right: number | null; full: number | null }
+  const sp = (l: number | null, r: number | null): GalleryRow => ({ layout: 'split', left: l, right: r, full: null })
+  // À-la-carte tiles (client uploads graphics). The Dinner Time Specials banner is
+  // now a real text+photo header on the setMenu block below.
+  const menuTiles = [
+    sp(rest, rest), // intro card | Tatar wołowy
+    sp(rest, rest), // Jambalaya | Pierogi z dynią
+    sp(rest, rest), // Boston Chowder | Krem z dyni
+    sp(rest, rest), // Texas Rib Eye | Żeberka BBQ
+    sp(rest, rest), // Smash Burger | Club Sandwich
+    sp(rest, rest), // Mule po marynarsku | Pappardelle
+    sp(rest, rest), // Sałatka Cezar | BIG BEAT!
+    sp(rest, rest), // Club Snacks: na ciepło | na zimno
+    sp(rest, rest), // Desery: Szarlotka | Tiramisù
+  ]
+  // MENU A / MENU B — photo on the left, structured courses on the right (design
+  // ADC_Restauracja). Both menus share the same courses; the client edits each in
+  // the CMS and uploads a distinct photo per menu.
+  const setMenuCoursesPl = [
+    { courseLabel: 'PRZYSTAWKA', dish: 'TATAR WOŁOWY', description: 'wołowina 60g / ogórek konserwowy / szalotka / borowik / musztarda francuska / kapary / oliwa z oliwek / sos worcestershire / papryka / żółtko / brioszka' },
+    { courseLabel: 'DANIE GŁÓWNE', dish: 'POLIK WOŁOWY', description: 'polik wołowy 100g / puree z pasternaku / burak / sos z wypieku' },
+    { courseLabel: 'DESER', dish: 'BROWNIE', description: 'brownie / wiśnie / lody śmietankowe' },
+  ]
+  const setMenuCoursesEn = [
+    { courseLabel: 'STARTER', dish: 'BEEF TARTARE', description: 'beef 60g / pickled cucumber / shallot / porcini / French mustard / capers / olive oil / Worcestershire sauce / pepper / egg yolk / brioche' },
+    { courseLabel: 'MAIN COURSE', dish: 'BEEF CHEEK', description: 'beef cheek 100g / parsnip purée / beetroot / pan sauce' },
+    { courseLabel: 'DESSERT', dish: 'BROWNIE', description: 'brownie / cherries / cream ice cream' },
+  ]
+  const setMenuPl = {
+    blockType: 'setMenu',
+    heading: 'Dinner Time',
+    headingScript: 'specials',
+    subtitle: '3-daniowa kolacja degustacyjna w stałej cenie',
+    image: prog,
+    dateLabel: '69 zł / os.',
+    body: 'Dinner Time Specials to wyjątkowa oferta dla miłośników dobrej kuchni i odkrywania nowych smaków: trzydaniowa kolacja degustacyjna w stałej cenie. Stolik dla dwojga w atmosferze klubu. Wy się relaksujecie, a my zajmujemy się resztą. Zapraszamy od wtorku do niedzieli.',
+    ctaLabel: 'ZAREZERWUJ STOLIK',
+    ctaUrl: '/rezerwacje',
+    menus: [
+      { name: 'MENU A', image: rest, courses: setMenuCoursesPl },
+      { name: 'MENU B', image: rest, courses: setMenuCoursesPl },
+    ],
+  }
+  const setMenuEn = {
+    blockType: 'setMenu',
+    heading: 'Dinner Time',
+    headingScript: 'specials',
+    subtitle: 'A 3-course tasting dinner at a fixed price',
+    image: prog,
+    dateLabel: '69 zł / os.',
+    body: 'Dinner Time Specials is a special offer for lovers of good food and discovering new flavours: a three-course tasting dinner at a fixed price. A table for two in a club atmosphere. You relax while we take care of the rest. Open Tuesday to Sunday.',
+    ctaLabel: 'BOOK A TABLE',
+    ctaUrl: '/rezerwacje',
+    menus: [
+      { name: 'MENU A', image: rest, courses: setMenuCoursesEn },
+      { name: 'MENU B', image: rest, courses: setMenuCoursesEn },
+    ],
+  }
+
+  // TOWARZYSKA NIEDZIELA — gold panel: banner + two-column priced menu (design).
+  const specialMenuPl = {
+    blockType: 'specialMenu',
+    image: twoje,
+    heading: 'Towarzyska Niedziela',
+    subtitle: 'Specjalne menu i relaksująca atmosfera',
+    body: 'Zakończ tydzień razem z nami! Towarzyska Niedziela to wyjątkowy wieczór w klubowej atmosferze — od 16:00 do 21:00. W godzinach 17:00 – 20:00 tańce przy największych przebojach muzycznych XX wieku.',
+    ctaLabel: 'ZAREZERWUJ STOLIK',
+    ctaUrl: '/rezerwacje',
+    categories: [
+      { title: 'PRZYSTAWKI', column: 'left', items: [
+        { name: 'TATAR WOŁOWY', price: 55, dietary: 'none', ingredients: 'wołowina 60g / ogórek konserwowy / szalotka / borowik / musztarda francuska / kapary / oliwa z oliwek / sos worcestershire / papryka / żółtko / brioszka' },
+        { name: 'PIEROGI Z DYNIĄ', price: 49, dietary: 'vg', ingredients: 'dynia / pigwa / marchew / ziemniak / cebula / imbir / sos śliwkowy / chili / czosnek / pestki dyni' },
+      ] },
+      { title: 'ZUPY', column: 'left', items: [
+        { name: 'KREM Z DYNI', price: 55, dietary: 'v', ingredients: 'pieczona dynia / cebula / pomidory pelati / żółte curry / ziemniak / pestki dyni / oliwa' },
+      ] },
+      { title: 'PRZEKĄSKI', column: 'left', items: [
+        { name: 'SELEKCJA SERÓW', price: 67, dietary: 'v', ingredients: 'selekcja serów / krakersy / orzechy włoskie' },
+        { name: 'SELEKCJA WĘDLIN', price: 67, dietary: 'none', ingredients: 'selekcja wędlin / krakersy / żurawina suszona' },
+        { name: 'SELEKCJA SERÓW I WĘDLIN', price: 97, dietary: 'pair', ingredients: 'selekcja wędlin / krakersy / żurawina suszona' },
+      ] },
+      { title: 'DANIA GŁÓWNE', column: 'right', items: [
+        { name: 'BURGER BBQ', price: 49, dietary: 'none', ingredients: 'wołowina 180g / bułka maślana / ser cheddar / boczek / pomidor / marmolada z czerwonej cebuli / ogórek konserwowy / sos bbq / frytki' },
+        { name: 'SAŁATKA CEZAR Z KURCZAKIEM', price: 49, dietary: 'none', ingredients: 'sałata rzymska / kurczak / parmezan / pancetta / pomidorki cherry / grzanki / sos cezar' },
+        { name: 'SAŁATKA CEZAR Z KREWETKAMI', price: 65, dietary: 'none', ingredients: 'sałata rzymska / krewetki / parmezan / pancetta / pomidorki cherry / grzanki / sos cezar' },
+        { name: 'PAPPARDELLE Z KREWETKAMI W SOSIE SZAFRANOWO-POMARAŃCZOWYM', price: 77, dietary: 'none', ingredients: 'makaron pappardelle / krewetki / pomidorki koktajlowe / sos szafranowo-pomarańczowy / pietruszka' },
+      ] },
+      { title: 'DESERY', column: 'right', items: [
+        { name: 'SZARLOTKA NA CIEPŁO', price: 35, dietary: 'none', ingredients: 'szarlotka / lody waniliowe / bita śmietana' },
+        { name: 'TIRAMISÙ', price: 35, dietary: 'none', ingredients: 'biszkopty / kawa / likier amaretto / likier kawowy / mascarpone / jajka / cukier / kakao' },
+      ] },
+    ],
+    notice:
+      'Wszystkie podane ceny są w polskich złotych (PLN) i zawierają podatek VAT. W przypadku rezerwacji powyżej 9 osób pobierana jest opłata serwisowa w wysokości 10% wartości rachunku, przy mniejszej liczbie osób serwis nie jest wliczony w cenę.\n\nJeśli masz wymagania dietetyczne lub dotyczące alergenów poinformuj o tym nasz zespół.',
+  }
+  const specialMenuEn = {
+    blockType: 'specialMenu',
+    image: twoje,
+    heading: 'Social Sunday',
+    subtitle: 'A special menu and a relaxed atmosphere',
+    body: 'End the week together with us! Social Sunday is a special evening in a club atmosphere — from 4 pm to 9 pm. Between 5 pm and 8 pm, dancing to the greatest musical hits of the 20th century.',
+    ctaLabel: 'BOOK A TABLE',
+    ctaUrl: '/rezerwacje',
+    categories: [
+      { title: 'STARTERS', column: 'left', items: [
+        { name: 'BEEF TARTARE', price: 55, dietary: 'none', ingredients: 'beef 60g / pickled cucumber / shallot / porcini / French mustard / capers / olive oil / Worcestershire sauce / pepper / egg yolk / brioche' },
+        { name: 'PUMPKIN DUMPLINGS', price: 49, dietary: 'vg', ingredients: 'pumpkin / quince / carrot / potato / onion / ginger / plum sauce / chilli / garlic / pumpkin seeds' },
+      ] },
+      { title: 'SOUPS', column: 'left', items: [
+        { name: 'PUMPKIN CREAM SOUP', price: 55, dietary: 'v', ingredients: 'roasted pumpkin / onion / pelati tomatoes / yellow curry / potato / pumpkin seeds / olive oil' },
+      ] },
+      { title: 'SNACKS', column: 'left', items: [
+        { name: 'CHEESE SELECTION', price: 67, dietary: 'v', ingredients: 'cheese selection / crackers / walnuts' },
+        { name: 'CHARCUTERIE SELECTION', price: 67, dietary: 'none', ingredients: 'charcuterie / crackers / dried cranberries' },
+        { name: 'CHEESE & CHARCUTERIE SELECTION', price: 97, dietary: 'pair', ingredients: 'charcuterie / crackers / dried cranberries' },
+      ] },
+      { title: 'MAIN COURSES', column: 'right', items: [
+        { name: 'BBQ BURGER', price: 49, dietary: 'none', ingredients: 'beef 180g / butter bun / cheddar / bacon / tomato / red onion marmalade / pickled cucumber / bbq sauce / fries' },
+        { name: 'CAESAR SALAD WITH CHICKEN', price: 49, dietary: 'none', ingredients: 'romaine / chicken / parmesan / pancetta / cherry tomatoes / croutons / Caesar dressing' },
+        { name: 'CAESAR SALAD WITH PRAWNS', price: 65, dietary: 'none', ingredients: 'romaine / prawns / parmesan / pancetta / cherry tomatoes / croutons / Caesar dressing' },
+        { name: 'PAPPARDELLE WITH PRAWNS IN SAFFRON-ORANGE SAUCE', price: 77, dietary: 'none', ingredients: 'pappardelle / prawns / cocktail tomatoes / saffron-orange sauce / parsley' },
+      ] },
+      { title: 'DESSERTS', column: 'right', items: [
+        { name: 'WARM APPLE PIE', price: 35, dietary: 'none', ingredients: 'apple pie / vanilla ice cream / whipped cream' },
+        { name: 'TIRAMISÙ', price: 35, dietary: 'none', ingredients: 'ladyfingers / coffee / amaretto liqueur / coffee liqueur / mascarpone / eggs / sugar / cocoa' },
+      ] },
+    ],
+    notice:
+      'All prices are in Polish złoty (PLN) and include VAT. For reservations of more than 9 guests a 10% service charge applies; for smaller groups the service is not included in the price.\n\nIf you have any dietary requirements or allergens, please inform our team.',
+  }
   await page('restaurant', 'Restauracja', [
-    { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
+    { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
     { blockType: 'aboutIntro', eyebrow: 'Nasza kuchnia', heading: 'Dania inspirowane kulturą różnych stanów USA', body: 'Karta dań nawiązuje do kuchni amerykańskiej z akcentami europejskimi. Menu stanowi dopełnienie wieczoru — tworząc wraz z muzyką i rozmową jedną spójną, klubową całość. Dania i napoje możesz zamówić przed koncertem lub w jego trakcie — obsługa pozostaje do pełnej dyspozycji. W karcie oferta wegetariańska oraz starannie dobrane wina i koktajle.' },
-    { blockType: 'menuSection', sectionTag: 'MENU', heading: 'Nasze dania', menuType: 'food', layout: 'cardGrid', groupByCategory: true },
-    // BIG BEAT! — curated set-menu options matched to the evening programme (from PDF)
-    { blockType: 'promoBand', heading: 'BIG BEAT!', subtitle: 'ZAMÓW ZESTAW W ATRAKCYJNEJ CENIE', items: [
-      { label: 'B.B. KING', sub: '1/4 Smash Burgerów + piwo BUD (330 ml) lub lemoniada (330 ml)', price: 60 },
-      { label: 'JAZZ CLUB SPECIAL', sub: 'American Dream Club Sandwich + piwo BUD (330 ml) lub lemoniada (330 ml)', price: 60 },
-      { label: 'AMERICAN DREAM', sub: '2× aperitif (Bellini lub Americano) + przekąski dla dwojga (deska made in USA lub selekcja serów i wędlin) + 2× deser (brownie)', price: 147 },
-    ], ctaLabel: 'ZAREZERWUJ STOLIK', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: '3-daniowa kolacja degustacyjna w stałej cenie', image: await img.program(), menus: [
-      { name: 'MENU A', price: 69, courses: [
-        { courseLabel: 'PRZYSTAWKA', dish: 'Tatar wołowy', description: 'wołowina 65 g, ogórek konserwowy, szalotka, borowik, musztarda francuska, kapary, oliwa z oliwek, sos worcestershire, papryka, żółtko' },
-        { courseLabel: 'DANIE GŁÓWNE', dish: 'Polik wołowy', description: 'polik wołowy 100 g, puree z pasternaku, burak, sos z węgielka' },
-        { courseLabel: 'DESER', dish: 'Brownie', description: 'brownie, wiśnie, lody śmietankowe' },
-      ] },
-      { name: 'MENU B', price: 69, courses: [
-        { courseLabel: 'PRZYSTAWKA', dish: 'Tatar wołowy', description: 'wołowina 65 g, ogórek konserwowy, szalotka, borowik, musztarda francuska, kapary, oliwa z oliwek, sos worcestershire, papryka, żółtko' },
-        { courseLabel: 'DANIE GŁÓWNE', dish: 'Polik wołowy', description: 'polik wołowy 100 g, puree z pasternaku, burak, sos z węgielka' },
-        { courseLabel: 'DESER', dish: 'Brownie', description: 'brownie, wiśnie, lody śmietankowe' },
-      ] },
-    ] },
-    { blockType: 'promoBand', heading: 'Towarzyska Niedziela', subtitle: 'Specjalne menu i relaksująca atmosfera', body: 'Zakończ tydzień razem z nami! Towarzyska Niedziela to wyjątkowy wieczór w klubowej atmosferze — od 16:00 do 21:00. W godzinach 17:00 – 20:00 tańce przy największych przebojach muzycznych XX wieku.', ctaLabel: 'ZAREZERWUJ STOLIK', ctaUrl: '/rezerwacje', style: 'gold' },
+    { blockType: 'menuGallery', eyebrow: 'Karta dań', heading: 'NASZE MENU', pdfLabel: 'ZOBACZ CAŁE MENU (PDF)', aspectRatio: '4/5', rows: menuTiles },
+    setMenuPl,
+    specialMenuPl,
     { blockType: 'bentoSection', items: [
-      { image: await img.bar(), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar-and-cocktails' },
+      { image: bar, colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ], 'Restaurant', [
-    { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: await img.restauracja(), inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
+    { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
     { blockType: 'aboutIntro', eyebrow: 'Our kitchen', heading: 'Dishes inspired by the culture of different US states', body: 'The menu draws on American cuisine with European accents. It is a complement to the evening — forming, together with the music and conversation, one coherent, club-like whole. You can order dishes and drinks before the concert or during it — the staff remain fully at your disposal. The menu includes a vegetarian offer and carefully selected wines and cocktails.' },
-    { blockType: 'menuSection', sectionTag: 'MENU', heading: 'Our dishes', menuType: 'food', layout: 'cardGrid', groupByCategory: true },
-    { blockType: 'promoBand', heading: 'BIG BEAT!', subtitle: 'ORDER A SET AT A GREAT PRICE', items: [
-      { label: 'B.B. KING', sub: '1/4 Smash Burgers + BUD beer (330 ml) or lemonade (330 ml)', price: 60 },
-      { label: 'JAZZ CLUB SPECIAL', sub: 'American Dream Club Sandwich + BUD beer (330 ml) or lemonade (330 ml)', price: 60 },
-      { label: 'AMERICAN DREAM', sub: '2× aperitif (Bellini or Americano) + snacks for two (made-in-USA board or a selection of cheeses and cold cuts) + 2× dessert (brownie)', price: 147 },
-    ], ctaLabel: 'BOOK A TABLE', ctaUrl: '/rezerwacje', style: 'gold' },
-    { blockType: 'setMenu', heading: 'Dinner Time', subtitle: 'A three-course tasting dinner at a fixed price', image: await img.program(), menus: [
-      { name: 'MENU A', price: 69, courses: [
-        { courseLabel: 'STARTER', dish: 'Beef Tartare', description: 'beef 65 g, pickled cucumber, shallot, porcini, French mustard, capers, olive oil, Worcestershire sauce, paprika, egg yolk' },
-        { courseLabel: 'MAIN COURSE', dish: 'Beef Cheek', description: 'beef cheek 100 g, parsnip purée, beetroot, charcoal sauce' },
-        { courseLabel: 'DESSERT', dish: 'Brownie', description: 'brownie, cherries, cream ice cream' },
-      ] },
-      { name: 'MENU B', price: 69, courses: [
-        { courseLabel: 'STARTER', dish: 'Beef Tartare', description: 'beef 65 g, pickled cucumber, shallot, porcini, French mustard, capers, olive oil, Worcestershire sauce, paprika, egg yolk' },
-        { courseLabel: 'MAIN COURSE', dish: 'Beef Cheek', description: 'beef cheek 100 g, parsnip purée, beetroot, charcoal sauce' },
-        { courseLabel: 'DESSERT', dish: 'Brownie', description: 'brownie, cherries, cream ice cream' },
-      ] },
-    ] },
-    { blockType: 'promoBand', heading: 'Social Sunday', subtitle: 'A special menu and a relaxed atmosphere', body: 'End the week together with us! Social Sunday is a special evening in a club atmosphere — from 4 pm to 9 pm. Between 5 pm and 8 pm, dancing to the greatest musical hits of the 20th century.', ctaLabel: 'BOOK A TABLE', ctaUrl: '/rezerwacje', style: 'gold' },
+    { blockType: 'menuGallery', eyebrow: 'The menu', heading: 'OUR MENU', pdfLabel: 'SEE THE FULL MENU (PDF)', aspectRatio: '4/5', rows: menuTiles },
+    setMenuEn,
+    specialMenuEn,
     { blockType: 'bentoSection', items: [
-      { image: await img.bar(), colSpan: 'full', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar-and-cocktails' },
+      { image: bar, colSpan: 'full', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ])
 

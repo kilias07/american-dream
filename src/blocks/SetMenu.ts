@@ -16,6 +16,15 @@ export const SetMenu: Block = {
       },
     },
     {
+      name: 'headingScript',
+      type: 'text',
+      localized: true,
+      admin: {
+        placeholder: 'specials',
+        description: 'Decorative script accent shown under the heading (e.g. "specials").',
+      },
+    },
+    {
       name: 'subtitle',
       type: 'text',
       localized: true,
@@ -28,14 +37,38 @@ export const SetMenu: Block = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Optional photo shown beside the heading/intro.',
+        description: 'Background photo for the header banner (Dinner Time Specials).',
       },
     },
     {
       name: 'dateLabel',
       type: 'text',
       admin: {
-        placeholder: '02.07',
+        placeholder: '69 zł / os.',
+        description: 'Price / date shown in the outlined badge.',
+      },
+    },
+    {
+      name: 'body',
+      type: 'textarea',
+      localized: true,
+      admin: {
+        description: 'Intro paragraph shown in the header banner.',
+      },
+    },
+    {
+      name: 'ctaLabel',
+      type: 'text',
+      localized: true,
+      admin: {
+        placeholder: 'ZAREZERWUJ STOLIK',
+      },
+    },
+    {
+      name: 'ctaUrl',
+      type: 'text',
+      admin: {
+        placeholder: '/rezerwacje',
       },
     },
     {
@@ -54,6 +87,14 @@ export const SetMenu: Block = {
         {
           name: 'price',
           type: 'number',
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description: 'Photo shown to the left of this menu (design: MENU A / MENU B).',
+          },
         },
         {
           name: 'courses',

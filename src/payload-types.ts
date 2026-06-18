@@ -279,7 +279,9 @@ export interface Page {
         | AboutIntroBlock
         | BentoSectionBlock
         | MenuSectionBlock
+        | MenuGalleryBlock
         | SetMenuBlock
+        | SpecialMenuBlock
         | PromoBandBlock
         | EventsTeaserBlock
         | SpecialEventsBlock
@@ -658,20 +660,72 @@ export interface MenuSectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MenuGalleryBlock".
+ */
+export interface MenuGalleryBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Optional "ZOBACZ CAŁE MENU (PDF)" download.
+   */
+  pdfDownload?: (number | null) | Media;
+  pdfLabel?: string | null;
+  /**
+   * Fixed shape for the two-column (split) tiles. Full-width tiles keep their own proportions.
+   */
+  aspectRatio: '2/3' | '3/4' | '4/5' | '1/1' | '4/3' | '16/10';
+  /**
+   * Each row is two tiles (left + right) or one full-width tile. Add as many rows as you need.
+   */
+  rows?:
+    | {
+        layout: 'split' | 'full';
+        left?: (number | null) | Media;
+        right?: (number | null) | Media;
+        /**
+         * Single full-width image (e.g. Dinner Time / Menu A-B / recap banner).
+         */
+        full?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'menuGallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "SetMenuBlock".
  */
 export interface SetMenuBlock {
   heading?: string | null;
+  /**
+   * Decorative script accent shown under the heading (e.g. "specials").
+   */
+  headingScript?: string | null;
   subtitle?: string | null;
   /**
-   * Optional photo shown beside the heading/intro.
+   * Background photo for the header banner (Dinner Time Specials).
    */
   image?: (number | null) | Media;
+  /**
+   * Price / date shown in the outlined badge.
+   */
   dateLabel?: string | null;
+  /**
+   * Intro paragraph shown in the header banner.
+   */
+  body?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
   menus?:
     | {
         name?: string | null;
         price?: number | null;
+        /**
+         * Photo shown to the left of this menu (design: MENU A / MENU B).
+         */
+        image?: (number | null) | Media;
         courses?:
           | {
               courseLabel?: string | null;
@@ -686,6 +740,51 @@ export interface SetMenuBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'setMenu';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpecialMenuBlock".
+ */
+export interface SpecialMenuBlock {
+  /**
+   * Background photo for the top banner.
+   */
+  image?: (number | null) | Media;
+  /**
+   * Optional script wordmark shown over the banner (falls back to the heading text).
+   */
+  logo?: (number | null) | Media;
+  heading?: string | null;
+  subtitle?: string | null;
+  body?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  /**
+   * Menu sections (e.g. Przystawki, Zupy). Use the column field to place each one left or right.
+   */
+  categories?:
+    | {
+        title?: string | null;
+        column?: ('left' | 'right') | null;
+        items?:
+          | {
+              name?: string | null;
+              price?: number | null;
+              ingredients?: string | null;
+              dietary?: ('none' | 'v' | 'vg' | 'pair') | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Fine print shown at the bottom (prices / VAT / allergens).
+   */
+  notice?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'specialMenu';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1949,7 +2048,9 @@ export interface PagesSelect<T extends boolean = true> {
         aboutIntro?: T | AboutIntroBlockSelect<T>;
         bentoSection?: T | BentoSectionBlockSelect<T>;
         menuSection?: T | MenuSectionBlockSelect<T>;
+        menuGallery?: T | MenuGalleryBlockSelect<T>;
         setMenu?: T | SetMenuBlockSelect<T>;
+        specialMenu?: T | SpecialMenuBlockSelect<T>;
         promoBand?: T | PromoBandBlockSelect<T>;
         eventsTeaser?: T | EventsTeaserBlockSelect<T>;
         specialEvents?: T | SpecialEventsBlockSelect<T>;
@@ -2147,18 +2248,45 @@ export interface MenuSectionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MenuGalleryBlock_select".
+ */
+export interface MenuGalleryBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  pdfDownload?: T;
+  pdfLabel?: T;
+  aspectRatio?: T;
+  rows?:
+    | T
+    | {
+        layout?: T;
+        left?: T;
+        right?: T;
+        full?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "SetMenuBlock_select".
  */
 export interface SetMenuBlockSelect<T extends boolean = true> {
   heading?: T;
+  headingScript?: T;
   subtitle?: T;
   image?: T;
   dateLabel?: T;
+  body?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
   menus?:
     | T
     | {
         name?: T;
         price?: T;
+        image?: T;
         courses?:
           | T
           | {
@@ -2169,6 +2297,38 @@ export interface SetMenuBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpecialMenuBlock_select".
+ */
+export interface SpecialMenuBlockSelect<T extends boolean = true> {
+  image?: T;
+  logo?: T;
+  heading?: T;
+  subtitle?: T;
+  body?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  categories?:
+    | T
+    | {
+        title?: T;
+        column?: T;
+        items?:
+          | T
+          | {
+              name?: T;
+              price?: T;
+              ingredients?: T;
+              dietary?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  notice?: T;
   id?: T;
   blockName?: T;
 }

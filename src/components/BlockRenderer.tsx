@@ -17,6 +17,7 @@ import { PageHeroBlock } from './blocks/PageHeroBlock'
 import { AboutIntroBlock } from './blocks/AboutIntroBlock'
 import { PromoBandBlock } from './blocks/PromoBandBlock'
 import { SetMenuBlock } from './blocks/SetMenuBlock'
+import { SpecialMenuBlock } from './blocks/SpecialMenuBlock'
 import { OfferCardsBlock } from './blocks/OfferCardsBlock'
 import { ArtistCTABlock } from './blocks/ArtistCTABlock'
 import { Notice21PlusBlock } from './blocks/Notice21PlusBlock'
@@ -28,6 +29,7 @@ import { RoomSelectorBlock } from './blocks/RoomSelectorBlock'
 import { MusiciansGridBlock } from './blocks/MusiciansGridBlock'
 import { RecurringSeriesTeaserBlock } from './blocks/RecurringSeriesTeaserBlock'
 import { MenuSectionBlock } from './blocks/MenuSectionBlock'
+import { MenuGalleryBlock } from './blocks/MenuGalleryBlock'
 import { NewsCarouselBlock } from './blocks/NewsCarouselBlock'
 import { SpecialEventsBlock } from './blocks/SpecialEventsBlock'
 import { EventsTeaserSectionBlock } from './blocks/EventsTeaserSectionBlock'
@@ -85,6 +87,8 @@ function renderBlock(
       return <PromoBandBlock key={i} block={block} locale={loc} />
     case 'setMenu':
       return <SetMenuBlock key={i} block={block} locale={loc} />
+    case 'specialMenu':
+      return <SpecialMenuBlock key={i} block={block} locale={loc} />
     case 'offerCards':
       return <OfferCardsBlock key={i} block={block} locale={loc} />
     case 'artistCTA':
@@ -107,6 +111,8 @@ function renderBlock(
       return <RecurringSeriesTeaserBlock key={i} block={block} locale={loc} />
     case 'menuSection':
       return <MenuSectionBlock key={i} block={block} locale={loc} />
+    case 'menuGallery':
+      return <MenuGalleryBlock key={i} block={block} locale={loc} />
     case 'newsCarousel':
       return <NewsCarouselBlock key={i} block={block} locale={loc} />
     case 'specialEvents':

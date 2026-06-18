@@ -15,6 +15,11 @@ import * as migration_20260612_103801_add_event_slug from './20260612_103801_add
 import * as migration_20260612_151806_add_offercards_style from './20260612_151806_add_offercards_style';
 import * as migration_20260612_152457_add_menusection_image from './20260612_152457_add_menusection_image';
 import * as migration_20260612_153252_add_setmenu_image from './20260612_153252_add_setmenu_image';
+import * as migration_20260618_082719_menu_gallery from './20260618_082719_menu_gallery';
+import * as migration_20260618_084014_menu_gallery_rows from './20260618_084014_menu_gallery_rows';
+import * as migration_20260618_090500_add_setmenu_menus_image from './20260618_090500_add_setmenu_menus_image';
+import * as migration_20260618_093000_add_setmenu_header_fields from './20260618_093000_add_setmenu_header_fields';
+import * as migration_20260618_114045_special_menu from './20260618_114045_special_menu';
 
 export const migrations = [
   {
@@ -100,6 +105,31 @@ export const migrations = [
   {
     up: migration_20260612_153252_add_setmenu_image.up,
     down: migration_20260612_153252_add_setmenu_image.down,
-    name: '20260612_153252_add_setmenu_image'
+    name: '20260612_153252_add_setmenu_image',
+  },
+  {
+    up: migration_20260618_082719_menu_gallery.up,
+    down: migration_20260618_082719_menu_gallery.down,
+    name: '20260618_082719_menu_gallery',
+  },
+  {
+    up: migration_20260618_084014_menu_gallery_rows.up,
+    down: migration_20260618_084014_menu_gallery_rows.down,
+    name: '20260618_084014_menu_gallery_rows',
+  },
+  {
+    up: migration_20260618_090500_add_setmenu_menus_image.up,
+    down: migration_20260618_090500_add_setmenu_menus_image.down,
+    name: '20260618_090500_add_setmenu_menus_image',
+  },
+  {
+    up: migration_20260618_093000_add_setmenu_header_fields.up,
+    down: migration_20260618_093000_add_setmenu_header_fields.down,
+    name: '20260618_093000_add_setmenu_header_fields',
+  },
+  {
+    up: migration_20260618_114045_special_menu.up,
+    down: migration_20260618_114045_special_menu.down,
+    name: '20260618_114045_special_menu'
   },
 ];
