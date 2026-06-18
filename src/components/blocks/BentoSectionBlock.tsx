@@ -23,12 +23,50 @@ function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
+/** Small glyph for the CTA, derived from where the card links to. */
+function CtaIcon({ url }: { url: string }) {
+  const u = url.toLowerCase()
+  const cls = 'w-4 h-4 flex-shrink-0'
+  if (u.includes('bar') || u.includes('cocktail') || u.includes('koktajl')) {
+    // Cocktail (coupe) glass
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M3 4h18l-8 8.6V19h3.5v2h-9v-2H11v-6.4L3 4Zm3.6 2L12 10.4 17.4 6H6.6Z" />
+      </svg>
+    )
+  }
+  if (u.includes('restaurant') || u.includes('restauracja')) {
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M7 2v7a2 2 0 0 0 2 2v11h2V11a2 2 0 0 0 2-2V2h-1.5v6H10V2H8.5v6H7V2Zm10 0c-1.7 0-3 2-3 5s1 4 2 4v9h2V2Z" />
+      </svg>
+    )
+  }
+  if (u.includes('cigar')) {
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M2 14h16v4H2v-4Zm17 0h2v4h-2v-4Zm-3-7c0-1.5 1-2 1-3M13 8c0-1.5 1-2 1-3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      </svg>
+    )
+  }
+  if (u.includes('event') || u.includes('program') || u.includes('wydarzen')) {
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="2" fill="none" />
+        <circle cx="6" cy="18" r="3" />
+        <circle cx="18" cy="16" r="3" />
+      </svg>
+    )
+  }
+  return null
+}
+
 function BentoCard({ item }: { item: BentoItem }) {
   const media = isMedia(item.image) ? item.image : null
 
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden group cursor-pointer ${
+      className={`relative rounded-2xl overflow-hidden group cursor-pointer ring-1 ring-brand-gold/70 ${
         item.colSpan === 'full' ? 'col-span-2' : 'col-span-2 md:col-span-1'
       }`}
       style={{ minHeight: item.colSpan === 'full' ? 420 : 320 }}
@@ -56,16 +94,17 @@ function BentoCard({ item }: { item: BentoItem }) {
           <p className="text-white/80 text-sm mb-2 max-w-xs leading-snug">{item.label}</p>
         )}
 
-        <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide mb-4 flex items-center gap-2">
+        <h3 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-wide mb-4 flex items-center gap-2">
           {item.title}
-          <span className="text-white/70">›</span>
+          <span className="text-white">›</span>
         </h3>
 
         {item.ctaLabel && item.ctaUrl && (
           <Link
             href={item.ctaUrl}
-            className="inline-flex items-center gap-2 border border-white text-white text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-2 rounded-full hover:bg-white hover:text-brand-navy transition-colors"
+            className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
           >
+            <CtaIcon url={item.ctaUrl} />
             {item.ctaLabel}
           </Link>
         )}
