@@ -1,7 +1,23 @@
 'use client'
 import React, { useState } from 'react'
 
-export function NewsletterForm() {
+type Props = {
+  placeholder?: string
+  consentText?: string
+  submitLabel?: string
+  sendingLabel?: string
+  successText?: string
+  errorText?: string
+}
+
+export function NewsletterForm({
+  placeholder = 'Adres email',
+  consentText = 'Akceptuję politykę prywatności',
+  submitLabel = 'Dołącz',
+  sendingLabel = 'Wysyłanie…',
+  successText = 'Dziękujemy! Wiadomość została wysłana.',
+  errorText = 'Wystąpił błąd. Spróbuj ponownie później.',
+}: Props) {
   const [email, setEmail] = useState('')
   const [accepted, setAccepted] = useState(false)
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
@@ -34,7 +50,7 @@ export function NewsletterForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input
         type="email"
-        placeholder="Adres email"
+        placeholder={placeholder}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="w-full px-4 py-2 rounded-full border border-brand-navy/30 bg-white/80 text-brand-navy text-sm placeholder:text-brand-navy/50 outline-none focus:border-brand-navy"
@@ -46,25 +62,23 @@ export function NewsletterForm() {
           onChange={(e) => setAccepted(e.target.checked)}
           className="mt-0.5 accent-brand-navy"
         />
-        <span className="text-brand-navy text-xs leading-snug">
-          Akceptuję politykę prywatności
-        </span>
+        <span className="text-brand-navy text-xs leading-snug">{consentText}</span>
       </label>
       <button
         type="submit"
         disabled={status === 'submitting'}
         className="self-start px-8 py-2 bg-brand-navy text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-brand-navy/80 transition-colors disabled:opacity-50"
       >
-        {status === 'submitting' ? 'Wysyłanie…' : 'Dołącz'}
+        {status === 'submitting' ? sendingLabel : submitLabel}
       </button>
       {status === 'success' && (
         <p className="text-brand-navy text-xs font-semibold" role="status">
-          Dziękujemy! Wiadomość została wysłana.
+          {successText}
         </p>
       )}
       {status === 'error' && (
         <p className="text-red-700 text-xs font-semibold" role="alert">
-          Wystąpił błąd. Spróbuj ponownie później.
+          {errorText}
         </p>
       )}
     </form>

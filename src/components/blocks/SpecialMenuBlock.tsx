@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { SpecialMenuBlock as SpecialMenuBlockType, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -41,7 +42,7 @@ function PairGlyph() {
   )
 }
 
-export function SpecialMenuBlock({
+export async function SpecialMenuBlock({
   block,
   locale,
 }: {
@@ -66,10 +67,16 @@ export function SpecialMenuBlock({
   const leftCats = cats.filter((c) => c.column !== 'right')
   const rightCats = cats.filter((c) => c.column === 'right')
 
-  const legend =
+  const ui = await getUILabels(locale as Locale)
+  const fallbackLegend =
     locale === 'en'
       ? { pair: 'dish for two', v: 'vegetarian dish', vg: 'vegan dish' }
       : { pair: 'danie dla dwóch osób', v: 'danie wegetariańskie', vg: 'danie wegańskie' }
+  const legend = {
+    pair: pick(ui?.menu?.legendPair, fallbackLegend.pair),
+    v: pick(ui?.menu?.legendVeg, fallbackLegend.v),
+    vg: pick(ui?.menu?.legendVegan, fallbackLegend.vg),
+  }
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">

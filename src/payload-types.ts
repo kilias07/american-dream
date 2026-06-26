@@ -126,6 +126,7 @@ export interface Config {
     'opening-hours': OpeningHour;
     'reservation-settings': ReservationSetting;
     legal: Legal;
+    'ui-labels': UiLabel;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -134,6 +135,7 @@ export interface Config {
     'opening-hours': OpeningHoursSelect<false> | OpeningHoursSelect<true>;
     'reservation-settings': ReservationSettingsSelect<false> | ReservationSettingsSelect<true>;
     legal: LegalSelect<false> | LegalSelect<true>;
+    'ui-labels': UiLabelsSelect<false> | UiLabelsSelect<true>;
   };
   locale: 'en' | 'pl';
   widgets: {
@@ -3318,6 +3320,10 @@ export interface SiteSetting {
    */
   reservationUrl?: string | null;
   reviewAggregate?: string | null;
+  /**
+   * Domyślny opis SEO strony (meta description / Open Graph), używany gdy strona nie ma własnego opisu.
+   */
+  metaDescription?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3450,6 +3456,55 @@ export interface Legal {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ui-labels".
+ */
+export interface UiLabel {
+  id: number;
+  common?: {
+    readMore?: string | null;
+    openingHours?: string | null;
+    closed?: string | null;
+    newsletter?: string | null;
+    noNews?: string | null;
+    writeToUs?: string | null;
+    callUs?: string | null;
+  };
+  days?: {
+    monday?: string | null;
+    tuesday?: string | null;
+    wednesday?: string | null;
+    thursday?: string | null;
+    friday?: string | null;
+    saturday?: string | null;
+    sunday?: string | null;
+  };
+  forms?: {
+    name?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    message?: string | null;
+    consent?: string | null;
+    submit?: string | null;
+    sending?: string | null;
+    success?: string | null;
+    error?: string | null;
+    contactHeading?: string | null;
+  };
+  menu?: {
+    fullMenuPdf?: string | null;
+    legendPair?: string | null;
+    legendVeg?: string | null;
+    legendVegan?: string | null;
+  };
+  event?: {
+    reserveTable?: string | null;
+    specialEvent?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -3556,6 +3611,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   mapEmbedUrl?: T;
   reservationUrl?: T;
   reviewAggregate?: T;
+  metaDescription?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -3610,6 +3666,65 @@ export interface LegalSelect<T extends boolean = true> {
   privacy?: T;
   companyData?: T;
   age21Notice?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ui-labels_select".
+ */
+export interface UiLabelsSelect<T extends boolean = true> {
+  common?:
+    | T
+    | {
+        readMore?: T;
+        openingHours?: T;
+        closed?: T;
+        newsletter?: T;
+        noNews?: T;
+        writeToUs?: T;
+        callUs?: T;
+      };
+  days?:
+    | T
+    | {
+        monday?: T;
+        tuesday?: T;
+        wednesday?: T;
+        thursday?: T;
+        friday?: T;
+        saturday?: T;
+        sunday?: T;
+      };
+  forms?:
+    | T
+    | {
+        name?: T;
+        phone?: T;
+        email?: T;
+        message?: T;
+        consent?: T;
+        submit?: T;
+        sending?: T;
+        success?: T;
+        error?: T;
+        contactHeading?: T;
+      };
+  menu?:
+    | T
+    | {
+        fullMenuPdf?: T;
+        legendPair?: T;
+        legendVeg?: T;
+        legendVegan?: T;
+      };
+  event?:
+    | T
+    | {
+        reserveTable?: T;
+        specialEvent?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

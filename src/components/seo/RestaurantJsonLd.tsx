@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 import configPromise from '@payload-config'
 import type { OpeningHour, SiteSetting } from '@/payload-types'
+import { getSiteContact } from '@/lib/site-contact'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
@@ -52,20 +53,23 @@ export async function RestaurantJsonLd() {
 
   const openingHours = buildOpeningHours(hours)
 
+  // Contact details come from the `site-settings` global (single source of truth).
+  const { phone: telephone, streetAddress, postalCode, addressLocality } = await getSiteContact()
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': ['NightClub', 'Restaurant'],
     name: settings?.siteName || 'American Dream Club',
     url: SITE_URL,
     image: `${SITE_URL}/website-template-OG.webp`,
-    telephone: '+48 500 210 333',
+    telephone,
     priceRange: '$$$',
     servesCuisine: ['European', 'Polish', 'Cocktails'],
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'ul. Dominikańska 9',
-      postalCode: '61-762',
-      addressLocality: 'Poznań',
+      streetAddress,
+      postalCode,
+      addressLocality,
       addressCountry: 'PL',
     },
     ...(openingHours.length ? { openingHours } : {}),

@@ -10,6 +10,7 @@ import type {
 } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -47,7 +48,15 @@ async function getSeries(
   }
 }
 
-function SeriesCard({ series, locale }: { series: RecurringSery; locale: string }) {
+function SeriesCard({
+  series,
+  locale,
+  readMore,
+}: {
+  series: RecurringSery
+  locale: string
+  readMore: string
+}) {
   const wordmark = isMedia(series.wordmarkImage) ? series.wordmarkImage : null
   const hero = isMedia(series.heroImage) ? series.heroImage : null
   const bg = wordmark ?? hero
@@ -95,7 +104,7 @@ function SeriesCard({ series, locale }: { series: RecurringSery; locale: string 
           className="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em]"
           style={{ color: accent }}
         >
-          {locale === 'pl' ? 'Czytaj więcej' : 'Read more'}
+          {readMore}
           <span aria-hidden="true">›</span>
         </span>
       </div>
@@ -114,6 +123,9 @@ export async function RecurringSeriesTeaserBlock({
   const series = await getSeries(block, locale)
 
   if (series.length === 0) return null
+
+  const ui = await getUILabels(locale as Locale)
+  const readMore = pick(ui?.common?.readMore, locale === 'pl' ? 'Czytaj więcej' : 'Read more')
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -138,7 +150,7 @@ export async function RecurringSeriesTeaserBlock({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
           {series.map((s) => (
-            <SeriesCard key={s.id} series={s} locale={locale} />
+            <SeriesCard key={s.id} series={s} locale={locale} readMore={readMore} />
           ))}
         </div>
       </div>

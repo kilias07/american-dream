@@ -7,6 +7,7 @@ import type { Media, Post } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { auditEntry, buildMetadata } from '@/lib/audit-seo'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -44,6 +45,10 @@ export async function renderNewsList(pageParam: string | undefined, locale: Loca
 
   const { docs, totalPages } = await cachedGetPosts()
 
+  const ui = await getUILabels(locale)
+  const noNewsLabel = pick(ui?.common?.noNews, locale === 'pl' ? 'Brak aktualności.' : 'No news yet.')
+  const readMoreLabel = pick(ui?.common?.readMore, locale === 'pl' ? 'Czytaj więcej…' : 'Read more…')
+
   return (
     <div className="bg-brand-navy text-white">
       {/* Page hero */}
@@ -63,7 +68,7 @@ export async function renderNewsList(pageParam: string | undefined, locale: Loca
         <div className="max-w-[1280px] mx-auto px-6 md:px-10">
           {docs.length === 0 ? (
             <p className="text-center text-white/60 py-20">
-              {locale === 'pl' ? 'Brak aktualności.' : 'No news yet.'}
+              {noNewsLabel}
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -99,7 +104,7 @@ export async function renderNewsList(pageParam: string | undefined, locale: Loca
                         </p>
                       )}
                       <span className="inline-flex items-center gap-1 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em]">
-                        {locale === 'pl' ? 'Czytaj więcej…' : 'Read more…'}
+                        {readMoreLabel}
                       </span>
                     </div>
                   </Link>

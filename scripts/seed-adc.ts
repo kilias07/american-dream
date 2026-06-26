@@ -264,10 +264,98 @@ async function run() {
       'https://www.google.com/maps?q=ul.+Dominika%C5%84ska+9,+61-762+Pozna%C5%84&output=embed',
     reservationUrl: 'tel:+48500210333',
     reviewAggregate: '478 opinii · 4,8/5 w Google',
+    metaDescription:
+      'American Dream Club — restauracja i klub jazzowy w sercu Poznania. Koncerty na żywo, autorska kuchnia, bar i cigar room.',
   }, {
-    // localized: address, reviewAggregate
+    // localized: address, reviewAggregate, metaDescription
     address: '9 Dominikańska St., 61-762 Poznań',
     reviewAggregate: '478 reviews · 4.8/5 on Google',
+    metaDescription:
+      'American Dream Club — a restaurant and jazz club in the heart of Poznań. Live concerts, a signature kitchen, bar and cigar room.',
+  })
+
+  await setGlobal('ui-labels', {
+    common: {
+      readMore: 'Czytaj więcej',
+      openingHours: 'Godziny otwarcia',
+      closed: 'Zamknięte',
+      newsletter: 'Newsletter',
+      noNews: 'Brak aktualności.',
+      writeToUs: 'Napisz do nas',
+      callUs: 'Zadzwoń do nas',
+    },
+    days: {
+      monday: 'Poniedziałek',
+      tuesday: 'Wtorek',
+      wednesday: 'Środa',
+      thursday: 'Czwartek',
+      friday: 'Piątek',
+      saturday: 'Sobota',
+      sunday: 'Niedziela',
+    },
+    forms: {
+      name: 'Imię',
+      phone: 'Telefon',
+      email: 'Adres email',
+      message: 'Wiadomość',
+      consent: 'Akceptuję politykę prywatności',
+      submit: 'Wyślij wiadomość',
+      sending: 'Wysyłanie…',
+      success: 'Dziękujemy! Wiadomość została wysłana.',
+      error: 'Wystąpił błąd. Spróbuj ponownie później.',
+      contactHeading: 'SKONTAKTUJ SIĘ Z NAMI',
+    },
+    menu: {
+      fullMenuPdf: 'Zobacz całe menu (PDF)',
+      legendPair: 'danie dla dwóch osób',
+      legendVeg: 'danie wegetariańskie',
+      legendVegan: 'danie wegańskie',
+    },
+    event: {
+      reserveTable: 'Zarezerwuj stolik',
+      specialEvent: 'Wydarzenie specjalne',
+    },
+  }, {
+    common: {
+      readMore: 'Read more',
+      openingHours: 'Opening hours',
+      closed: 'Closed',
+      newsletter: 'Newsletter',
+      noNews: 'No news yet.',
+      writeToUs: 'Write to us',
+      callUs: 'Call us',
+    },
+    days: {
+      monday: 'Monday',
+      tuesday: 'Tuesday',
+      wednesday: 'Wednesday',
+      thursday: 'Thursday',
+      friday: 'Friday',
+      saturday: 'Saturday',
+      sunday: 'Sunday',
+    },
+    forms: {
+      name: 'Name',
+      phone: 'Phone',
+      email: 'Email address',
+      message: 'Message',
+      consent: 'I accept the privacy policy',
+      submit: 'Send message',
+      sending: 'Sending…',
+      success: 'Thank you! Your message has been sent.',
+      error: 'Something went wrong. Please try again later.',
+      contactHeading: 'CONTACT US',
+    },
+    menu: {
+      fullMenuPdf: 'See full menu (PDF)',
+      legendPair: 'dish for two',
+      legendVeg: 'vegetarian dish',
+      legendVegan: 'vegan dish',
+    },
+    event: {
+      reserveTable: 'Reserve a table',
+      specialEvent: 'Special event',
+    },
   })
 
   await setGlobal('opening-hours', {

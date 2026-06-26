@@ -21,6 +21,7 @@ import * as migration_20260618_090500_add_setmenu_menus_image from './20260618_0
 import * as migration_20260618_093000_add_setmenu_header_fields from './20260618_093000_add_setmenu_header_fields';
 import * as migration_20260618_114045_special_menu from './20260618_114045_special_menu';
 import * as migration_20260621_192721_cigar_menu_image_and_gallery_layout from './20260621_192721_cigar_menu_image_and_gallery_layout';
+import * as migration_20260626_090000_ui_labels from './20260626_090000_ui_labels';
 
 export const migrations = [
   {
@@ -137,5 +138,10 @@ export const migrations = [
     up: migration_20260621_192721_cigar_menu_image_and_gallery_layout.up,
     down: migration_20260621_192721_cigar_menu_image_and_gallery_layout.down,
     name: '20260621_192721_cigar_menu_image_and_gallery_layout'
+  },
+  {
+    up: migration_20260626_090000_ui_labels.up,
+    down: migration_20260626_090000_ui_labels.down,
+    name: '20260626_090000_ui_labels',
   },
 ];

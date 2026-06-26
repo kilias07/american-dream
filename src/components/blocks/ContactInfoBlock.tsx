@@ -4,6 +4,8 @@ import config from '@payload-config'
 import type { ContactInfoBlock as ContactInfoBlockType, SiteSetting, OpeningHour } from '@/payload-types'
 import { ContactFormClient } from './ContactFormClient'
 import { Logo } from '@/Header/Logo'
+import { getUILabels, pick } from '@/lib/ui-labels'
+import type { Locale } from '@/config/locales'
 
 const DAY_LABELS: Record<string, { pl: string; en: string }> = {
   monday: { pl: 'Poniedziałek', en: 'Monday' },
@@ -35,8 +37,12 @@ export async function ContactInfoBlock({
   const days = openingHours?.days ?? []
   const mapUrl = siteSettings?.mapEmbedUrl
 
-  const closedLabel = locale === 'pl' ? 'ZAMKNIĘTE' : 'CLOSED'
-  const formHeading = block.formHeading || (locale === 'pl' ? 'SKONTAKTUJ SIĘ Z NAMI' : 'CONTACT US')
+  const ui = await getUILabels(locale as Locale)
+  const uiDays = ui?.days as Record<string, string | null | undefined> | undefined
+  const closedLabel = pick(ui?.common?.closed, locale === 'pl' ? 'ZAMKNIĘTE' : 'CLOSED')
+  const formHeading =
+    block.formHeading ||
+    pick(ui?.forms?.contactHeading, locale === 'pl' ? 'SKONTAKTUJ SIĘ Z NAMI' : 'CONTACT US')
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -62,7 +68,7 @@ export async function ContactInfoBlock({
               {emails.length > 0 && (
                 <div className="mb-6">
                   <p className="text-brand-gold font-serif text-2xl mb-2">
-                    {locale === 'pl' ? 'Napisz do nas' : 'Write to us'}
+                    {pick(ui?.common?.writeToUs, locale === 'pl' ? 'Napisz do nas' : 'Write to us')}
                   </p>
                   <ul className="space-y-1">
                     {emails.map((e) => (
@@ -82,7 +88,7 @@ export async function ContactInfoBlock({
               {phones.length > 0 && (
                 <div>
                   <p className="text-brand-gold font-serif text-2xl mb-2">
-                    {locale === 'pl' ? 'Zadzwoń do nas' : 'Call us'}
+                    {pick(ui?.common?.callUs, locale === 'pl' ? 'Zadzwoń do nas' : 'Call us')}
                   </p>
                   <ul className="space-y-1">
                     {phones.map((p) => (
@@ -107,7 +113,23 @@ export async function ContactInfoBlock({
 
           {/* RIGHT — contact form */}
           <div>
-            {block.showForm && <ContactFormClient formHeading={formHeading} locale={locale} />}
+            {block.showForm && (
+              <ContactFormClient
+                formHeading={formHeading}
+                locale={locale}
+                labels={{
+                  name: ui?.forms?.name,
+                  phone: ui?.forms?.phone,
+                  email: ui?.forms?.email,
+                  message: ui?.forms?.message,
+                  consent: ui?.forms?.consent,
+                  submit: ui?.forms?.submit,
+                  submitting: ui?.forms?.sending,
+                  sent: ui?.forms?.success,
+                  error: ui?.forms?.error,
+                }}
+              />
+            )}
           </div>
         </div>
 
@@ -118,11 +140,13 @@ export async function ContactInfoBlock({
               {days.length > 0 && (
                 <div>
                   <p className="text-brand-gold text-xs font-bold uppercase tracking-[0.18em] mb-3">
-                    {locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours'}
+                    {pick(ui?.common?.openingHours, locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours')}
                   </p>
                   <ul className="space-y-2">
                     {days.map((d) => {
-                      const dayName = d.day ? DAY_LABELS[d.day]?.[locale === 'pl' ? 'pl' : 'en'] ?? d.day : ''
+                      const dayName = d.day
+                        ? pick(uiDays?.[d.day], DAY_LABELS[d.day]?.[locale === 'pl' ? 'pl' : 'en'] ?? d.day)
+                        : ''
                       const hours = d.closed
                         ? closedLabel
                         : d.openTime && d.closeTime

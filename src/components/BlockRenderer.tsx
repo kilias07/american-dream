@@ -21,7 +21,7 @@ import { SpecialMenuBlock } from './blocks/SpecialMenuBlock'
 import { OfferCardsBlock } from './blocks/OfferCardsBlock'
 import { ArtistCTABlock } from './blocks/ArtistCTABlock'
 import { Notice21PlusBlock } from './blocks/Notice21PlusBlock'
-import { NewsletterCTABlock } from './blocks/NewsletterCTABlock'
+import { NewsletterCTASection } from './blocks/NewsletterCTASection'
 import { SalesContactBlock } from './blocks/SalesContactBlock'
 import { EveningPhasesBlock } from './blocks/EveningPhasesBlock'
 import { MapEmbedBlock } from './blocks/MapEmbedBlock'
@@ -97,7 +97,7 @@ function renderBlock(
     case 'notice21Plus':
       return <Notice21PlusBlock key={i} block={block} locale={loc} />
     case 'newsletterCTA':
-      return <NewsletterCTABlock key={i} block={block} locale={loc} />
+      return <NewsletterCTASection key={i} block={block} locale={loc} />
     case 'salesContact':
       return <SalesContactBlock key={i} block={block} locale={loc} />
     case 'eveningPhases':

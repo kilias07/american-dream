@@ -14,6 +14,8 @@ import { ShareBar } from '@/components/ui/ShareBar'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
 import { UpcomingEventsCarousel } from '@/components/ui/UpcomingEventsCarousel'
 import { warsawParts, getDayAbbr } from '@/lib/recurring-events'
+import { getSiteContact } from '@/lib/site-contact'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -97,6 +99,10 @@ export async function renderEvent(slug: string, locale: Locale) {
   )
   const upcoming = await cachedUpcoming()
 
+  // Venue address for the .ics / Google Calendar export (from site-settings).
+  const contact = await getSiteContact(locale)
+  const ui = await getUILabels(locale)
+
   const hero = isMedia(event.image) ? event.image : isMedia(event.posterImage) ? event.posterImage : null
   const { weekday, dayMonth, time } = formatDateParts(event.date, locale)
   const genres = (event.genres ?? []).filter(isCategory)
@@ -106,7 +112,7 @@ export async function renderEvent(slug: string, locale: Locale) {
   // Every reservation CTA opens the MyRest widget (the old site's only booking
   // system) — pre-selected to this event's night. We don't push any separate
   // ticket vendor, so the label is always the table-reservation wording.
-  const ctaLabel = locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'
+  const ctaLabel = pick(ui?.event?.reserveTable, locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table')
   const ctaClass =
     'inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-gold-dark transition-colors'
 
@@ -134,7 +140,7 @@ export async function renderEvent(slug: string, locale: Locale) {
         {/* Special event ribbon — anchored to the left edge */}
         {isSpecial && (
           <span className="absolute top-8 md:top-10 left-0 z-20 bg-brand-gold text-brand-navy text-[11px] md:text-xs font-bold uppercase tracking-[0.16em] pl-6 md:pl-10 pr-5 py-2.5 rounded-r-md shadow-lg">
-            {locale === 'pl' ? 'Wydarzenie specjalne' : 'Special event'}
+            {pick(ui?.event?.specialEvent, locale === 'pl' ? 'Wydarzenie specjalne' : 'Special event')}
           </span>
         )}
 
@@ -212,6 +218,7 @@ export async function renderEvent(slug: string, locale: Locale) {
                       id: event.id,
                       title: event.title ?? '',
                       description: event.description ?? undefined,
+                      location: `American Dream Club, ${contact.address}`,
                       startISO: event.date,
                       endTime: event.endTime ?? undefined,
                     }}

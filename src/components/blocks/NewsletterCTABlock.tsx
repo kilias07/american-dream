@@ -6,12 +6,24 @@ import type { NewsletterCtaBlock as NewsletterCTABlockType } from '@/payload-typ
 export function NewsletterCTABlock({
   block,
   locale,
+  messages,
 }: {
   block: NewsletterCTABlockType
   locale: string
+  /** State messages from the `ui-labels` CMS global (empty → built-in default). */
+  messages?: { sending?: string | null; success?: string | null; error?: string | null }
 }) {
   const { heading, body, placeholder, buttonLabel, consentText } = block
   const isPl = locale === 'pl'
+
+  const sendingLabel =
+    messages?.sending?.trim() || (isPl ? 'WYSYŁANIE…' : 'SENDING…')
+  const successText =
+    messages?.success?.trim() ||
+    (isPl ? 'Dziękujemy! Wiadomość została wysłana.' : 'Thank you! Your message has been sent.')
+  const errorText =
+    messages?.error?.trim() ||
+    (isPl ? 'Wystąpił błąd. Spróbuj ponownie później.' : 'Something went wrong. Please try again later.')
 
   const [email, setEmail] = useState('')
   const [consent, setConsent] = useState(false)
@@ -78,7 +90,7 @@ export function NewsletterCTABlock({
                 disabled={status === 'submitting'}
                 className="inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors whitespace-nowrap disabled:opacity-40"
               >
-                {status === 'submitting' ? (isPl ? 'WYSYŁANIE…' : 'SENDING…') : buttonLabel || 'OK'}
+                {status === 'submitting' ? sendingLabel : buttonLabel || 'OK'}
               </button>
             </div>
 
@@ -98,12 +110,12 @@ export function NewsletterCTABlock({
 
             {status === 'success' && (
               <p className="text-brand-gold text-sm" role="status">
-                {isPl ? 'Dziękujemy! Wiadomość została wysłana.' : 'Thank you! Your message has been sent.'}
+                {successText}
               </p>
             )}
             {status === 'error' && (
               <p className="text-red-400 text-sm" role="alert">
-                {isPl ? 'Wystąpił błąd. Spróbuj ponownie później.' : 'Something went wrong. Please try again later.'}
+                {errorText}
               </p>
             )}
           </form>

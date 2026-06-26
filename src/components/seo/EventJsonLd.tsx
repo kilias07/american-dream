@@ -1,6 +1,7 @@
 import type { Event, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeUrl } from '@/utilities/seo'
+import { getSiteContact } from '@/lib/site-contact'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
@@ -11,10 +12,13 @@ function mediaUrl(value: number | null | Media | undefined): string | null {
   return null
 }
 
-export function EventJsonLd({ event, locale }: { event: Event; locale: Locale }) {
+export async function EventJsonLd({ event, locale }: { event: Event; locale: Locale }) {
   const image = mediaUrl(event.image) ?? mediaUrl(event.posterImage)
   const url = localeUrl(locale, `events/${event.slug}`)
   const offerUrl = event.ticketUrl || event.reservationUrl || url
+
+  // Venue address from the `site-settings` global (single source of truth).
+  const { streetAddress, postalCode, addressLocality } = await getSiteContact(locale)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -31,9 +35,9 @@ export function EventJsonLd({ event, locale }: { event: Event; locale: Locale })
       name: 'American Dream Club',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'ul. Dominikańska 9',
-        postalCode: '61-762',
-        addressLocality: 'Poznań',
+        streetAddress,
+        postalCode,
+        addressLocality,
         addressCountry: 'PL',
       },
     },

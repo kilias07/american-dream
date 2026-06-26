@@ -1,5 +1,9 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
+import { unstable_cache } from 'next/cache'
+import type { SiteSetting } from '@/payload-types'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import './globals.css'
 
@@ -18,41 +22,70 @@ const OG_IMAGE = {
 // Brand Facebook page — mirrors the old site's `article:publisher` tag.
 const FACEBOOK_PAGE = 'https://www.facebook.com/americandreamclubpoznan'
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
-  // Same crawl directives Yoast emitted on the live site, so the Google
-  // listing keeps large image previews and untruncated snippets.
-  robots: {
-    index: true,
-    follow: true,
-    'max-snippet': -1,
-    'max-image-preview': 'large',
-    'max-video-preview': -1,
-  },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    locale: 'pl_PL',
-    alternateLocale: ['en_GB'],
-    images: [OG_IMAGE],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    images: [OG_IMAGE.url],
-  },
-  other: {
-    'article:publisher': FACEBOOK_PAGE,
-  },
+// Site name + default description come from the `site-settings` global so they
+// are CMS-editable; the constants above are the fallback if the global is empty
+// or the DB is briefly unavailable (e.g. during build).
+async function getSiteMeta(): Promise<{ name: string; description: string }> {
+  const cached = unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayload({ config: configPromise })
+        const s = (await payload.findGlobal({
+          slug: 'site-settings',
+          depth: 0,
+        })) as SiteSetting | null
+        return {
+          name: s?.siteName?.trim() || SITE_NAME,
+          description: s?.metaDescription?.trim() || SITE_DESCRIPTION,
+        }
+      } catch {
+        return { name: SITE_NAME, description: SITE_DESCRIPTION }
+      }
+    },
+    ['root-site-meta'],
+    { tags: ['global_site_settings'] },
+  )
+  return cached()
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { name, description } = await getSiteMeta()
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: name,
+      template: `%s | ${name}`,
+    },
+    description,
+    applicationName: name,
+    // Same crawl directives Yoast emitted on the live site, so the Google
+    // listing keeps large image previews and untruncated snippets.
+    robots: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
+    openGraph: {
+      type: 'website',
+      siteName: name,
+      title: name,
+      description,
+      locale: 'pl_PL',
+      alternateLocale: ['en_GB'],
+      images: [OG_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: name,
+      description,
+      images: [OG_IMAGE.url],
+    },
+    other: {
+      'article:publisher': FACEBOOK_PAGE,
+    },
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

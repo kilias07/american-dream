@@ -8,6 +8,7 @@ import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { Logo } from '@/Header/Logo'
 import { NewsletterForm } from './NewsletterForm'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 async function getFooter(locale: Locale): Promise<FooterType | null> {
   try {
@@ -40,16 +41,27 @@ async function getOpeningDays(): Promise<OpeningDay[]> {
 
 type SocialEntry = { platform: string; url: string }
 
-// Social links — jedno źródło prawdy: global „Site Settings” (pole `social`).
-async function getSocialLinks(): Promise<SocialEntry[]> {
+type SiteContact = {
+  phone: string | null
+  address: string | null
+  social: SocialEntry[]
+}
+
+// Contact details + social — jedno źródło prawdy: global „Site Settings”
+// (pola `phones`, `address`, `social`). Footer czyta stąd, więc edycja w jednym
+// miejscu zmienia stopkę (i resztę strony). `address` jest localized.
+async function getSiteContact(locale: Locale): Promise<SiteContact> {
   try {
     const payload = await getPayload({ config: configPromise })
-    const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
-    return (settings?.social ?? [])
+    const settings = await payload.findGlobal({ slug: 'site-settings', locale, depth: 0 })
+    const social = (settings?.social ?? [])
       .filter((s) => Boolean(s?.platform && s?.url))
       .map((s) => ({ platform: s.platform as string, url: s.url as string }))
+    const phone = settings?.phones?.find((p) => p?.number)?.number ?? null
+    const address = settings?.address ?? null
+    return { phone, address, social }
   } catch {
-    return []
+    return { phone: null, address: null, social: [] }
   }
 }
 
@@ -114,10 +126,29 @@ export async function Footer({ locale }: { locale: Locale }) {
     (od): od is OpeningDay => Boolean(od),
   )
 
-  const cachedSocial = unstable_cache(() => getSocialLinks(), ['social-links'], {
-    tags: ['global_site_settings'],
-  })
-  const socialLinks = await cachedSocial()
+  const cachedContact = unstable_cache(
+    () => getSiteContact(locale),
+    [`footer-site-contact-${locale}`],
+    { tags: ['global_site_settings'] },
+  )
+  const { phone, address, social: socialLinks } = await cachedContact()
+
+  // Interface microcopy (weekday names, "opening hours", "closed") from CMS.
+  const ui = await getUILabels(locale)
+  const pl = locale === 'pl'
+  const dayName = (day: string) =>
+    pick(
+      (ui?.days as Record<string, string | null | undefined> | undefined)?.[day],
+      DAY_LABELS[day]?.[pl ? 'pl' : 'en'] ?? '',
+    )
+
+  // Fall back to the known values if Site Settings is empty, so the footer never
+  // renders blank contact details. Address splits on the first comma into two
+  // visual lines (street / postcode + city) to keep the design.
+  const phoneDisplay = phone ?? '+48 500 210 333'
+  const addressDisplay = address ?? 'ul. Dominikańska 9, 61-762 Poznań'
+  const [addrLine1, ...addrRest] = addressDisplay.split(',')
+  const addrLine2 = addrRest.join(',').trim()
 
   const navColumns = footer?.navColumns || []
   const bottomBarLinks = footer?.bottomBarLinks || []
@@ -134,20 +165,28 @@ export async function Footer({ locale }: { locale: Locale }) {
             </Link>
             <div className="flex flex-col gap-1.5 mt-2">
               <a
-                href="tel:+48500210333"
+                href={`tel:${phoneDisplay.replace(/\s/g, '')}`}
                 className="flex items-center gap-2 text-brand-navy text-sm font-medium hover:opacity-70 transition-opacity"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy shrink-0">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.36a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.13 6.13l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
-                +48 500 210 333
+                {phoneDisplay}
               </a>
               <div className="flex items-start gap-2 text-brand-navy text-sm">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy shrink-0 mt-0.5">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>ul. Dominikańska 9<br />61-762 Poznań</span>
+                <span>
+                  {addrLine1.trim()}
+                  {addrLine2 && (
+                    <>
+                      <br />
+                      {addrLine2}
+                    </>
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -156,15 +195,13 @@ export async function Footer({ locale }: { locale: Locale }) {
           {openingDays.length > 0 && (
             <div>
               <p className="text-brand-navy text-xs font-bold uppercase tracking-[0.1em] mb-4">
-                {locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours'}
+                {pick(ui?.common?.openingHours, pl ? 'Godziny otwarcia' : 'Opening hours')}
               </p>
               <ul className="flex flex-col gap-2">
                 {openingDays.map((od) => {
-                  const label = od.day ? DAY_LABELS[od.day]?.[locale === 'pl' ? 'pl' : 'en'] : ''
+                  const label = od.day ? dayName(od.day) : ''
                   const hours = od.closed
-                    ? locale === 'pl'
-                      ? 'Zamknięte'
-                      : 'Closed'
+                    ? pick(ui?.common?.closed, pl ? 'Zamknięte' : 'Closed')
                     : `${od.openTime ?? ''}${od.closeTime ? `–${od.closeTime}` : ''}`
                   return (
                     <li
@@ -205,9 +242,13 @@ export async function Footer({ locale }: { locale: Locale }) {
           {/* Newsletter + 21+ */}
           <div className="flex flex-col gap-4">
             <p className="text-brand-navy text-xs font-bold uppercase tracking-[0.1em]">
-              Newsletter
+              {footer?.newsletter?.heading || 'Newsletter'}
             </p>
-            <NewsletterForm />
+            <NewsletterForm
+              placeholder={footer?.newsletter?.placeholder || undefined}
+              consentText={footer?.newsletter?.consentText || undefined}
+              submitLabel={footer?.newsletter?.buttonLabel || undefined}
+            />
             <div className="self-end mt-2">
               <div className="w-12 h-12 rounded-full border-2 border-brand-navy flex items-center justify-center">
                 <span className="text-brand-navy text-sm font-bold">21+</span>

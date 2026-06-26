@@ -78,6 +78,15 @@ export const SiteSettings: GlobalConfig = {
         placeholder: '500+ opinii · 4,8/5',
       },
     },
+    {
+      name: 'metaDescription',
+      type: 'textarea',
+      localized: true,
+      admin: {
+        description:
+          'Domyślny opis SEO strony (meta description / Open Graph), używany gdy strona nie ma własnego opisu.',
+      },
+    },
   ],
   hooks: {
     afterChange: [

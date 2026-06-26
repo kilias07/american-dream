@@ -1,9 +1,23 @@
 'use client'
 import React, { useState } from 'react'
 
+type FormLabels = Partial<{
+  name: string | null
+  phone: string | null
+  email: string | null
+  message: string | null
+  consent: string | null
+  submit: string | null
+  submitting: string | null
+  sent: string | null
+  error: string | null
+}>
+
 type Props = {
   formHeading: string
   locale: string
+  /** Per-key overrides from the `ui-labels` CMS global; empty values ignored. */
+  labels?: FormLabels
 }
 
 const labels = {
@@ -31,8 +45,15 @@ const labels = {
   },
 }
 
-export function ContactFormClient({ formHeading, locale }: Props) {
-  const t = locale === 'pl' ? labels.pl : labels.en
+export function ContactFormClient({ formHeading, locale, labels: overrides }: Props) {
+  const base = locale === 'pl' ? labels.pl : labels.en
+  const t = { ...base }
+  if (overrides) {
+    for (const key of Object.keys(base) as (keyof typeof base)[]) {
+      const v = overrides[key]
+      if (v && v.trim()) t[key] = v
+    }
+  }
   const [sent, setSent] = useState(false)
   const [error, setError] = useState(false)
   const [submitting, setSubmitting] = useState(false)

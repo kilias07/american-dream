@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { localeUrl } from '@/utilities/seo'
+import { getSiteContact } from '@/lib/site-contact'
 
 /**
  * /llm.txt — plain-text map of the most important URLs and their purpose for
@@ -15,10 +16,13 @@ export async function GET(): Promise<Response> {
   const lines: string[] = []
   const push = (s = '') => lines.push(s)
 
+  // Address from the `site-settings` global (single source of truth).
+  const { address } = await getSiteContact('pl')
+
   push('# American Dream Club')
   push()
   push(
-    '> Jazz club i restauracja z muzyką na żywo w centrum Poznania (ul. Dominikańska 9). ' +
+    `> Jazz club i restauracja z muzyką na żywo w centrum Poznania (${address}). ` +
       'Koncerty, kolacje, cocktail bar, cigar lounge i organizacja imprez. ' +
       'Marka znana wcześniej jako „Pod Papugami".',
   )

@@ -8,6 +8,7 @@ import { unstable_cache } from 'next/cache'
 import type { EveningPhasesBlock as EveningPhasesBlockType, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 type Phase = NonNullable<EveningPhasesBlockType['phases']>[number]
 
@@ -150,7 +151,10 @@ export async function EveningPhasesBlock({
   if (!phases?.length) return null
 
   const openDays = await getOpenDays()
-  const dayLabels = locale === 'pl' ? DAY_LABELS_PL : DAY_LABELS_EN
+  const fallbackLabels = locale === 'pl' ? DAY_LABELS_PL : DAY_LABELS_EN
+  const ui = await getUILabels(locale as Locale)
+  const uiDays = ui?.days as Record<string, string | null | undefined> | undefined
+  const dayLabel = (day: string) => pick(uiDays?.[day], fallbackLabels[day] ?? '')
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -175,7 +179,7 @@ export async function EveningPhasesBlock({
                 }`}
               >
                 <div className="text-[12px] font-bold uppercase tracking-[0.1em]">
-                  {od.day ? dayLabels[od.day] : ''}
+                  {od.day ? dayLabel(od.day) : ''}
                 </div>
                 <div
                   className={`text-[12px] font-semibold mt-1 ${

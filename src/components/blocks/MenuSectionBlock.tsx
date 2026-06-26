@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { MenuSectionBlock as MenuSectionBlockType, MenuItem, MenuCategory, Media } from '@/payload-types'
+import type { Locale } from '@/config/locales'
+import { getUILabels, pick } from '@/lib/ui-labels'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -214,6 +216,7 @@ export async function MenuSectionBlock({
   locale: string
 }) {
   const payload = await getPayload({ config })
+  const ui = await getUILabels(locale as Locale)
 
   const { docs } = await payload.find({
     collection: 'menu-items',
@@ -285,7 +288,7 @@ export async function MenuSectionBlock({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
             >
-              {locale === 'pl' ? 'Zobacz całe menu (PDF)' : 'See full menu (PDF)'}
+              {pick(ui?.menu?.fullMenuPdf, locale === 'pl' ? 'Zobacz całe menu (PDF)' : 'See full menu (PDF)')}
             </Link>
           </div>
         )}
