@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateTag } from 'next/cache'
 
 export const MenuItems: CollectionConfig = {
   slug: 'menu-items',
@@ -109,4 +110,25 @@ export const MenuItems: CollectionConfig = {
       defaultValue: true,
     },
   ],
+  // Menu items are rendered into statically-cached pages (/restaurant,
+  // /bar-and-cocktails, /cigar-lounge) via the menuSection block — bust the
+  // `pages` cache so menu edits appear on the site.
+  hooks: {
+    afterChange: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {
+          // Outside Next.js context (e.g. seed script)
+        }
+      },
+    ],
+    afterDelete: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {}
+      },
+    ],
+  },
 }

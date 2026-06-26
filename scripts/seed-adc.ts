@@ -14,7 +14,9 @@
  * only written once. See the `upsert` / `setGlobal` / `page` helpers below.
  */
 import 'dotenv/config'
+import os from 'os'
 import path from 'path'
+import * as fsp from 'fs/promises'
 import { getPayload } from 'payload'
 import configPromise from '../src/payload.config'
 import { warsawParts } from '../src/lib/recurring-events'
@@ -127,11 +129,52 @@ async function run() {
     single: ph('single', 'Wydarzenie muzyczne'),
     special: ph('special', 'Wydarzenie specjalne'),
     gallery: ph('gallery', 'Galeria klubu'),
+    cigarMenu: ph('cigar-menu', 'Karta cygar'),
     logo: () => media('public/images/logo-on-navy.jpg', 'American Dream Club logo'),
   }
   // Hero background video — uploaded as Media so it lives in R2 (NOT in /public,
   // which would bundle it as a Workers static asset and hit the 25 MiB limit).
   const heroVideo = () => media('scripts/assets/hero-banner.mp4', 'American Dream Club — film w tle hero')
+
+  // ── helper: per-page hero background (its OWN media doc) ────────────────────
+  // `media()` caches by source path, so two heroes pointing at the same
+  // placeholder would share ONE media doc — editing/replacing that image then
+  // bleeds across both pages. `heroImg` gives every page hero its own document
+  // (filename `<slug>-hero.jpg`) by copying the source to a uniquely-named temp
+  // file and uploading via `filePath` (the in-memory buffer path does NOT
+  // upload reliably through the remote R2 proxy). Cached per slug so the pl + en
+  // hero of the SAME page correctly share one doc; different pages never do.
+  async function heroImg(slug: string, sourceRel: string, alt: string): Promise<number | null> {
+    const cacheKey = `hero:${slug}`
+    if (mediaCache.has(cacheKey)) return mediaCache.get(cacheKey)!
+    const filename = `${slug}-hero${path.extname(sourceRel) || '.jpg'}`
+    try {
+      const existing = await payload.find({
+        collection: 'media',
+        where: { filename: { equals: filename } },
+        limit: 1,
+      })
+      if (existing.docs[0]) {
+        mediaCache.set(cacheKey, existing.docs[0].id as number)
+        return existing.docs[0].id as number
+      }
+      const tmp = path.join(os.tmpdir(), filename)
+      await fsp.copyFile(path.resolve(ROOT, sourceRel), tmp)
+      try {
+        const created = await payload.create({ collection: 'media', data: { alt }, filePath: tmp })
+        mediaCache.set(cacheKey, created.id as number)
+        return created.id as number
+      } finally {
+        await fsp.unlink(tmp).catch(() => {})
+      }
+    } catch (e) {
+      log(`⚠ heroImg "${slug}" failed: ${(e as Error).message}`)
+      mediaCache.set(cacheKey, null)
+      return null
+    }
+  }
+  // Source placeholder for each page's hero (client replaces per page in CMS).
+  const PLACEHOLDER = (name: string) => `public/images/placeholders/${name}.jpg`
   // Distinct portrait placeholders for musicians (rotated round-robin).
   const musicianPhotos = [
     'musician-1', 'musician-2', 'musician-3', 'musician-4', 'musician-5', 'musician-6',
@@ -266,7 +309,8 @@ async function run() {
       { link: { type: 'custom', label: 'RESTAURACJA', url: '/restaurant' } },
       { link: { type: 'custom', label: 'PROGRAM', url: '/events' } },
       { link: { type: 'custom', label: 'TWOJE WYDARZENIE', url: '/business' } },
-      { link: { type: 'custom', label: 'BAR & CIGAR', url: '/bar-and-cocktails' } },
+      { link: { type: 'custom', label: 'BAR', url: '/bar-and-cocktails' } },
+      { link: { type: 'custom', label: 'CIGAR ROOM', url: '/cigar-lounge' } },
       { link: { type: 'custom', label: 'KONTAKT', url: '/contact' } },
     ],
     ctaEnabled: true,
@@ -548,28 +592,51 @@ async function run() {
       'Chamber Room', 'An intimate space for smaller gatherings.',
       ['Projector', 'Screen', 'WiFi']],
     ['VIP Room', 12, 'Kameralny pokój z dużym stołem dla 12 gości. Idealne miejsce na spotkania biznesowe i kameralne uroczystości.',
-      ['Rzutnik: EPSON EB-L265F, 1920×1080 FullHD', 'Łączność: HDMI / Apple TV / ChromeCast', 'Ekran do prezentacji: 1340mm × 2460mm', 'Flipchart z papierem', 'WiFi'],
+      ['Rzutnik: EPSON EB-L265F, 1920 x 1080 FullHD', 'Łączność: HDMI / AppleTV / ChromeCast', 'Ekran do prezentacji: 1340 mm x 2450 mm', 'Flipchart', 'WiFi'],
       'VIP Room', 'An intimate room with a large table seating 12 guests. Ideal for business meetings and intimate celebrations.',
-      ['Projector: EPSON EB-L265F, 1920×1080 FullHD', 'Connectivity: HDMI / Apple TV / ChromeCast', 'Presentation screen: 1340mm × 2460mm', 'Flipchart with paper', 'WiFi']],
+      ['Projector: EPSON EB-L265F, 1920 x 1080 FullHD', 'Connectivity: HDMI / AppleTV / ChromeCast', 'Presentation screen: 1340 mm x 2450 mm', 'Flipchart', 'WiFi']],
     ['Cigar Room', 16, 'Profesjonalna palarnia cygar.',
       ['Wentylacja', 'Humidor', 'Wybór alkoholi'],
       'Cigar Room', 'A professional cigar lounge.',
       ['Ventilation', 'Humidor', 'Selection of spirits']],
   ]
+  // Distinct cover photo per zone so the selector tiles read as different rooms
+  // (only placeholder imagery is available — swap for real room photos later).
+  const roomCovers: Record<string, () => Promise<number | null>> = {
+    'sala-klubowa': img.program,
+    'sala-kameralna': img.twoje,
+    'vip-room': img.gallery,
+    'cigar-room': img.cigar,
+  }
   const roomIds: number[] = []
   o = 0
   for (const [name, capacity, description, equipment, nameEn, descriptionEn, equipmentEn] of rooms) {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    roomIds.push(
-      await upsert('rooms', { slug: { equals: slug } }, {
-        name, slug, capacity, description, order: o++,
-        equipment: equipment.map((item) => ({ item })),
-        gallery: [{ image: await img.twoje() }],
-      }, {
-        name: nameEn, description: descriptionEn,
-        equipment: equipmentEn.map((item) => ({ item })),
-      }),
-    )
+    const cover = await (roomCovers[slug] ?? img.twoje)()
+    const id = await upsert('rooms', { slug: { equals: slug } }, {
+      name, slug, capacity, description, order: o++,
+      equipment: equipment.map((item) => ({ item })),
+      gallery: [{ image: cover }],
+    }, {
+      name: nameEn, description: descriptionEn,
+      // NB: equipment is a localized array. Setting it here without row ids would
+      // replace the rows and wipe the PL values, so we apply EN below by id.
+    })
+
+    // Re-read the PL rows to map the EN translations onto the SAME array rows,
+    // preserving the Polish values per locale.
+    const plDoc = await payload.findByID({ collection: 'rooms', id, locale: LOCALE, depth: 0 })
+    const eqRows = (plDoc.equipment ?? []) as { id?: string | null }[]
+    await payload.update({
+      collection: 'rooms',
+      id,
+      locale: EN,
+      data: {
+        equipment: eqRows.map((row, i) => ({ id: row.id, item: equipmentEn[i] ?? '' })),
+      },
+    })
+
+    roomIds.push(id)
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -1121,7 +1188,7 @@ async function run() {
 
   // HOME
   await page('home', 'Strona główna', [
-    { blockType: 'heroBanner', heading: 'Restauracja & Jazz Club', subtext: 'Kolacja i drinki w trakcie koncertu na żywo', backgroundImage: await img.home(), backgroundVideo: await heroVideo(),
+    { blockType: 'heroBanner', heading: 'Restauracja & Jazz Club', subtext: 'Kolacja i drinki w trakcie koncertu na żywo', backgroundImage: await heroImg('home', PLACEHOLDER('home'), 'Strona główna — Hero'), backgroundVideo: await heroVideo(),
       ctaLink: { type: 'custom', label: 'ZAREZERWUJ STOLIK', url: '/rezerwacje' }, ctaIcon: 'ticket',
       secondaryLinks: [
         { link: { type: 'custom', label: 'MENU', url: '/restaurant' }, icon: 'fork' },
@@ -1143,7 +1210,7 @@ async function run() {
     { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google',
       items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
   ], 'Home', [
-    { blockType: 'heroBanner', heading: 'Restaurant & Jazz Club', subtext: 'Dinner and drinks during a live concert', backgroundImage: await img.home(), backgroundVideo: await heroVideo(),
+    { blockType: 'heroBanner', heading: 'Restaurant & Jazz Club', subtext: 'Dinner and drinks during a live concert', backgroundImage: await heroImg('home', PLACEHOLDER('home'), 'Strona główna — Hero'), backgroundVideo: await heroVideo(),
       ctaLink: { type: 'custom', label: 'ZAREZERWUJ STOLIK', url: '/rezerwacje' }, ctaIcon: 'ticket',
       secondaryLinks: [
         { link: { type: 'custom', label: 'MENU', url: '/restaurant' }, icon: 'fork' },
@@ -1169,7 +1236,7 @@ async function run() {
   // RESTAURACJA — hero + intro + banners stay as components; the menu itself is
   // simple image tiles. The client uploads ready-made menu graphics (two tiles per
   // row, "Cover" fit, one fixed shape) and can add as many rows as needed via the CMS.
-  const rest = await img.restauracja()
+  const rest = await heroImg('restaurant', PLACEHOLDER('restauracja'), 'Restauracja — Hero')
   const prog = await img.program()
   const bar = await img.bar()
   const twoje = await img.twoje() // social-event crowd — Towarzyska Niedziela banner
@@ -1331,7 +1398,7 @@ async function run() {
 
   // BAR
   await page('bar-and-cocktails', 'Cocktail Bar', [
-    { blockType: 'pageHero', eyebrow: 'Starannie dobrana selekcja win oraz autorskie koktajle', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await img.bar() },
+    { blockType: 'pageHero', eyebrow: 'Starannie dobrana selekcja win oraz autorskie koktajle', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await heroImg('bar-and-cocktails', PLACEHOLDER('bar'), 'Cocktail Bar — Hero') },
     { blockType: 'aboutIntro', heading: 'Przestrzeń spotkań z wyjątkowym smakiem', subheading: 'Dopełnienie klubowego charakteru wieczoru', body: 'Oferujemy starannie dobraną selekcję win oraz autorskie koktajle przygotowywane przez doświadczonych barmanów. Wina, drinki i koktajle serwowane są zarówno przy barze, jak i bezpośrednio do stolików, tak aby goście mogli swobodnie rozmawiać, słuchać muzyki i pozostać przy stole przez cały wieczór. W karcie znajdują się wina, alkohole premium oraz klasyczne i autorskie koktajle — skomponowane z myślą o klubowym charakterze wieczoru.' },
     { blockType: 'menuSection', sectionTag: 'KOKTAJLE AUTORSKIE', heading: 'Koktajle', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
     { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
@@ -1339,7 +1406,7 @@ async function run() {
       { image: await img.cigar(), colSpan: 'half', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-lounge' },
     ] },
   ], 'Cocktail Bar', [
-    { blockType: 'pageHero', eyebrow: 'A carefully curated wine selection and signature cocktails', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await img.bar() },
+    { blockType: 'pageHero', eyebrow: 'A carefully curated wine selection and signature cocktails', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await heroImg('bar-and-cocktails', PLACEHOLDER('bar'), 'Cocktail Bar — Hero') },
     { blockType: 'aboutIntro', heading: 'A meeting space with exceptional flavour', subheading: 'The finishing touch to the club character of the evening', body: 'We offer a carefully curated selection of wines and signature cocktails prepared by experienced bartenders. Wines, drinks and cocktails are served both at the bar and directly to the tables, so guests can chat freely, listen to the music and stay at their table all evening long. The menu features wines, premium spirits and classic and signature cocktails — composed with the club character of the evening in mind.' },
     { blockType: 'menuSection', sectionTag: 'SIGNATURE COCKTAILS', heading: 'Cocktails', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
     { blockType: 'bentoSection', heading: 'MORE', items: [
@@ -1350,34 +1417,38 @@ async function run() {
 
   // CIGAR ROOM
   await page('cigar-lounge', 'Cigar Room', [
-    { blockType: 'pageHero', eyebrow: 'Uzupełnienie wieczoru w otoczeniu klubowej elegancji', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await img.cigar() },
+    { blockType: 'pageHero', eyebrow: 'Uzupełnienie wieczoru w otoczeniu klubowej elegancji', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await heroImg('cigar-lounge', PLACEHOLDER('cigar'), 'Cigar Room — Hero') },
     { blockType: 'aboutIntro', heading: 'Profesjonalna przestrzeń dla miłośników cygar', subheading: 'Starannie dobrana oferta cygar i alkoholi', body: 'Palarnia cygar w American Dream Club to przestrzeń stworzona z myślą o gościach, którzy cenią spokojną rozmowę i kulturę celebrowania cygara czy fajki. Zapewnia komfortowe warunki oraz atmosferę sprzyjającą dłuższemu pobytowi. Oferujemy starannie dobraną selekcję cygar, przechowywanych w odpowiednich warunkach i podawanych z należytą dbałością. Do wyboru starannie dobrane trunki, szlachetne whisky i koniaki naturalnie wpisujące się w charakter tego miejsca. Palarnia stanowi uzupełnienie wieczoru — przed koncertem, w przerwie lub po jego zakończeniu. Dedykowana dla osób, które oczekują dyskrecji, spokoju i poczucia bezpieczeństwa, w otoczeniu klubowej elegancji.' },
-    { blockType: 'menuSection', sectionTag: 'CYGARA', heading: 'Cygara', menuType: 'cigars', layout: 'pricedList', groupByCategory: true, image: await img.cigar() },
-    { blockType: 'imageGallery', images: [
-      { image: await img.cigar() }, { image: await img.bar() }, { image: await img.restauracja() },
-      { image: await img.program() }, { image: await img.special() }, { image: await img.gallery() },
+    { blockType: 'menuImage', eyebrow: 'CYGARA', heading: 'Cygara', enableLightbox: true, images: [
+      { image: await img.cigarMenu(), caption: 'Starannie dobrana oferta cygar' },
     ] },
-    { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restaurant' },
-      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar-and-cocktails' },
+    { blockType: 'imageGallery', columns: '3', enableLightbox: true, images: [
+      { image: await img.cigar(), size: 'tall' }, { image: await img.bar(), size: 'wide' }, { image: await img.restauracja(), size: 'normal' },
+      { image: await img.program(), size: 'normal' }, { image: await img.special(), size: 'normal' }, { image: await img.gallery(), size: 'normal' }, { image: await img.home(), size: 'normal' },
+    ] },
+    { blockType: 'bentoSection', items: [
+      { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'RESTAURACJA ›', ctaUrl: '/restaurant' },
+      { image: await img.bar(), colSpan: 'half', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
     ] },
   ], 'Cigar Room', [
-    { blockType: 'pageHero', eyebrow: 'A perfect close to the evening amid club elegance', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await img.cigar() },
+    { blockType: 'pageHero', eyebrow: 'A perfect close to the evening amid club elegance', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await heroImg('cigar-lounge', PLACEHOLDER('cigar'), 'Cigar Room — Hero') },
     { blockType: 'aboutIntro', heading: 'A professional space for cigar lovers', subheading: 'A carefully curated selection of cigars and spirits', body: 'The cigar lounge at American Dream Club is a space created for guests who value calm conversation and the culture of savouring a fine cigar or pipe. It offers comfortable conditions and an atmosphere that invites a longer stay. We offer a carefully curated selection of cigars, stored in the right conditions and served with due care. To go with them, a selection of fine spirits, noble whiskies and cognacs that naturally fit the character of this place. The lounge is a complement to the evening — before the concert, during the interval or after it ends. Dedicated to those who expect discretion, calm and a sense of security, amid club elegance.' },
-    { blockType: 'menuSection', sectionTag: 'CIGARS', heading: 'Cigars', menuType: 'cigars', layout: 'pricedList', groupByCategory: true, image: await img.cigar() },
-    { blockType: 'imageGallery', images: [
-      { image: await img.cigar() }, { image: await img.bar() }, { image: await img.restauracja() },
-      { image: await img.program() }, { image: await img.special() }, { image: await img.gallery() },
+    { blockType: 'menuImage', eyebrow: 'CIGARS', heading: 'Cigars', enableLightbox: true, images: [
+      { image: await img.cigarMenu(), caption: 'A carefully curated selection of cigars' },
     ] },
-    { blockType: 'bentoSection', heading: 'MORE', items: [
-      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restaurant' },
-      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'SEE THE MENU', ctaUrl: '/bar-and-cocktails' },
+    { blockType: 'imageGallery', columns: '3', enableLightbox: true, images: [
+      { image: await img.cigar(), size: 'tall' }, { image: await img.bar(), size: 'wide' }, { image: await img.restauracja(), size: 'normal' },
+      { image: await img.program(), size: 'normal' }, { image: await img.special(), size: 'normal' }, { image: await img.gallery(), size: 'normal' }, { image: await img.home(), size: 'normal' },
+    ] },
+    { blockType: 'bentoSection', items: [
+      { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'RESTAURANT ›', ctaUrl: '/restaurant' },
+      { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
     ] },
   ])
 
   // PROGRAM
   await page('program', 'Program', [
-    { blockType: 'pageHero', eyebrow: 'Sprawdź nadchodzące wydarzenia i zaplanuj swój wieczór', title: 'Program', titleStyle: 'serif', backgroundImage: await img.program() },
+    { blockType: 'pageHero', eyebrow: 'Sprawdź nadchodzące wydarzenia i zaplanuj swój wieczór', title: 'Program', titleStyle: 'serif', backgroundImage: await heroImg('program', PLACEHOLDER('program'), 'Program — Hero') },
     { blockType: 'aboutIntro', heading: 'Muzyka, którą gramy', subheading: 'Największe standardy świata — inny klimat w każdy wieczór.', body: 'W klubie gramy największe amerykańskie i światowe standardy. Usłyszysz: jazz, swing, blues, soul i country — oraz najlepsze europejskie melodie. To brzmienie, które przez dekady kształtowały kulturę klubową oraz emocje słuchaczy, przywołując klimat najlepszych lat XX wieku. Każdy wieczór ma charakter przewodni — sprawdź w kalendarzu poniżej.' },
     { blockType: 'eventsCalendar', variant: 'full', heading: 'KALENDARZ', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: 'Nie przegap', heading: 'WYDARZENIA SPECJALNE', limit: 4 },
@@ -1388,7 +1459,7 @@ async function run() {
       { colSpan: 'half', label: 'Wieczory kina niemego z akompaniamentem fortepianu na żywo. Poczuj klimat dawnych lat!', title: 'KLUB X MUZY', ctaLabel: 'KLUB X MUZY ›', ctaUrl: '/wydarzenia-cykliczne/klub-x-muzy' },
     ] },
   ], 'Program', [
-    { blockType: 'pageHero', eyebrow: 'Check the upcoming events and plan your evening', title: 'Program', titleStyle: 'serif', backgroundImage: await img.program() },
+    { blockType: 'pageHero', eyebrow: 'Check the upcoming events and plan your evening', title: 'Program', titleStyle: 'serif', backgroundImage: await heroImg('program', PLACEHOLDER('program'), 'Program — Hero') },
     { blockType: 'aboutIntro', heading: 'The music we play', subheading: "The world's greatest standards — a different vibe every evening.", body: "At the club we play the greatest American and international standards. You'll hear jazz, swing, blues, soul and country — and the finest European melodies. This is the sound that for decades shaped club culture and the emotions of listeners, evoking the spirit of the best years of the 20th century. Every evening has a leading theme — check the calendar below." },
     { blockType: 'eventsCalendar', variant: 'full', heading: 'CALENDAR', eventsSource: 'auto', autoCount: 6 },
     { blockType: 'specialEvents', eyebrow: "Don't miss", heading: 'SPECIAL EVENTS', limit: 4 },
@@ -1401,13 +1472,13 @@ async function run() {
 
   // TWOJE WYDARZENIE
   await page('business', 'Twoje wydarzenie', [
-    { blockType: 'pageHero', eyebrow: 'Codziennie ktoś u nas świętuje', title: 'Twoje wydarzenie', titleStyle: 'serif', backgroundImage: await img.twoje() },
+    { blockType: 'pageHero', eyebrow: 'Codziennie ktoś u nas świętuje', title: 'Twoje wydarzenie', titleStyle: 'serif', backgroundImage: await heroImg('business', PLACEHOLDER('twoje'), 'Twoje wydarzenie — Hero') },
     { blockType: 'aboutIntro', heading: 'Urodziny. Rocznice. Imprezy firmowe.', subheading: 'Zaproś Gości — my zajmiemy się resztą!', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my wszystko zorganizujemy. Przygotujemy ofertę dopasowaną do Twoich potrzeb i charakteru wydarzenia. Zadbamy o menu, serwis, oprawę muzyczną, atrakcje wieczoru i dekoracje. Wszystkie szczegóły ustalimy z Tobą indywidualnie.' },
-    { blockType: 'offerCards', eyebrow: 'Zorganizuj z nami', heading: 'OFERTA', style: 'framed', cards: [
-      { image: await img.twoje(), tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA', body: 'Nasz klub to idealne miejsce, jeśli chcesz świętować spokojnie, z bliską rodziną i muzyką w tle. Ty przychodzisz z Gośćmi — my zajmiemy się organizacją, oprawą i przebiegiem wieczoru. Wszystkie szczegóły organizacyjne — menu, układ sali oraz oprawę wieczoru — ustalimy indywidualnie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/contact' },
-      { image: await img.gallery(), tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE', body: 'Eleganckie sale, muzyka na żywo, pełna obsługa — Ty jesteś gościem, my zajmiemy się resztą. Oferujemy przestrzeń dla grup od kilku do 120 osób. Korzystamy z menu à la carte albo uzgodnionego menu grupowego w stałej, z góry określonej cenie.', ctaLabel: 'ZOBACZ PEŁNĄ OFERTĘ', ctaUrl: '/contact' },
+    { blockType: 'offerCards', style: 'framed', cards: [
+      { image: await img.twoje(), tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA', body: 'Nasz klub to idealne miejsce, jeśli chcesz świętować spokojnie, z bliską rodziną i muzyką w tle. Ty przychodzisz z Gośćmi — my zajmiemy się organizacją, oprawą i przebiegiem wieczoru. Wszystkie szczegóły organizacyjne — menu, układ sali oraz oprawę wieczoru — ustalimy indywidualnie.', ctaLabel: 'ZADZWOŃ I POZNAJ OFERTĘ', ctaUrl: 'tel:+48508090575' },
+      { image: await img.gallery(), tag: 'IMPREZY FIRMOWE', title: 'SPOTKANIA FIRMOWE W KLUBOWEJ ATMOSFERZE', body: 'Eleganckie sale, muzyka na żywo, pełna obsługa — Ty jesteś gościem, my zajmiemy się resztą. Oferujemy przestrzeń dla grup od kilku do 120 osób. Korzystamy z menu à la carte albo uzgodnionego menu grupowego w stałej, z góry określonej cenie.', ctaLabel: 'ZADZWOŃ I DOPASUJ OFERTĘ', ctaUrl: 'tel:+48508090575' },
     ] },
-    { blockType: 'roomSelector', heading: 'DOSTĘPNE STREFY', rooms: roomIds, equipmentHeading: 'WYPOSAŻENIE', offerHeading: 'CO PRZYGOTUJEMY DLA CIEBIE', offerItems: [
+    { blockType: 'roomSelector', heading: 'DOSTĘPNE STREFY:', rooms: roomIds, equipmentHeading: 'WYPOSAŻENIE:', offerHeading: 'CO PRZYGOTUJEMY DLA CIEBIE:', offerItems: [
       { item: 'Możliwość rezerwacji całego lokalu na wyłączność lub jego części' },
       { item: 'Usługa gastronomiczna w formie serwowanej lub bufetowej, na wstępie spotkania możemy przygotować małe przekąski Finger Food' },
       { item: 'Szeroka oferta win, drinków i koktajli w ramach zamówienia — w tym Open Bar' },
@@ -1420,18 +1491,18 @@ async function run() {
       { item: 'Rezerwację dla grup przyjmujemy z wyprzedzeniem do 1 miesiąca' },
     ] },
     { blockType: 'imageGallery', images: [
-      { image: await img.program() }, { image: await img.twoje() }, { image: await img.restauracja() },
+      { image: await img.program() }, { image: await img.bar() }, { image: await img.twoje() }, { image: await img.gallery() },
     ] },
-    { blockType: 'salesContact', heading: 'POROZMAWIAJMY O TWOIM WYDARZENIU!', teamMember: managerId, callLabel: 'ZADZWOŃ', emailLabel: 'ZAPYTAJ MAILOWO', style: 'gold' },
-    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google', items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
+    { blockType: 'salesContact', heading: 'POROZMAWIAJMY O TWOIM WYDARZENIU!', teamMember: managerId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
+    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '500+ opinii · 4,8/5 w Google', items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
   ], 'Your event', [
-    { blockType: 'pageHero', eyebrow: 'Every day someone is celebrating with us', title: 'Your event', titleStyle: 'serif', backgroundImage: await img.twoje() },
+    { blockType: 'pageHero', eyebrow: 'Every day someone is celebrating with us', title: 'Your event', titleStyle: 'serif', backgroundImage: await heroImg('business', PLACEHOLDER('twoje'), 'Twoje wydarzenie — Hero') },
     { blockType: 'aboutIntro', heading: 'Birthdays. Anniversaries. Corporate events.', subheading: "Invite your guests — we'll take care of the rest!", body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll organise everything. We'll prepare an offer tailored to your needs and the character of the event. We'll take care of the menu, service, music, evening attractions and decorations. We'll agree on every detail with you individually." },
-    { blockType: 'offerCards', eyebrow: 'Plan it with us', heading: 'WHAT WE OFFER', style: 'framed', cards: [
-      { image: await img.twoje(), tag: 'PRIVATE PARTIES', title: 'BIRTHDAYS AND ANNIVERSARIES IN THE HEART OF POZNAŃ', body: "Our club is the perfect place if you want to celebrate calmly, with close family and music in the background. You arrive with your guests — we'll handle the organisation, the setting and the running of the evening. We'll agree on every organisational detail — the menu, the room layout and the evening's setting — individually.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/contact' },
-      { image: await img.gallery(), tag: 'CORPORATE EVENTS', title: 'COMPANY GATHERINGS IN A CLUB ATMOSPHERE', body: "Elegant rooms, live music, full service — you are the guest, we'll take care of the rest. We offer space for groups from a few to 120 people. We work from an à la carte menu or an agreed group menu at a fixed, predetermined price.", ctaLabel: 'SEE THE FULL OFFER', ctaUrl: '/contact' },
+    { blockType: 'offerCards', style: 'framed', cards: [
+      { image: await img.twoje(), tag: 'PRIVATE PARTIES', title: 'BIRTHDAYS AND ANNIVERSARIES IN THE HEART OF POZNAŃ', body: "Our club is the perfect place if you want to celebrate calmly, with close family and music in the background. You arrive with your guests — we'll handle the organisation, the setting and the running of the evening. We'll agree on every organisational detail — the menu, the room layout and the evening's setting — individually.", ctaLabel: 'CALL AND ASK ABOUT THE OFFER', ctaUrl: 'tel:+48508090575' },
+      { image: await img.gallery(), tag: 'CORPORATE EVENTS', title: 'COMPANY GATHERINGS IN A CLUB ATMOSPHERE', body: "Elegant rooms, live music, full service — you are the guest, we'll take care of the rest. We offer space for groups from a few to 120 people. We work from an à la carte menu or an agreed group menu at a fixed, predetermined price.", ctaLabel: 'CALL AND TAILOR THE OFFER', ctaUrl: 'tel:+48508090575' },
     ] },
-    { blockType: 'roomSelector', heading: 'AVAILABLE SPACES', rooms: roomIds, equipmentHeading: 'EQUIPMENT', offerHeading: "WHAT WE'LL PREPARE FOR YOU", offerItems: [
+    { blockType: 'roomSelector', heading: 'AVAILABLE SPACES:', rooms: roomIds, equipmentHeading: 'EQUIPMENT:', offerHeading: "WHAT WE'LL PREPARE FOR YOU:", offerItems: [
       { item: 'Option to book the entire venue exclusively or just part of it' },
       { item: 'Catering service, plated or buffet style; to start we can prepare small Finger Food snacks' },
       { item: 'A wide selection of wines, drinks and cocktails as part of the order — including an Open Bar' },
@@ -1444,15 +1515,15 @@ async function run() {
       { item: 'We accept group reservations up to 1 month in advance' },
     ] },
     { blockType: 'imageGallery', images: [
-      { image: await img.program() }, { image: await img.twoje() }, { image: await img.restauracja() },
+      { image: await img.program() }, { image: await img.bar() }, { image: await img.twoje() }, { image: await img.gallery() },
     ] },
-    { blockType: 'salesContact', heading: "LET'S TALK ABOUT YOUR EVENT!", teamMember: managerId, callLabel: 'CALL US', emailLabel: 'ASK BY EMAIL', style: 'gold' },
-    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google', items: testiItemsEn },
+    { blockType: 'salesContact', heading: "LET'S TALK ABOUT YOUR EVENT!", teamMember: managerId, callLabel: 'CALL US', emailLabel: 'WRITE A MESSAGE', style: 'gold' },
+    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '500+ reviews · 4.8/5 on Google', items: testiItemsEn },
   ])
 
   // REZERWACJE
   await page('rezerwacje', 'Rezerwacja', [
-    { blockType: 'pageHero', eyebrow: 'Zaplanuj swój wieczór', title: 'Rezerwacja', titleStyle: 'serif', backgroundImage: await img.restauracja() },
+    { blockType: 'pageHero', eyebrow: 'Zaplanuj swój wieczór', title: 'Rezerwacja', titleStyle: 'serif', backgroundImage: await heroImg('rezerwacje', PLACEHOLDER('restauracja'), 'Rezerwacja — Hero') },
     { blockType: 'aboutIntro', heading: 'Zaplanuj swój wieczór', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my zajmiemy się pełną organizacją.' },
     { blockType: 'eveningPhases', heading: 'ZAPLANUJ SWÓJ WIECZÓR', phases: [
       { image: await img.restauracja(), title: 'OTWARCIE WIECZORU', timeLabel: 'od 17:00', body: 'Zapraszamy do rozpoczęcia wieczoru w spokojnej, klubowej atmosferze. Rezerwacja stolika jest bezpłatna. Planujesz zostać na koncert? Prosimy o wcześniejszy zakup biletu.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
@@ -1462,7 +1533,7 @@ async function run() {
     { blockType: 'salesContact', heading: 'REZERWACJA', teamMember: reservationContactId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
     { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/contact' },
   ], 'Reservation', [
-    { blockType: 'pageHero', eyebrow: 'Plan your evening', title: 'Reservation', titleStyle: 'serif', backgroundImage: await img.restauracja() },
+    { blockType: 'pageHero', eyebrow: 'Plan your evening', title: 'Reservation', titleStyle: 'serif', backgroundImage: await heroImg('rezerwacje', PLACEHOLDER('restauracja'), 'Rezerwacja — Hero') },
     { blockType: 'aboutIntro', heading: 'Plan your evening', body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll take care of the full organisation." },
     { blockType: 'eveningPhases', heading: 'PLAN YOUR EVENING', phases: [
       { image: await img.restauracja(), title: 'START OF THE EVENING', timeLabel: 'od 17:00', body: 'Start your evening in a calm, club atmosphere. Booking a table is free of charge. Planning to stay for the concert? Please buy a ticket in advance.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
@@ -1475,12 +1546,12 @@ async function run() {
 
   // KONTAKT
   await page('contact', 'Kontakt', [
-    { blockType: 'pageHero', title: 'Kontakt', titleStyle: 'serif', backgroundImage: await img.bar() },
+    { blockType: 'pageHero', title: 'Kontakt', titleStyle: 'serif', backgroundImage: await heroImg('contact', PLACEHOLDER('bar'), 'Kontakt — Hero') },
     { blockType: 'contactInfo', showForm: true, formHeading: 'SKONTAKTUJ SIĘ Z NAMI', showMap: true },
     { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Zapisz się i bądź na bieżąco.', placeholder: 'Adres email', buttonLabel: 'ZAPISZ SIĘ', consentText: 'Akceptuję politykę prywatności' },
     { blockType: 'artistCTA', eyebrow: 'Jesteś muzykiem? Zapraszamy do współpracy!', heading: 'KONTAKT DLA ARTYSTÓW', backgroundImage: await img.special(), ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/kontakt-dla-artystow' },
   ], 'Contact', [
-    { blockType: 'pageHero', title: 'Contact', titleStyle: 'serif', backgroundImage: await img.bar() },
+    { blockType: 'pageHero', title: 'Contact', titleStyle: 'serif', backgroundImage: await heroImg('contact', PLACEHOLDER('bar'), 'Kontakt — Hero') },
     { blockType: 'contactInfo', showForm: true, formHeading: 'GET IN TOUCH', showMap: true },
     { blockType: 'newsletterCTA', heading: 'NEWSLETTER', body: 'Sign up and stay up to date.', placeholder: 'Email address', buttonLabel: 'SIGN UP', consentText: 'I accept the privacy policy' },
     { blockType: 'artistCTA', eyebrow: "Are you a musician? We'd love to work with you!", heading: 'CONTACT FOR ARTISTS', backgroundImage: await img.special(), ctaLabel: 'LEARN MORE', ctaUrl: '/kontakt-dla-artystow' },
@@ -1488,11 +1559,11 @@ async function run() {
 
   // KONTAKT DLA ARTYSTÓW
   await page('kontakt-dla-artystow', 'Kontakt dla artystów', [
-    { blockType: 'pageHero', eyebrow: 'Jesteś muzykiem? Zapraszamy do współpracy!', title: 'Kontakt dla artystów', titleStyle: 'serif', backgroundImage: await img.special() },
+    { blockType: 'pageHero', eyebrow: 'Jesteś muzykiem? Zapraszamy do współpracy!', title: 'Kontakt dla artystów', titleStyle: 'serif', backgroundImage: await heroImg('kontakt-dla-artystow', PLACEHOLDER('special'), 'Kontakt dla artystów — Hero') },
     { blockType: 'aboutIntro', heading: 'Zagraj w American Dream Club', body: 'W American Dream Club grają muzycy z pasją i warsztatem. Współpracujemy z absolwentami i studentami Akademii Muzycznej oraz doświadczonymi muzykami z poznańskiej sceny jazzowej. Jeśli grasz jazz, soul, blues, swing lub pokrewne gatunki i chcesz wystąpić przed wymagającą publicznością — wypełnij formularz. Odezwiemy się do Ciebie.' },
     { blockType: 'artistForm', eyebrow: 'Jesteś muzykiem? Zapraszamy do współpracy!', heading: 'FORMULARZ KONTAKTOWY', intro: 'Wypełnij formularz, a nasz zespół skontaktuje się z Tobą w sprawie współpracy.' },
   ], 'Contact for artists', [
-    { blockType: 'pageHero', eyebrow: "Are you a musician? We'd love to work with you!", title: 'Contact for artists', titleStyle: 'serif', backgroundImage: await img.special() },
+    { blockType: 'pageHero', eyebrow: "Are you a musician? We'd love to work with you!", title: 'Contact for artists', titleStyle: 'serif', backgroundImage: await heroImg('kontakt-dla-artystow', PLACEHOLDER('special'), 'Kontakt dla artystów — Hero') },
     { blockType: 'aboutIntro', heading: 'Play at American Dream Club', body: "At American Dream Club we host musicians with passion and craft. We work with graduates and students of the Academy of Music and experienced musicians from the Poznań jazz scene. If you play jazz, soul, blues, swing or related genres and want to perform for a discerning audience — fill in the form. We'll get back to you." },
     { blockType: 'artistForm', eyebrow: "Are you a musician? We'd love to work with you!", heading: 'CONTACT FORM', intro: 'Fill in the form and our team will get in touch with you about working together.' },
   ])

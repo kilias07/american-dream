@@ -4,8 +4,6 @@ import Link from 'next/link'
 import type { PromoBandBlock as PromoBandBlockType, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
-import { isReservationUrl } from '@/lib/reservation-url'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -111,10 +109,7 @@ export function PromoBandBlock({
                     ? 'bg-brand-navy text-white hover:bg-brand-navy-royal'
                     : 'bg-brand-gold text-brand-navy hover:bg-brand-gold-dark'
                 }`
-                // Reservation CTAs open the MyRest widget; other links navigate normally.
-                return isReservationUrl(ctaUrl) ? (
-                  <ReserveTrigger className={ctaClass}>{ctaLabel}</ReserveTrigger>
-                ) : (
+                return (
                   <Link href={ctaHref} className={ctaClass}>
                     {ctaLabel}
                   </Link>

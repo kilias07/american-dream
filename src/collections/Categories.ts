@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateTag } from 'next/cache'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -37,4 +38,25 @@ export const Categories: CollectionConfig = {
       },
     },
   ],
+  // Category names appear on cached news/article pages — bust those caches.
+  hooks: {
+    afterChange: [
+      () => {
+        try {
+          revalidateTag('posts', 'max')
+          revalidateTag('pages', 'max')
+        } catch {
+          // Outside Next.js context (e.g. seed script)
+        }
+      },
+    ],
+    afterDelete: [
+      () => {
+        try {
+          revalidateTag('posts', 'max')
+          revalidateTag('pages', 'max')
+        } catch {}
+      },
+    ],
+  },
 }

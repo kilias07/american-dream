@@ -69,7 +69,10 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
   )
 }
 
+// Framed variant — used on the "Twoje wydarzenie" page. A full-bleed background
+// photo inside a thin gold frame, with a navy gradient and centred copy + CTA.
 function FramedOfferCard({ card, locale }: { card: OfferCard; locale: string }) {
+  const media = isMedia(card.image) ? card.image : null
   const ctaHref = card.ctaUrl
     ? card.ctaUrl.startsWith('/')
       ? localeHref(locale as Locale, card.ctaUrl)
@@ -77,28 +80,52 @@ function FramedOfferCard({ card, locale }: { card: OfferCard; locale: string }) 
     : null
 
   return (
-    <div className="flex flex-col items-center text-center rounded-2xl border border-brand-gold/40 bg-white/[0.02] p-8 md:p-10">
-      {card.tag && (
-        <span className="bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full mb-4">
-          {card.tag}
-        </span>
+    <div
+      className="relative rounded-2xl overflow-hidden border border-brand-gold/50 group"
+      style={{ minHeight: 460 }}
+    >
+      {/* Background image */}
+      {media?.url ? (
+        <Image
+          src={media.url}
+          alt={media.alt || card.title || ''}
+          fill
+          className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-brand-navy" />
       )}
-      {card.title && (
-        <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide mb-4">
-          {card.title}
-        </h3>
-      )}
-      {card.body && (
-        <p className="text-white/70 text-sm md:text-base leading-relaxed mb-7">{card.body}</p>
-      )}
-      {card.ctaLabel && ctaHref && (
-        <Link
-          href={ctaHref}
-          className="mt-auto inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors"
-        >
-          {card.ctaLabel}
-        </Link>
-      )}
+
+      {/* Navy gradient overlay — heavier at the bottom where the copy sits */}
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/85 to-brand-navy/25" />
+
+      {/* Content — centred at the bottom */}
+      <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col items-center text-center">
+        {card.tag && (
+          <p className="text-brand-gold text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] mb-3">
+            {card.tag}
+          </p>
+        )}
+        {card.title && (
+          <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide mb-4 max-w-md">
+            {card.title}
+          </h3>
+        )}
+        {card.body && (
+          <p className="text-white/80 text-sm md:text-[15px] leading-relaxed mb-6 max-w-md">
+            {card.body}
+          </p>
+        )}
+        {card.ctaLabel && ctaHref && (
+          <Link
+            href={ctaHref}
+            className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-full hover:bg-brand-gold-dark transition-colors"
+          >
+            {card.ctaLabel}
+          </Link>
+        )}
+      </div>
     </div>
   )
 }

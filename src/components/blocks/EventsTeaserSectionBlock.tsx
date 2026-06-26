@@ -45,6 +45,8 @@ export async function EventsTeaserSectionBlock({
     return {
       id: event.id,
       title: event.title ?? '',
+      // Klik w kafelkę prowadzi na stronę wydarzenia (/events/[slug]).
+      href: localeHref(locale as Locale, `/events/${event.slug}`),
       dateISO: event.date ?? null,
       endTime: event.endTime ?? null,
       price: event.price ?? null,
@@ -67,11 +69,14 @@ export async function EventsTeaserSectionBlock({
         <div className="flex items-end justify-between mb-8 gap-4">
           <div>
             {block.eyebrow && (
-              <p className="text-brand-navy/70 text-xs md:text-sm font-bold uppercase tracking-[0.18em] mb-2">
+              <p className="text-brand-navy text-base md:text-xl font-normal mb-1">
                 {block.eyebrow}
               </p>
             )}
-            <h2 className="font-serif text-brand-navy text-3xl md:text-5xl leading-tight">{heading}</h2>
+            <h2 className="flex items-center gap-2 text-brand-navy text-3xl md:text-4xl font-extrabold uppercase tracking-tight leading-none">
+              {heading}
+              <span className="text-2xl md:text-3xl font-bold leading-none">›</span>
+            </h2>
           </div>
 
           {block.viewAllLabel && viewAllHref && (

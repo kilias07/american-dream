@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateTag } from 'next/cache'
 
 export const TeamMembers: CollectionConfig = {
   slug: 'team-members',
@@ -47,4 +48,24 @@ export const TeamMembers: CollectionConfig = {
       },
     },
   ],
+  // Team members are embedded in pages (salesContact band on /business,
+  // /rezerwacje) cached under the `pages` tag — bust it on edit.
+  hooks: {
+    afterChange: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {
+          // Outside Next.js context (e.g. seed script)
+        }
+      },
+    ],
+    afterDelete: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {}
+      },
+    ],
+  },
 }

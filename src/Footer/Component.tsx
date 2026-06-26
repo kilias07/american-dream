@@ -8,8 +8,6 @@ import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { Logo } from '@/Header/Logo'
 import { NewsletterForm } from './NewsletterForm'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
-import { isReservationUrl } from '@/lib/reservation-url'
 
 async function getFooter(locale: Locale): Promise<FooterType | null> {
   try {
@@ -191,20 +189,13 @@ export async function Footer({ locale }: { locale: Locale }) {
               <ul className="flex flex-col gap-2">
                 {(col.links || []).map((link) => (
                   <li key={link.id}>
-                    {isReservationUrl(link.url) ? (
-                      // Reservation links open the MyRest widget instead of navigating.
-                      <ReserveTrigger className="text-brand-navy text-sm hover:opacity-60 transition-opacity text-left">
-                        {link.label}
-                      </ReserveTrigger>
-                    ) : (
-                      <Link
-                        href={link.url.startsWith('/') ? localeHref(locale, link.url) : link.url}
-                        target={link.newTab ? '_blank' : undefined}
-                        className="text-brand-navy text-sm hover:opacity-60 transition-opacity"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
+                    <Link
+                      href={link.url.startsWith('/') ? localeHref(locale, link.url) : link.url}
+                      target={link.newTab ? '_blank' : undefined}
+                      className="text-brand-navy text-sm hover:opacity-60 transition-opacity"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

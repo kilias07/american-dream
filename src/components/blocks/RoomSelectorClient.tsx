@@ -23,6 +23,14 @@ type Props = {
   locale: string
 }
 
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+    </svg>
+  )
+}
+
 function RoomGallery({ gallery, name }: { gallery: GalleryImage[]; name: string }) {
   const [index, setIndex] = useState(0)
   const total = gallery.length
@@ -106,36 +114,55 @@ export function RoomSelectorClient({
     <section className="py-12 md:py-16 bg-brand-navy">
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
         {heading && (
-          <h2 className="text-white font-serif text-3xl md:text-4xl font-bold uppercase tracking-tight mb-8">
+          <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight mb-8">
             {heading}
           </h2>
         )}
 
-        {/* Tab selector */}
-        <div className="flex flex-wrap gap-3 mb-8">
+        {/* Zone cards — photo tiles in a gold frame */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
           {rooms.map((room) => {
             const isActive = room.id === active.id
+            const cover = room.gallery[0]
             return (
               <button
                 key={room.id}
                 type="button"
                 onClick={() => setActiveId(room.id)}
-                className={`flex flex-col items-start text-left px-5 py-3 rounded-2xl border transition-colors ${
+                aria-pressed={isActive}
+                className={`relative overflow-hidden rounded-2xl border text-left transition-all aspect-[5/4] ${
                   isActive
-                    ? 'bg-brand-gold border-brand-gold text-brand-navy'
-                    : 'bg-brand-navy-royal border-white/15 text-white hover:border-brand-gold'
+                    ? 'border-brand-gold ring-1 ring-brand-gold'
+                    : 'border-brand-gold/40 hover:border-brand-gold'
                 }`}
               >
-                <span className="text-sm font-bold uppercase tracking-wide">{room.name}</span>
-                {capacityLabel(room) && (
-                  <span
-                    className={`text-[11px] mt-0.5 ${
-                      isActive ? 'text-brand-navy/70' : 'text-white/60'
-                    }`}
-                  >
-                    {capacityLabel(room)}
-                  </span>
+                {cover ? (
+                  <Image
+                    src={cover.url}
+                    alt={cover.alt || room.name}
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-brand-navy-royal" />
                 )}
+                <div
+                  className={`absolute inset-0 transition-colors ${
+                    isActive ? 'bg-brand-navy/40' : 'bg-brand-navy/70'
+                  }`}
+                />
+                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4">
+                  <span className="block text-white text-xs md:text-sm font-bold uppercase tracking-wide">
+                    {room.name}
+                  </span>
+                  {capacityLabel(room) && (
+                    <span className="mt-1 flex items-center gap-1 text-brand-gold text-[11px] md:text-xs font-semibold">
+                      <UsersIcon className="w-3.5 h-3.5" />
+                      {capacityLabel(room)}
+                    </span>
+                  )}
+                </div>
               </button>
             )
           })}
@@ -146,6 +173,16 @@ export function RoomSelectorClient({
           <RoomGallery gallery={active.gallery} name={active.name} />
 
           <div>
+            <div className="mb-4">
+              <h3 className="text-white text-2xl font-bold uppercase tracking-wide">{active.name}</h3>
+              {capacityLabel(active) && (
+                <p className="mt-1 flex items-center gap-1.5 text-brand-gold text-sm font-semibold">
+                  <UsersIcon className="w-4 h-4" />
+                  {capacityLabel(active)}
+                </p>
+              )}
+            </div>
+
             {active.description && (
               <p className="text-white/75 text-sm md:text-base leading-relaxed mb-6">
                 {active.description}
@@ -161,8 +198,8 @@ export function RoomSelectorClient({
                 )}
                 <ul className="flex flex-col gap-2">
                   {active.equipment.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-white/80 text-sm">
-                      <span className="text-brand-gold mt-0.5">›</span>
+                    <li key={i} className="flex items-start gap-2.5 text-white/80 text-sm">
+                      <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-brand-gold shrink-0" />
                       {item}
                     </li>
                   ))}
@@ -176,14 +213,14 @@ export function RoomSelectorClient({
         {offerItems.length > 0 && (
           <div className="mt-12 border-t border-white/10 pt-10">
             {offerHeading && (
-              <h3 className="text-white font-serif text-2xl md:text-3xl font-bold uppercase tracking-tight mb-6">
+              <h3 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-tight mb-6">
                 {offerHeading}
               </h3>
             )}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+            <ul className="flex flex-col gap-3 max-w-3xl">
               {offerItems.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-white/80 text-sm">
-                  <span className="text-brand-gold mt-0.5">›</span>
+                <li key={i} className="flex items-start gap-2.5 text-white/80 text-sm md:text-base">
+                  <span className="mt-[8px] w-1.5 h-1.5 rounded-full bg-brand-gold shrink-0" />
                   {item}
                 </li>
               ))}

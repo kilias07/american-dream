@@ -30,6 +30,7 @@ import { MusiciansGridBlock } from './blocks/MusiciansGridBlock'
 import { RecurringSeriesTeaserBlock } from './blocks/RecurringSeriesTeaserBlock'
 import { MenuSectionBlock } from './blocks/MenuSectionBlock'
 import { MenuGalleryBlock } from './blocks/MenuGalleryBlock'
+import { MenuImageBlock } from './blocks/MenuImageBlock'
 import { NewsCarouselBlock } from './blocks/NewsCarouselBlock'
 import { SpecialEventsBlock } from './blocks/SpecialEventsBlock'
 import { EventsTeaserSectionBlock } from './blocks/EventsTeaserSectionBlock'
@@ -113,6 +114,8 @@ function renderBlock(
       return <MenuSectionBlock key={i} block={block} locale={loc} />
     case 'menuGallery':
       return <MenuGalleryBlock key={i} block={block} locale={loc} />
+    case 'menuImage':
+      return <MenuImageBlock key={i} block={block} locale={loc} />
     case 'newsCarousel':
       return <NewsCarouselBlock key={i} block={block} locale={loc} />
     case 'specialEvents':

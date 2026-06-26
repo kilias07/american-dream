@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateTag } from 'next/cache'
 
 export const MenuCategories: CollectionConfig = {
   slug: 'menu-categories',
@@ -41,4 +42,23 @@ export const MenuCategories: CollectionConfig = {
       },
     },
   ],
+  // Categories group menu items on statically-cached menu pages — bust `pages`.
+  hooks: {
+    afterChange: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {
+          // Outside Next.js context (e.g. seed script)
+        }
+      },
+    ],
+    afterDelete: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {}
+      },
+    ],
+  },
 }

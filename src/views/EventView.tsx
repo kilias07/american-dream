@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
@@ -12,7 +13,6 @@ import { EventJsonLd } from '@/components/seo/EventJsonLd'
 import { ShareBar } from '@/components/ui/ShareBar'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
 import { UpcomingEventsCarousel } from '@/components/ui/UpcomingEventsCarousel'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { warsawParts, getDayAbbr } from '@/lib/recurring-events'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
@@ -200,9 +200,9 @@ export async function renderEvent(slug: string, locale: Locale) {
                 </span>
               )}
               <div className="flex flex-wrap items-center gap-3">
-                <ReserveTrigger date={event.date} className={ctaClass}>
+                <Link href={localeHref(locale, '/rezerwacje')} className={ctaClass}>
                   {ctaLabel}
-                </ReserveTrigger>
+                </Link>
                 {event.date && (
                   <AddToCalendar
                     theme="light"
@@ -311,15 +311,15 @@ export async function renderEvent(slug: string, locale: Locale) {
                 </svg>
               </h2>
               <span className="hidden sm:block shrink-0">
-                <ReserveTrigger
-                  date={event.date}
+                <Link
+                  href={localeHref(locale, '/rezerwacje')}
                   className="inline-flex items-center gap-2 bg-brand-navy text-white text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-navy/85 transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                     <path d="M22 10V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.46c-1.19.69-2 1.99-2 3.46s.81 2.77 2 3.46V18H4v-2.54c1.19-.69 2-1.99 2-3.46 0-1.48-.8-2.77-2-3.46V6h16v2.54z" />
                   </svg>
                   {ctaLabel}
-                </ReserveTrigger>
+                </Link>
               </span>
             </div>
             <UpcomingEventsCarousel

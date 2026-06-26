@@ -13,8 +13,6 @@ import {
   warsawDayKey,
 } from '@/lib/recurring-events'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
-import { isReservationUrl } from '@/lib/reservation-url'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 
@@ -330,12 +328,12 @@ function EventPopover({
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-            <ReserveTrigger
-              date={occ.dateISO}
+            <Link
+              href={localeHref(locale as Locale, '/rezerwacje')}
               className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.1em] px-4 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
             >
               {reserveLabel}
-            </ReserveTrigger>
+            </Link>
             <AddToCalendar
               theme="dark"
               locale={locale}
@@ -549,14 +547,9 @@ export function EventsFullCalendar({
                   <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
                 </svg>
               )
-              // Reservation CTA opens MyRest; any other link navigates normally.
-              return isReservationUrl(ctaUrl) ? (
-                <ReserveTrigger className={calCtaClass}>
-                  {icon}
-                  {ctaLabel}
-                </ReserveTrigger>
-              ) : (
-                <Link href={ctaUrl} className={calCtaClass}>
+              const calHref = ctaUrl.startsWith('/') ? localeHref(locale as Locale, ctaUrl) : ctaUrl
+              return (
+                <Link href={calHref} className={calCtaClass}>
                   {icon}
                   {ctaLabel}
                 </Link>

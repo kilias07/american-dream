@@ -20,7 +20,7 @@ const STATIC_SLUGS = [
   'business/venue-hire',
   'news',
   'news/pod-papugami',
-  'rezerwacja',
+  'rezerwacje',
   'contact',
   'kontakt-dla-artystow',
   'privacy',

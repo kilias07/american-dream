@@ -9,7 +9,6 @@ import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { CMSLink } from '@/components/Link'
 import { LocaleSwitcher } from '@/components/LocaleSwitcher'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { MobileMenu } from './MobileMenu'
 import { Logo } from './Logo'
 import { HeaderShell } from './HeaderShell'
@@ -106,6 +105,17 @@ export async function Header({ locale }: { locale: Locale }) {
 
   const allNavItems = navItems || []
 
+  // The reservation CTA NAVIGATES to the reservation page (its CMS-configured
+  // url — default /rezerwacje, the full design page) rather than opening the
+  // MyRest popup. Booking itself still happens from that page.
+  const ctaUrl =
+    ctaButton?.url ||
+    (typeof ctaButton?.reference?.value === 'object'
+      ? `/${(ctaButton.reference.value as { slug?: string }).slug ?? ''}`
+      : '') ||
+    '/rezerwacje'
+  const ctaHref = ctaUrl.startsWith('/') ? localeHref(locale, ctaUrl) : ctaUrl
+
   return (
     <HeaderShell
       topBar={
@@ -197,11 +207,14 @@ export async function Header({ locale }: { locale: Locale }) {
             {/* Language switcher — maps the current path to the other locale */}
             <LocaleSwitcher currentLocale={locale} />
 
-            {/* CTA — "Zarezerwuj" → opens the MyRest booking widget */}
+            {/* CTA — "Zarezerwuj" → navigates to the reservation page */}
             {ctaEnabled && ctaButton?.label && (
-              <ReserveTrigger className="bg-brand-gold text-brand-navy px-3.5 xl:px-5 py-2.5 rounded-full text-[11px] xl:text-[12px] font-bold uppercase tracking-[0.02em] xl:tracking-[0.06em] hover:brightness-110 transition-all whitespace-nowrap">
+              <Link
+                href={ctaHref}
+                className="bg-brand-gold text-brand-navy px-3.5 xl:px-5 py-2.5 rounded-full text-[11px] xl:text-[12px] font-bold uppercase tracking-[0.02em] xl:tracking-[0.06em] hover:brightness-110 transition-all whitespace-nowrap"
+              >
                 {ctaButton.label}
-              </ReserveTrigger>
+              </Link>
             )}
           </div>
         </div>

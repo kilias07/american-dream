@@ -280,6 +280,7 @@ export interface Page {
         | BentoSectionBlock
         | MenuSectionBlock
         | MenuGalleryBlock
+        | MenuImageBlock
         | SetMenuBlock
         | SpecialMenuBlock
         | PromoBandBlock
@@ -321,8 +322,20 @@ export interface Page {
             blockType: 'richText';
           }
         | {
+            /**
+             * How many columns the mosaic uses on desktop.
+             */
+            columns?: ('2' | '3' | '4') | null;
+            /**
+             * Allow clicking a photo to enlarge it in a full-screen overlay.
+             */
+            enableLightbox?: boolean | null;
             images: {
               image: number | Media;
+              /**
+               * Tile size in the mosaic. Combine sizes to build the layout you want.
+               */
+              size?: ('normal' | 'wide' | 'tall' | 'large') | null;
               caption?: string | null;
               id?: string | null;
             }[];
@@ -692,6 +705,29 @@ export interface MenuGalleryBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'menuGallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MenuImageBlock".
+ */
+export interface MenuImageBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Upload the menu as a graphic. Add more than one only for multi-page menus.
+   */
+  images: {
+    image: number | Media;
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Allow clicking the menu to enlarge it in a full-screen overlay.
+   */
+  enableLightbox?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'menuImage';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2049,6 +2085,7 @@ export interface PagesSelect<T extends boolean = true> {
         bentoSection?: T | BentoSectionBlockSelect<T>;
         menuSection?: T | MenuSectionBlockSelect<T>;
         menuGallery?: T | MenuGalleryBlockSelect<T>;
+        menuImage?: T | MenuImageBlockSelect<T>;
         setMenu?: T | SetMenuBlockSelect<T>;
         specialMenu?: T | SpecialMenuBlockSelect<T>;
         promoBand?: T | PromoBandBlockSelect<T>;
@@ -2079,10 +2116,13 @@ export interface PagesSelect<T extends boolean = true> {
         imageGallery?:
           | T
           | {
+              columns?: T;
+              enableLightbox?: T;
               images?:
                 | T
                 | {
                     image?: T;
+                    size?: T;
                     caption?: T;
                     id?: T;
                   };
@@ -2265,6 +2305,24 @@ export interface MenuGalleryBlockSelect<T extends boolean = true> {
         full?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MenuImageBlock_select".
+ */
+export interface MenuImageBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  enableLightbox?: T;
   id?: T;
   blockName?: T;
 }

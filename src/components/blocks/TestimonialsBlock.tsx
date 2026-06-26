@@ -71,18 +71,20 @@ export function TestimonialsBlock({ block }: { block: TestimonialsData }) {
   return (
     <section className="bg-brand-navy py-16 px-6 md:px-10">
       <div className="container max-w-[1280px] mx-auto">
-        {/* Heading */}
-        {heading && (
-          <h2 className="text-white text-xl font-bold uppercase tracking-widest mb-8">
-            {heading}
-          </h2>
-        )}
-
-        {/* Google review summary */}
-        {reviewSummary && (
-          <div className="flex items-center justify-center gap-3 mb-10 text-white text-lg">
-            <span>{reviewSummary}</span>
-            <GoogleLogo />
+        {/* Heading + Google review summary on one row */}
+        {(heading || reviewSummary) && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-10">
+            {heading && (
+              <h2 className="text-white text-xl md:text-2xl font-bold uppercase tracking-widest">
+                {heading}
+              </h2>
+            )}
+            {reviewSummary && (
+              <div className="flex items-center gap-2 text-white text-base md:text-lg">
+                <span>{reviewSummary}</span>
+                <GoogleLogo />
+              </div>
+            )}
           </div>
         )}
 

@@ -1,8 +1,10 @@
 'use client'
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { localeHref } from '@/utilities/href'
+import type { Locale } from '@/config/locales'
 
 export type SpecialContact = {
   phone: string
@@ -113,15 +115,15 @@ function PosterCard({
 
       {/* Bottom band: reserve CTA + contact line */}
       <div className="bg-[#0a0820] px-3 py-3">
-        <ReserveTrigger
-          date={card.dateISO}
+        <Link
+          href={localeHref(locale as Locale, '/rezerwacje')}
           className="flex w-full items-center justify-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
         >
           <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z" />
           </svg>
           {reserveLabel}
-        </ReserveTrigger>
+        </Link>
         <p className="mt-2 text-white/45 text-[10px] leading-snug text-center">
           {card.price != null && <span className="text-white/70 font-bold">{card.price} zł · </span>}
           {contact.phone} · {contact.email}

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { revalidateTag } from 'next/cache'
 
 export const Rooms: CollectionConfig = {
   slug: 'rooms',
@@ -64,4 +65,24 @@ export const Rooms: CollectionConfig = {
       },
     },
   ],
+  // Rooms are embedded in pages (e.g. /business roomSelector) which are
+  // statically cached under the `pages` tag — bust it so CMS edits show up.
+  hooks: {
+    afterChange: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {
+          // Outside Next.js context (e.g. seed script)
+        }
+      },
+    ],
+    afterDelete: [
+      () => {
+        try {
+          revalidateTag('pages', 'max')
+        } catch {}
+      },
+    ],
+  },
 }

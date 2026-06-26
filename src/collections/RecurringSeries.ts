@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { revalidateTag } from 'next/cache'
 
 export const RecurringSeries: CollectionConfig = {
   slug: 'recurring-series',
@@ -143,4 +144,26 @@ export const RecurringSeries: CollectionConfig = {
       ],
     },
   ],
+  // Consumed by RecurringSeriesView (tag `recurring-series`) and the
+  // RecurringSeriesTeaser block embedded in pages — bust both.
+  hooks: {
+    afterChange: [
+      () => {
+        try {
+          revalidateTag('recurring-series', 'max')
+          revalidateTag('pages', 'max')
+        } catch {
+          // Outside Next.js context (e.g. seed script)
+        }
+      },
+    ],
+    afterDelete: [
+      () => {
+        try {
+          revalidateTag('recurring-series', 'max')
+          revalidateTag('pages', 'max')
+        } catch {}
+      },
+    ],
+  },
 }

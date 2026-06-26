@@ -4,8 +4,6 @@ import Link from 'next/link'
 import type { SpecialMenuBlock as SpecialMenuBlockType, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
-import { isReservationUrl } from '@/lib/reservation-url'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -126,9 +124,7 @@ export function SpecialMenuBlock({
               {/* CTA — lower-right over the photo on desktop, stacked on mobile. */}
               {ctaLabel && (
                 <div className="mt-8 md:mt-0 md:absolute md:right-12 md:bottom-12">
-                  {isReservationUrl(ctaUrl) ? (
-                    <ReserveTrigger className={ctaClass}>{ctaLabel}</ReserveTrigger>
-                  ) : ctaHref ? (
+                  {ctaHref ? (
                     <Link href={ctaHref} className={ctaClass}>
                       {ctaLabel}
                     </Link>

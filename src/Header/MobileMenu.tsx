@@ -1,10 +1,11 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import Link from 'next/link'
 import { CMSLink } from '@/components/Link'
 import { LocaleSwitcher } from '@/components/LocaleSwitcher'
 import type { Locale } from '@/config/locales'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { localeHref } from '@/utilities/href'
 
 type NavItem = {
   link: {
@@ -92,6 +93,16 @@ export const MobileMenu: React.FC<Props> = ({
   const [mounted, setMounted] = useState(false)
   const allNavItems = navItems
 
+  // The reservation CTA navigates to the reservation page (CMS url, default
+  // /rezerwacje) instead of opening the MyRest popup.
+  const ctaUrl =
+    ctaButton?.url ||
+    (typeof ctaButton?.reference?.value === 'object'
+      ? `/${(ctaButton.reference.value as { slug?: string }).slug ?? ''}`
+      : '') ||
+    '/rezerwacje'
+  const ctaHref = ctaUrl.startsWith('/') ? localeHref(locale, ctaUrl) : ctaUrl
+
   // Portal musi działać dopiero po stronie klienta (potrzebuje `document`).
   useEffect(() => setMounted(true), [])
 
@@ -159,12 +170,15 @@ export const MobileMenu: React.FC<Props> = ({
 
         {/* Bottom section */}
         <div className="px-6 pb-8 pt-4 flex flex-col gap-5">
-          {/* CTA button — opens the MyRest booking widget */}
+          {/* CTA button — navigates to the reservation page */}
           {ctaEnabled && ctaButton?.label && (
             <div onClick={() => setIsOpen(false)}>
-              <ReserveTrigger className="block w-full text-center bg-brand-gold text-white px-6 py-3 rounded-full text-[12px] font-bold uppercase tracking-[0.06em] hover:bg-brand-gold-dark transition-colors">
+              <Link
+                href={ctaHref}
+                className="block w-full text-center bg-brand-gold text-white px-6 py-3 rounded-full text-[12px] font-bold uppercase tracking-[0.06em] hover:bg-brand-gold-dark transition-colors"
+              >
                 {ctaButton.label}
-              </ReserveTrigger>
+              </Link>
             </div>
           )}
 
