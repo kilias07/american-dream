@@ -30,6 +30,16 @@ export const EveningPhases: Block = {
           localized: true,
         },
         {
+          name: 'linkToCalendar',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Pokaż wydarzenie z kalendarza',
+          admin: {
+            description:
+              'Gdy zaznaczone: ta karta pokazuje rzeczywiste wydarzenie z kalendarza dla wybranego dnia tygodnia (tytuł, godzina, zdjęcie, link do wydarzenia). Bez wydarzenia danego dnia — pokazuje treść poniżej.',
+          },
+        },
+        {
           name: 'timeLabel',
           type: 'text',
           admin: {

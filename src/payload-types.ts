@@ -1359,6 +1359,10 @@ export interface EveningPhasesBlock {
     | {
         image?: (number | null) | Media;
         title?: string | null;
+        /**
+         * Gdy zaznaczone: ta karta pokazuje rzeczywiste wydarzenie z kalendarza dla wybranego dnia tygodnia (tytuł, godzina, zdjęcie, link do wydarzenia). Bez wydarzenia danego dnia — pokazuje treść poniżej.
+         */
+        linkToCalendar?: boolean | null;
         timeLabel?: string | null;
         body?: string | null;
         primaryCtaLabel?: string | null;
@@ -2558,6 +2562,7 @@ export interface EveningPhasesBlockSelect<T extends boolean = true> {
     | {
         image?: T;
         title?: T;
+        linkToCalendar?: T;
         timeLabel?: T;
         body?: T;
         primaryCtaLabel?: T;

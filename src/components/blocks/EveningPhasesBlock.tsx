@@ -1,14 +1,23 @@
 import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
-import type { EveningPhasesBlock as EveningPhasesBlockType, Media } from '@/payload-types'
+import type { EveningPhasesBlock as EveningPhasesBlockType, Media, Event } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { getUILabels, pick } from '@/lib/ui-labels'
+import {
+  toOccurrences,
+  warsawParts,
+  formatTime,
+  type EventDoc,
+} from '@/lib/recurring-events'
+import {
+  EveningPhasesClient,
+  type PhaseData,
+  type DayPill,
+  type DayEvent,
+} from './EveningPhasesClient'
 
 type Phase = NonNullable<EveningPhasesBlockType['phases']>[number]
 
@@ -43,6 +52,16 @@ const DAY_LABELS_EN: Record<string, string> = {
   sunday: 'Sunday',
 }
 const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+// warsawParts().weekday is 0=Sun … 6=Sat.
+const WEEKDAY_TO_DAY = [
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+]
 
 async function getOpenDays(): Promise<OpeningDay[]> {
   const cached = unstable_cache(
@@ -64,79 +83,46 @@ async function getOpenDays(): Promise<OpeningDay[]> {
     .filter((od) => !od.closed)
 }
 
-function PhaseCard({
-  phase,
-  locale,
-}: {
-  phase: Phase
-  locale: string
-}) {
-  const image = isMedia(phase.image) ? phase.image : null
-  // Design keeps the image on the LEFT for every phase row (no alternating).
-  const reversed = false
-
-  const prefix = (url: string) => (url.startsWith('/') ? localeHref(locale as Locale, url) : url)
-
-  return (
-    <div
-      className={`flex flex-col ${
-        reversed ? 'md:flex-row-reverse' : 'md:flex-row'
-      } items-stretch gap-6 md:gap-10 bg-brand-navy-royal rounded-2xl overflow-hidden`}
-    >
-      {/* Image */}
-      <div className="relative w-full md:w-2/5 aspect-[4/3] md:aspect-auto md:min-h-[280px] flex-shrink-0">
-        {image?.url ? (
-          <Image
-            src={image.url}
-            alt={image.alt || phase.title || ''}
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, 40vw"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-brand-navy" />
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 flex flex-col justify-center p-6 md:py-10 md:pr-10">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          {phase.title && (
-            <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide">
-              {phase.title}
-            </h3>
-          )}
-          {phase.timeLabel && (
-            <span className="inline-block bg-brand-navy text-white text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full">
-              {phase.timeLabel}
-            </span>
-          )}
-        </div>
-
-        {phase.body && (
-          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-5">{phase.body}</p>
-        )}
-
-        <div className="flex flex-wrap gap-3">
-          {/* Primary CTA is the date-less "reserve a table" action → opens the
-              generic MyRest table-booking flow (no specific night pre-selected). */}
-          {phase.primaryCtaLabel && phase.primaryCtaUrl && (
-            <ReserveTrigger className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors">
-              {phase.primaryCtaLabel}
-            </ReserveTrigger>
-          )}
-          {phase.secondaryCtaLabel && phase.secondaryCtaUrl && (
-            <Link
-              href={prefix(phase.secondaryCtaUrl)}
-              className="inline-flex items-center gap-2 border border-white text-white text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-white hover:text-brand-navy transition-colors"
-            >
-              {phase.secondaryCtaLabel}
-            </Link>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+/**
+ * For each weekday, the NEXT upcoming calendar event that falls on it — so the
+ * reservation-page day selector stays consistent with the kalendarium. Keyed by
+ * day name (tuesday … sunday). `nowIso` is passed in so the cache key varies by
+ * the request day (events drop off as they pass).
+ */
+async function getEventsByWeekday(locale: Locale, nowIso: string): Promise<Record<string, DayEvent>> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const res = await payload.find({
+      collection: 'events',
+      where: { date: { greater_than_equal: nowIso } },
+      sort: 'date',
+      limit: 300,
+      depth: 1,
+      locale,
+    })
+    const occ = toOccurrences(res.docs as unknown as EventDoc[])
+    const byDay: Record<string, DayEvent> = {}
+    for (const o of occ) {
+      const day = WEEKDAY_TO_DAY[warsawParts(new Date(o.dateISO)).weekday]
+      if (!day || byDay[day]) continue // keep the earliest (events are sorted asc)
+      const start = formatTime(o.dateISO)
+      byDay[day] = {
+        slug: o.eventSlug ?? '',
+        title: o.title,
+        description: o.description ?? null,
+        timeLabel: o.endTime ? `${start}–${o.endTime}` : start,
+        imageUrl: o.image?.url ?? null,
+        imageAlt: o.image?.alt ?? o.title,
+        price: o.price ?? null,
+        eventType: o.eventType ?? null,
+        detailsUrl: o.eventSlug ? localeHref(locale, `/events/${o.eventSlug}`) : null,
+        dateISO: o.dateISO,
+      }
+    }
+    return byDay
+  } catch {
+    return {}
+  }
 }
 
 export async function EveningPhasesBlock({
@@ -150,56 +136,64 @@ export async function EveningPhasesBlock({
 
   if (!phases?.length) return null
 
+  const loc = locale as Locale
   const openDays = await getOpenDays()
   const fallbackLabels = locale === 'pl' ? DAY_LABELS_PL : DAY_LABELS_EN
-  const ui = await getUILabels(locale as Locale)
+  const ui = await getUILabels(loc)
   const uiDays = ui?.days as Record<string, string | null | undefined> | undefined
   const dayLabel = (day: string) => pick(uiDays?.[day], fallbackLabels[day] ?? '')
 
+  // Only fetch the calendar when at least one phase is wired to it.
+  const usesCalendar = phases.some((p) => p.linkToCalendar)
+  const now = new Date()
+  const eventsByDay = usesCalendar
+    ? await getEventsByWeekday(loc, new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString())
+    : {}
+
+  const days: DayPill[] = openDays
+    .filter((od): od is OpeningDay & { day: string } => Boolean(od.day))
+    .map((od) => ({
+      key: od.day,
+      label: dayLabel(od.day),
+      hours: `${od.openTime ?? ''}${od.closeTime ? ` - ${od.closeTime}` : ''}`,
+      hasEvent: Boolean(eventsByDay[od.day]),
+    }))
+
+  // Default selection: today if it is an open day, otherwise the first open day.
+  const todayKey = WEEKDAY_TO_DAY[warsawParts(now).weekday]
+  const defaultDay = days.some((d) => d.key === todayKey) ? todayKey : (days[0]?.key ?? '')
+
+  const prefix = (url?: string | null) =>
+    url ? (url.startsWith('/') ? localeHref(loc, url) : url) : null
+
+  const phasesData: PhaseData[] = phases.map((phase: Phase, i) => {
+    const image = isMedia(phase.image) ? phase.image : null
+    return {
+      key: String(phase.id ?? i),
+      title: phase.title ?? '',
+      timeLabel: phase.timeLabel ?? '',
+      body: phase.body ?? '',
+      imageUrl: image?.url ?? null,
+      imageAlt: image?.alt || phase.title || '',
+      primaryCtaLabel: phase.primaryCtaLabel ?? null,
+      primaryCtaEnabled: Boolean(phase.primaryCtaLabel && phase.primaryCtaUrl),
+      secondaryCtaLabel: phase.secondaryCtaLabel ?? null,
+      secondaryCtaUrl: prefix(phase.secondaryCtaUrl),
+      linkToCalendar: Boolean(phase.linkToCalendar),
+    }
+  })
+
+  const reserveLabel = pick(ui?.event?.reserveTable, locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table')
+
   return (
-    <section className="py-12 md:py-16 bg-brand-navy">
-      <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
-        {heading && (
-          <div className="flex items-center gap-3 mb-8">
-            <h2 className="text-white font-serif text-3xl md:text-4xl font-bold uppercase tracking-tight">
-              {heading}
-            </h2>
-            <span className="text-brand-gold text-2xl md:text-3xl font-bold">›</span>
-          </div>
-        )}
-
-        {/* Weekday hours pills (from OpeningHours global) */}
-        {openDays.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
-            {openDays.map((od, i) => (
-              <div
-                key={od.id ?? od.day}
-                className={`rounded-full px-4 py-3 text-center ${
-                  i === 0 ? 'bg-white text-brand-navy' : 'border border-white/30 text-white'
-                }`}
-              >
-                <div className="text-[12px] font-bold uppercase tracking-[0.1em]">
-                  {od.day ? dayLabel(od.day) : ''}
-                </div>
-                <div
-                  className={`text-[12px] font-semibold mt-1 ${
-                    i === 0 ? 'text-brand-navy/70' : 'text-brand-gold'
-                  }`}
-                >
-                  {od.openTime}
-                  {od.closeTime ? ` - ${od.closeTime}` : ''}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-col gap-6">
-          {phases.map((phase, i) => (
-            <PhaseCard key={phase.id ?? i} phase={phase} locale={locale} />
-          ))}
-        </div>
-      </div>
-    </section>
+    <EveningPhasesClient
+      heading={heading ?? ''}
+      days={days}
+      defaultDay={defaultDay}
+      phases={phasesData}
+      eventsByDay={eventsByDay}
+      reserveLabel={reserveLabel}
+      locale={locale}
+    />
   )
 }
