@@ -17,7 +17,7 @@ async function fetchEvents(locale: string) {
     locale: locale as any,
     limit: 1000,
     sort: 'date',
-    depth: 1, // populate image, genres and performers.musician for the popover
+    depth: 1, // populate image (calendar cards) + genres/performers (event pages)
   })
   return docs as unknown as EventDoc[]
 }

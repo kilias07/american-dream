@@ -1,7 +1,8 @@
 'use client'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import type { EventOccurrence } from '@/lib/recurring-events'
 import {
   dayKey,
@@ -12,9 +13,13 @@ import {
   groupByDay,
   warsawDayKey,
 } from '@/lib/recurring-events'
-import { AddToCalendar } from '@/components/ui/AddToCalendar'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+
+/** Each event links to its own detail page. */
+function eventHref(occ: EventOccurrence, locale: string): string {
+  return localeHref(locale as Locale, occ.eventSlug ? `/events/${occ.eventSlug}` : '/events')
+}
 
 type Props = {
   occurrences: EventOccurrence[]
@@ -75,25 +80,16 @@ function addDaysKey(key: string, days: number): string {
 
 const AGENDA_WEEK_STEP = 2 // weeks revealed initially and per "show more" click
 
-function EventCard({
-  occ,
-  locale,
-  onOpen,
-}: {
-  occ: EventOccurrence
-  locale: string
-  onOpen: (occ: EventOccurrence, trigger: HTMLElement) => void
-}) {
+function EventCard({ occ, locale }: { occ: EventOccurrence; locale: string }) {
   const dayAbbr = getDayAbbr(new Date(occ.dateISO), locale)
   const dayNum = warsawDayKey(occ.dateISO).slice(-2)
   const startTime = formatTime(occ.dateISO)
   const isSpecial = occ.eventType === 'special'
 
   return (
-    <button
-      type="button"
+    <Link
+      href={eventHref(occ, locale)}
       tabIndex={-1}
-      onClick={(e) => onOpen(occ, e.currentTarget)}
       className="relative block w-full h-full rounded-xl overflow-hidden bg-brand-navy group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
       aria-label={`${occ.title}, ${dayAbbr} ${dayNum}, ${startTime}`}
     >
@@ -132,28 +128,19 @@ function EventCard({
         )}
         {occ.price != null && <p className="text-white/70 text-[10px]">{occ.price} PLN</p>}
       </div>
-    </button>
+    </Link>
   )
 }
 
-function AgendaItem({
-  occ,
-  locale,
-  onOpen,
-}: {
-  occ: EventOccurrence
-  locale: string
-  onOpen: (occ: EventOccurrence, trigger: HTMLElement) => void
-}) {
+function AgendaItem({ occ, locale }: { occ: EventOccurrence; locale: string }) {
   const dayAbbr = getDayAbbr(new Date(occ.dateISO), locale)
   const dayNum = warsawDayKey(occ.dateISO).slice(-2)
   const startTime = formatTime(occ.dateISO)
   const isSpecial = occ.eventType === 'special'
 
   return (
-    <button
-      type="button"
-      onClick={(e) => onOpen(occ, e.currentTarget)}
+    <Link
+      href={eventHref(occ, locale)}
       className="flex items-stretch w-full text-left rounded-xl overflow-hidden bg-white ring-1 ring-brand-navy/10 hover:ring-brand-navy/25 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
     >
       {/* Date badge */}
@@ -195,167 +182,7 @@ function AgendaItem({
       <span className="self-center text-brand-navy/40 pr-3" aria-hidden>
         ›
       </span>
-    </button>
-  )
-}
-
-function EventPopover({
-  occ,
-  locale,
-  onClose,
-}: {
-  occ: EventOccurrence
-  locale: string
-  onClose: () => void
-}) {
-  const closeRef = useRef<HTMLButtonElement>(null)
-  const titleId = 'event-popover-title'
-
-  useEffect(() => {
-    closeRef.current?.focus()
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        onClose()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  const startTime = formatTime(occ.dateISO)
-  const weekday = new Date(occ.dateISO)
-  const dateLabel = weekday.toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    timeZone: 'Europe/Warsaw',
-  })
-  const reserveLabel = locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'
-  const detailsLabel = locale === 'pl' ? 'Szczegóły wydarzenia' : 'Event details'
-  const isSpecial = occ.eventType === 'special'
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      {/* Backdrop — clicking the blurred area closes the popover (mouse convenience;
-          keyboard/AT users use the Close button or Esc) */}
-      <button
-        type="button"
-        aria-hidden="true"
-        tabIndex={-1}
-        onClick={onClose}
-        className="absolute inset-0 bg-brand-navy/70 backdrop-blur-sm cursor-default"
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
-      >
-        {/* Image header */}
-        <div className="relative h-40 bg-brand-navy">
-          {occ.image?.url ? (
-            <Image src={occ.image.url} alt={occ.image.alt || occ.title} fill className="object-cover" sizes="448px" />
-          ) : (
-            <div className="absolute inset-0 bg-brand-navy-royal" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
-          {isSpecial && (
-            <span className="absolute top-3 left-3 bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full">
-              {locale === 'pl' ? 'Wydarzenie specjalne' : 'Special event'}
-            </span>
-          )}
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            aria-label={locale === 'pl' ? 'Zamknij' : 'Close'}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 text-brand-navy flex items-center justify-center hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="p-5">
-          {occ.leadTitle && (
-            <p className="text-brand-gold text-[11px] font-bold uppercase tracking-[0.16em] mb-1">
-              {occ.leadTitle}
-            </p>
-          )}
-          <h2 id={titleId} className="font-serif text-2xl font-bold text-brand-navy leading-tight mb-2">
-            {occ.title}
-          </h2>
-
-          <p className="text-brand-navy/70 text-sm font-semibold capitalize mb-1">
-            {dateLabel}
-            {startTime ? ` · ${startTime}${occ.endTime ? `–${occ.endTime}` : ''}` : ''}
-          </p>
-          {occ.price != null && (
-            <p className="text-brand-navy font-bold text-lg mb-3">{occ.price} PLN</p>
-          )}
-
-          {occ.genres.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {occ.genres.map((g) => (
-                <span
-                  key={g}
-                  className="border border-brand-navy/20 text-brand-navy/70 text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full"
-                >
-                  {g}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {occ.performers.length > 0 && (
-            <p className="text-brand-navy/70 text-sm mb-4">
-              <span className="font-semibold">{locale === 'pl' ? 'Wykonawcy: ' : 'Lineup: '}</span>
-              {occ.performers
-                .map((p) => (p.instrument ? `${p.name} (${p.instrument})` : p.name))
-                .join(', ')}
-            </p>
-          )}
-
-          {occ.description && (
-            <p className="text-brand-navy/70 text-sm leading-relaxed mb-4">{occ.description}</p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={localeHref(locale as Locale, '/rezerwacje')}
-              className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.1em] px-4 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
-            >
-              {reserveLabel}
-            </Link>
-            <AddToCalendar
-              theme="dark"
-              locale={locale}
-              event={{
-                id: occ.eventId,
-                title: occ.title,
-                description: occ.description ?? undefined,
-                startISO: occ.dateISO,
-                endTime: occ.endTime ?? undefined,
-              }}
-            />
-          </div>
-
-          <Link
-            href={localeHref(locale as Locale, `/events/${occ.eventSlug}`)}
-            className="inline-block mt-4 text-brand-navy/60 text-[12px] font-semibold uppercase tracking-[0.1em] hover:text-brand-navy"
-          >
-            {detailsLabel} ›
-          </Link>
-        </div>
-      </div>
-    </div>
+    </Link>
   )
 }
 
@@ -371,11 +198,10 @@ export function EventsFullCalendar({
   ctaUrl,
   locale,
 }: Props) {
+  const router = useRouter()
   const [year, setYear] = useState(initialYear)
   const [month, setMonth] = useState(initialMonth)
-  const [selected, setSelected] = useState<EventOccurrence | null>(null)
 
-  const triggerRef = useRef<HTMLElement | null>(null)
   const cellRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const monthAbs = year * 12 + month
@@ -424,17 +250,6 @@ export function EventsFullCalendar({
   }, [cells])
   const [activeKey, setActiveKey] = useState<string>(defaultActive)
   useEffect(() => setActiveKey(defaultActive), [defaultActive])
-
-  const openPopover = useCallback((occ: EventOccurrence, trigger: HTMLElement) => {
-    triggerRef.current = trigger
-    setSelected(occ)
-  }, [])
-
-  const closePopover = useCallback(() => {
-    setSelected(null)
-    // Return focus to the element that opened the popover.
-    requestAnimationFrame(() => triggerRef.current?.focus())
-  }, [])
 
   function prevMonth() {
     if (prevDisabled) return
@@ -489,7 +304,7 @@ export function EventsFullCalendar({
         const dayEvents = byDay[cell.key] ?? []
         if (dayEvents.length > 0) {
           e.preventDefault()
-          openPopover(dayEvents[0], cellRefs.current[cell.key] as HTMLElement)
+          router.push(eventHref(dayEvents[0], locale))
         }
         break
       }
@@ -603,7 +418,7 @@ export function EventsFullCalendar({
                     {hasEvents ? (
                       dayEvents.map((occ) => (
                         <div key={occ.id} style={{ height: 150 }}>
-                          <EventCard occ={occ} locale={locale} onOpen={openPopover} />
+                          <EventCard occ={occ} locale={locale} />
                         </div>
                       ))
                     ) : (
@@ -637,7 +452,7 @@ export function EventsFullCalendar({
               <ul className="flex flex-col gap-3">
                 {visibleAgenda.map((occ) => (
                   <li key={occ.id}>
-                    <AgendaItem occ={occ} locale={locale} onOpen={openPopover} />
+                    <AgendaItem occ={occ} locale={locale} />
                   </li>
                 ))}
               </ul>
@@ -675,8 +490,6 @@ export function EventsFullCalendar({
           </button>
         </div>
       </div>
-
-      {selected && <EventPopover occ={selected} locale={locale} onClose={closePopover} />}
     </section>
   )
 }
