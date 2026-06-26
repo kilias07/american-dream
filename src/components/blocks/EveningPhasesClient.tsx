@@ -39,13 +39,36 @@ export type PhaseData = {
 }
 
 const cardWrap =
-  'flex flex-col md:flex-row items-stretch gap-6 md:gap-10 bg-brand-navy-royal rounded-2xl overflow-hidden'
+  'flex flex-col md:flex-row items-stretch gap-5 md:gap-8 bg-brand-navy-royal rounded-2xl p-4 md:p-5'
+// Image is a gold-framed, rounded panel inset from the card edge (per design).
 const imgWrap =
-  'relative w-full md:w-2/5 aspect-[4/3] md:aspect-auto md:min-h-[280px] flex-shrink-0'
+  'relative w-full md:w-[42%] aspect-[16/10] md:aspect-auto md:min-h-[230px] flex-shrink-0 rounded-xl overflow-hidden border-2 border-brand-gold'
+const timePill =
+  'inline-flex items-center bg-brand-navy text-white text-sm font-semibold px-5 py-2.5 rounded-full border border-white/15'
 const primaryBtn =
   'inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors'
 const secondaryBtn =
   'inline-flex items-center gap-2 border border-white text-white text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-white hover:text-brand-navy transition-colors'
+
+function TicketIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4 shrink-0"
+      aria-hidden
+    >
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+      <path d="M13 5v2" />
+      <path d="M13 11v2" />
+      <path d="M13 17v2" />
+    </svg>
+  )
+}
 
 function CardImage({ url, alt }: { url: string | null; alt: string }) {
   return (
@@ -56,11 +79,39 @@ function CardImage({ url, alt }: { url: string | null; alt: string }) {
           alt={alt}
           fill
           className="object-cover object-center"
-          sizes="(max-width: 768px) 100vw, 40vw"
+          sizes="(max-width: 768px) 100vw, 42vw"
         />
       ) : (
         <div className="absolute inset-0 bg-brand-navy" />
       )}
+    </div>
+  )
+}
+
+/** Title → controls row (time pill + CTAs) → description — the design layout. */
+function CardBody({
+  title,
+  timeLabel,
+  body,
+  controls,
+}: {
+  title: string
+  timeLabel: string
+  body: string
+  controls: React.ReactNode
+}) {
+  return (
+    <div className="flex-1 flex flex-col justify-center md:py-2">
+      {title && (
+        <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide">
+          {title}
+        </h3>
+      )}
+      <div className="flex flex-wrap items-center gap-3 mt-4 mb-5">
+        {timeLabel && <span className={timePill}>{timeLabel}</span>}
+        {controls}
+      </div>
+      {body && <p className="text-white/70 text-sm md:text-base leading-relaxed">{body}</p>}
     </div>
   )
 }
@@ -80,80 +131,53 @@ function EventCard({
   return (
     <div className={cardWrap}>
       <CardImage url={event.imageUrl ?? phase.imageUrl} alt={event.imageAlt} />
-      <div className="flex-1 flex flex-col justify-center p-6 md:py-10 md:pr-10">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide">
-            {event.title}
-          </h3>
-          {event.timeLabel && (
-            <span className="inline-block bg-brand-navy text-white text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full">
-              {event.timeLabel}
-            </span>
-          )}
-          {typeof event.price === 'number' && (
-            <span className="inline-block bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full">
-              {event.price} zł
-            </span>
-          )}
-        </div>
-
-        {(event.description || phase.body) && (
-          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-5">
-            {event.description || phase.body}
-          </p>
-        )}
-
-        <div className="flex flex-wrap gap-3">
-          <ReserveTrigger date={event.dateISO} className={primaryBtn}>
-            {phase.primaryCtaLabel || reserveLabel}
-          </ReserveTrigger>
-          {event.detailsUrl && (
-            <Link href={event.detailsUrl} className={secondaryBtn}>
-              {phase.secondaryCtaLabel || detailsLabel}
-            </Link>
-          )}
-        </div>
-      </div>
+      <CardBody
+        title={event.title}
+        timeLabel={event.timeLabel}
+        body={event.description || phase.body}
+        controls={
+          <>
+            <ReserveTrigger date={event.dateISO} className={primaryBtn}>
+              <TicketIcon />
+              {phase.primaryCtaLabel || reserveLabel}
+            </ReserveTrigger>
+            {event.detailsUrl && (
+              <Link href={event.detailsUrl} className={secondaryBtn}>
+                {phase.secondaryCtaLabel || detailsLabel}
+              </Link>
+            )}
+          </>
+        }
+      />
     </div>
   )
 }
 
-/** A generic (static) phase card — unchanged from the original design. */
+/** A generic (static) phase card. */
 function PhaseCard({ phase }: { phase: PhaseData }) {
   return (
     <div className={cardWrap}>
       <CardImage url={phase.imageUrl} alt={phase.imageAlt} />
-      <div className="flex-1 flex flex-col justify-center p-6 md:py-10 md:pr-10">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          {phase.title && (
-            <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide">
-              {phase.title}
-            </h3>
-          )}
-          {phase.timeLabel && (
-            <span className="inline-block bg-brand-navy text-white text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full">
-              {phase.timeLabel}
-            </span>
-          )}
-        </div>
-
-        {phase.body && (
-          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-5">{phase.body}</p>
-        )}
-
-        <div className="flex flex-wrap gap-3">
-          {phase.primaryCtaEnabled && (
-            <ReserveTrigger className={primaryBtn}>
-              {phase.primaryCtaLabel}
-            </ReserveTrigger>
-          )}
-          {phase.secondaryCtaLabel && phase.secondaryCtaUrl && (
-            <Link href={phase.secondaryCtaUrl} className={secondaryBtn}>
-              {phase.secondaryCtaLabel}
-            </Link>
-          )}
-        </div>
-      </div>
+      <CardBody
+        title={phase.title}
+        timeLabel={phase.timeLabel}
+        body={phase.body}
+        controls={
+          <>
+            {phase.primaryCtaEnabled && (
+              <ReserveTrigger className={primaryBtn}>
+                <TicketIcon />
+                {phase.primaryCtaLabel}
+              </ReserveTrigger>
+            )}
+            {phase.secondaryCtaLabel && phase.secondaryCtaUrl && (
+              <Link href={phase.secondaryCtaUrl} className={secondaryBtn}>
+                {phase.secondaryCtaLabel}
+              </Link>
+            )}
+          </>
+        }
+      />
     </div>
   )
 }
