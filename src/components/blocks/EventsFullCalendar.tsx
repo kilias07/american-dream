@@ -80,11 +80,11 @@ function addDaysKey(key: string, days: number): string {
 
 const AGENDA_WEEK_STEP = 2 // weeks revealed initially and per "show more" click
 
-function EventCard({ occ, locale }: { occ: EventOccurrence; locale: string }) {
+function EventCard({ occ, locale, todayKey }: { occ: EventOccurrence; locale: string; todayKey: string }) {
   const dayAbbr = getDayAbbr(new Date(occ.dateISO), locale)
   const dayNum = warsawDayKey(occ.dateISO).slice(-2)
   const startTime = formatTime(occ.dateISO)
-  const isSpecial = occ.eventType === 'special'
+  const isToday = warsawDayKey(occ.dateISO) === todayKey
 
   return (
     <Link
@@ -106,10 +106,10 @@ function EventCard({ occ, locale }: { occ: EventOccurrence; locale: string }) {
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/50 to-brand-navy/20" />
 
-      {/* Day badge — amber for special events, blue for standard (per design) */}
+      {/* Day badge — gold for today's events, blue for upcoming days */}
       <div
         className={`absolute top-2 left-2 text-center rounded-md px-2 py-1 leading-none z-10 ${
-          isSpecial ? 'bg-brand-gold text-brand-navy' : 'bg-[#1B6EC2] text-white'
+          isToday ? 'bg-brand-gold text-brand-navy' : 'bg-[#1B6EC2] text-white'
         }`}
       >
         <div className="text-[9px] font-bold uppercase tracking-wider">{dayAbbr}</div>
@@ -132,21 +132,21 @@ function EventCard({ occ, locale }: { occ: EventOccurrence; locale: string }) {
   )
 }
 
-function AgendaItem({ occ, locale }: { occ: EventOccurrence; locale: string }) {
+function AgendaItem({ occ, locale, todayKey }: { occ: EventOccurrence; locale: string; todayKey: string }) {
   const dayAbbr = getDayAbbr(new Date(occ.dateISO), locale)
   const dayNum = warsawDayKey(occ.dateISO).slice(-2)
   const startTime = formatTime(occ.dateISO)
-  const isSpecial = occ.eventType === 'special'
+  const isToday = warsawDayKey(occ.dateISO) === todayKey
 
   return (
     <Link
       href={eventHref(occ, locale)}
       className="flex items-stretch w-full text-left rounded-xl overflow-hidden bg-white ring-1 ring-brand-navy/10 hover:ring-brand-navy/25 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
     >
-      {/* Date badge */}
+      {/* Date badge — gold for today's events, navy for upcoming days */}
       <div
         className={`flex flex-col items-center justify-center w-16 shrink-0 py-3 ${
-          isSpecial ? 'bg-brand-gold text-brand-navy' : 'bg-brand-navy text-white'
+          isToday ? 'bg-brand-gold text-brand-navy' : 'bg-brand-navy text-white'
         }`}
       >
         <span className="text-[10px] font-bold uppercase tracking-wider">{dayAbbr}</span>
@@ -418,7 +418,7 @@ export function EventsFullCalendar({
                     {hasEvents ? (
                       dayEvents.map((occ) => (
                         <div key={occ.id} style={{ height: 150 }}>
-                          <EventCard occ={occ} locale={locale} />
+                          <EventCard occ={occ} locale={locale} todayKey={todayKey} />
                         </div>
                       ))
                     ) : (
@@ -452,7 +452,7 @@ export function EventsFullCalendar({
               <ul className="flex flex-col gap-3">
                 {visibleAgenda.map((occ) => (
                   <li key={occ.id}>
-                    <AgendaItem occ={occ} locale={locale} />
+                    <AgendaItem occ={occ} locale={locale} todayKey={todayKey} />
                   </li>
                 ))}
               </ul>
