@@ -43,8 +43,12 @@ export const MenuGallery: Block = {
       name: 'aspectRatio',
       type: 'select',
       required: true,
-      defaultValue: '4/5',
+      defaultValue: '707/1000',
       options: [
+        // A-series paper (A4/A5 share the same 1:√2 proportions) — matches
+        // menu graphics exported straight from an A4/A5 design.
+        { label: 'A4/A5 portrait (paper sheet)', value: '707/1000' },
+        { label: 'A4/A5 landscape (paper sheet)', value: '1000/707' },
         { label: 'Portrait 2:3', value: '2/3' },
         { label: 'Portrait 3:4', value: '3/4' },
         { label: 'Portrait 4:5', value: '4/5' },
@@ -53,7 +57,8 @@ export const MenuGallery: Block = {
         { label: 'Landscape 16:10', value: '16/10' },
       ],
       admin: {
-        description: 'Fixed shape for the two-column (split) tiles. Full-width tiles keep their own proportions.',
+        description:
+          'Fixed shape for the two-column (split) tiles. Images are shown whole (never cropped); pick the shape that matches the uploaded graphics — A4/A5 for menu sheets. Full-width tiles keep their own proportions.',
       },
     },
     {

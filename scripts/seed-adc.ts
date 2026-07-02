@@ -173,6 +173,41 @@ async function run() {
       return null
     }
   }
+  // ── helper: unique media doc per upload SLOT (menu tiles etc.) ─────────────
+  // Same rationale as `heroImg`: every slot that the client will replace
+  // independently must own its media doc, or re-uploading one image bleeds into
+  // every other slot sharing the doc. Filename = `<key>.jpg`; cached per key so
+  // the pl + en copy of the SAME slot share one doc.
+  async function slotImg(key: string, sourceRel: string, alt: string): Promise<number | null> {
+    const cacheKey = `slot:${key}`
+    if (mediaCache.has(cacheKey)) return mediaCache.get(cacheKey)!
+    const filename = `${key}${path.extname(sourceRel) || '.jpg'}`
+    try {
+      const existing = await payload.find({
+        collection: 'media',
+        where: { filename: { equals: filename } },
+        limit: 1,
+      })
+      if (existing.docs[0]) {
+        mediaCache.set(cacheKey, existing.docs[0].id as number)
+        return existing.docs[0].id as number
+      }
+      const tmp = path.join(os.tmpdir(), filename)
+      await fsp.copyFile(path.resolve(ROOT, sourceRel), tmp)
+      try {
+        const created = await payload.create({ collection: 'media', data: { alt }, filePath: tmp })
+        mediaCache.set(cacheKey, created.id as number)
+        return created.id as number
+      } finally {
+        await fsp.unlink(tmp).catch(() => {})
+      }
+    } catch (e) {
+      log(`⚠ slotImg "${key}" failed: ${(e as Error).message}`)
+      mediaCache.set(cacheKey, null)
+      return null
+    }
+  }
+
   // Source placeholder for each page's hero (client replaces per page in CMS).
   const PLACEHOLDER = (name: string) => `public/images/placeholders/${name}.jpg`
   // Distinct portrait placeholders for musicians (rotated round-robin).
@@ -1336,18 +1371,22 @@ async function run() {
   // keys, so heterogeneous rows overflow ("too many SQL variables").
   type GalleryRow = { layout: string; left: number | null; right: number | null; full: number | null }
   const sp = (l: number | null, r: number | null): GalleryRow => ({ layout: 'split', left: l, right: r, full: null })
-  // À-la-carte tiles (client uploads graphics). The Dinner Time Specials banner is
-  // now a real text+photo header on the setMenu block below.
+  // À-la-carte tiles (client uploads graphics). Every tile slot gets its OWN
+  // media doc (`restaurant-menu-rN-{left,right}.jpg`) so replacing one menu
+  // graphic in /admin never bleeds into the other tiles or the hero.
+  const tile = (key: string) =>
+    slotImg(`restaurant-menu-${key}`, PLACEHOLDER('restauracja'), 'Restauracja — kafelek menu')
+  const menuRow = async (n: number) => sp(await tile(`r${n}-left`), await tile(`r${n}-right`))
   const menuTiles = [
-    sp(rest, rest), // intro card | Tatar wołowy
-    sp(rest, rest), // Jambalaya | Pierogi z dynią
-    sp(rest, rest), // Boston Chowder | Krem z dyni
-    sp(rest, rest), // Texas Rib Eye | Żeberka BBQ
-    sp(rest, rest), // Smash Burger | Club Sandwich
-    sp(rest, rest), // Mule po marynarsku | Pappardelle
-    sp(rest, rest), // Sałatka Cezar | BIG BEAT!
-    sp(rest, rest), // Club Snacks: na ciepło | na zimno
-    sp(rest, rest), // Desery: Szarlotka | Tiramisù
+    await menuRow(1), // intro card | Tatar wołowy
+    await menuRow(2), // Jambalaya | Pierogi z dynią
+    await menuRow(3), // Boston Chowder | Krem z dyni
+    await menuRow(4), // Texas Rib Eye | Żeberka BBQ
+    await menuRow(5), // Smash Burger | Club Sandwich
+    await menuRow(6), // Mule po marynarsku | Pappardelle
+    await menuRow(7), // Sałatka Cezar | BIG BEAT!
+    await menuRow(8), // Club Snacks: na ciepło | na zimno
+    await menuRow(9), // Desery: Szarlotka | Tiramisù
   ]
   // MENU A / MENU B — photo on the left, structured courses on the right (design
   // ADC_Restauracja). Both menus share the same courses; the client edits each in
@@ -1373,8 +1412,8 @@ async function run() {
     ctaLabel: 'ZAREZERWUJ STOLIK',
     ctaUrl: '/rezerwacje',
     menus: [
-      { name: 'MENU A', image: rest, courses: setMenuCoursesPl },
-      { name: 'MENU B', image: rest, courses: setMenuCoursesPl },
+      { name: 'MENU A', image: await slotImg('restaurant-setmenu-a', PLACEHOLDER('restauracja'), 'Menu A — zdjęcie'), courses: setMenuCoursesPl },
+      { name: 'MENU B', image: await slotImg('restaurant-setmenu-b', PLACEHOLDER('restauracja'), 'Menu B — zdjęcie'), courses: setMenuCoursesPl },
     ],
   }
   const setMenuEn = {
@@ -1388,8 +1427,8 @@ async function run() {
     ctaLabel: 'BOOK A TABLE',
     ctaUrl: '/rezerwacje',
     menus: [
-      { name: 'MENU A', image: rest, courses: setMenuCoursesEn },
-      { name: 'MENU B', image: rest, courses: setMenuCoursesEn },
+      { name: 'MENU A', image: await slotImg('restaurant-setmenu-a', PLACEHOLDER('restauracja'), 'Menu A — zdjęcie'), courses: setMenuCoursesEn },
+      { name: 'MENU B', image: await slotImg('restaurant-setmenu-b', PLACEHOLDER('restauracja'), 'Menu B — zdjęcie'), courses: setMenuCoursesEn },
     ],
   }
 
@@ -1467,7 +1506,7 @@ async function run() {
   await page('restaurant', 'Restauracja', [
     { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
     { blockType: 'aboutIntro', eyebrow: 'Nasza kuchnia', heading: 'Dania inspirowane kulturą różnych stanów USA', body: 'Karta dań nawiązuje do kuchni amerykańskiej z akcentami europejskimi. Menu stanowi dopełnienie wieczoru — tworząc wraz z muzyką i rozmową jedną spójną, klubową całość. Dania i napoje możesz zamówić przed koncertem lub w jego trakcie — obsługa pozostaje do pełnej dyspozycji. W karcie oferta wegetariańska oraz starannie dobrane wina i koktajle.' },
-    { blockType: 'menuGallery', eyebrow: 'Karta dań', heading: 'NASZE MENU', pdfLabel: 'ZOBACZ CAŁE MENU (PDF)', aspectRatio: '4/5', rows: menuTiles },
+    { blockType: 'menuGallery', eyebrow: 'Karta dań', heading: 'NASZE MENU', pdfLabel: 'ZOBACZ CAŁE MENU (PDF)', aspectRatio: '707/1000', rows: menuTiles },
     setMenuPl,
     specialMenuPl,
     { blockType: 'bentoSection', items: [
@@ -1476,7 +1515,7 @@ async function run() {
   ], 'Restaurant', [
     { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
     { blockType: 'aboutIntro', eyebrow: 'Our kitchen', heading: 'Dishes inspired by the culture of different US states', body: 'The menu draws on American cuisine with European accents. It is a complement to the evening — forming, together with the music and conversation, one coherent, club-like whole. You can order dishes and drinks before the concert or during it — the staff remain fully at your disposal. The menu includes a vegetarian offer and carefully selected wines and cocktails.' },
-    { blockType: 'menuGallery', eyebrow: 'The menu', heading: 'OUR MENU', pdfLabel: 'SEE THE FULL MENU (PDF)', aspectRatio: '4/5', rows: menuTiles },
+    { blockType: 'menuGallery', eyebrow: 'The menu', heading: 'OUR MENU', pdfLabel: 'SEE THE FULL MENU (PDF)', aspectRatio: '707/1000', rows: menuTiles },
     setMenuEn,
     specialMenuEn,
     { blockType: 'bentoSection', items: [

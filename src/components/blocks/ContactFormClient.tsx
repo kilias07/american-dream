@@ -101,8 +101,12 @@ export function ContactFormClient({ formHeading, locale, labels: overrides }: Pr
     }
   }
 
+  // Same input style as the newsletter signup (white pill, gold focus ring).
   const inputClass =
-    'w-full bg-brand-navy-royal border border-white/15 rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-brand-gold transition-colors'
+    'w-full rounded-full bg-white text-brand-navy placeholder:text-brand-navy/40 px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-gold'
+  // Multi-line variant — a pill radius clips a textarea, so soften it instead.
+  const textareaClass =
+    'w-full rounded-2xl bg-white text-brand-navy placeholder:text-brand-navy/40 px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-gold'
 
   return (
     <div>
@@ -144,7 +148,7 @@ export function ContactFormClient({ formHeading, locale, labels: overrides }: Pr
             name="message"
             rows={5}
             placeholder={t.message}
-            className={`${inputClass} resize-none`}
+            className={`${textareaClass} resize-none`}
           />
         </div>
 

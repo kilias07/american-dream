@@ -7,7 +7,8 @@ function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
-/** A fixed-shape tile (the two-column / split layout). */
+/** A fixed-shape tile (the two-column / split layout). Menu graphics carry
+ * text, so the image is shown whole (contain) — never cropped. */
 function SplitTile({ media, ratio, alt }: { media: Media | null; ratio: string; alt: string }) {
   return (
     <div
@@ -19,7 +20,7 @@ function SplitTile({ media, ratio, alt }: { media: Media | null; ratio: string; 
           src={media.url}
           alt={media.alt || alt}
           fill
-          className="object-cover object-center"
+          className="object-contain object-center"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
       )}

@@ -4,8 +4,13 @@ import React, { useState } from 'react'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
+// Same input style as the newsletter signup (white pill, gold focus ring).
 const inputClass =
-  'w-full bg-brand-navy-royal border border-white/15 rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-brand-gold transition-colors'
+  'w-full rounded-full bg-white text-brand-navy placeholder:text-brand-navy/40 px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-gold'
+
+// Multi-line variant — a pill radius clips a textarea, so soften it instead.
+const textareaClass =
+  'w-full rounded-2xl bg-white text-brand-navy placeholder:text-brand-navy/40 px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-gold'
 
 const labelClass = 'block text-white/70 text-xs font-bold uppercase tracking-[0.14em] mb-2'
 
@@ -182,13 +187,13 @@ export function ArtistApplicationForm() {
             <label htmlFor="dateProposals" className={labelClass}>
               Proponowane terminy
             </label>
-            <textarea id="dateProposals" name="dateProposals" rows={3} className={`${inputClass} resize-none`} />
+            <textarea id="dateProposals" name="dateProposals" rows={3} className={`${textareaClass} resize-none`} />
           </div>
           <div className={`${fieldWrapClass} md:col-span-2`}>
             <label htmlFor="repertoire" className={labelClass}>
               Repertuar
             </label>
-            <textarea id="repertoire" name="repertoire" rows={4} className={`${inputClass} resize-none`} />
+            <textarea id="repertoire" name="repertoire" rows={4} className={`${textareaClass} resize-none`} />
           </div>
         </div>
       </fieldset>
@@ -223,7 +228,7 @@ export function ArtistApplicationForm() {
               id="educationDetails"
               name="educationDetails"
               rows={3}
-              className={`${inputClass} resize-none`}
+              className={`${textareaClass} resize-none`}
             />
           </div>
           <div className={fieldWrapClass}>
@@ -242,7 +247,7 @@ export function ArtistApplicationForm() {
             <label htmlFor="pastVenues" className={labelClass}>
               Dotychczasowe miejsca występów
             </label>
-            <textarea id="pastVenues" name="pastVenues" rows={3} className={`${inputClass} resize-none`} />
+            <textarea id="pastVenues" name="pastVenues" rows={3} className={`${textareaClass} resize-none`} />
           </div>
         </div>
       </fieldset>
@@ -261,7 +266,7 @@ export function ArtistApplicationForm() {
             value={recordings}
             onChange={(e) => setRecordings(e.target.value)}
             placeholder="https://youtube.com/…&#10;https://soundcloud.com/…"
-            className={`${inputClass} resize-none`}
+            className={`${textareaClass} resize-none`}
           />
         </div>
       </fieldset>
@@ -292,7 +297,7 @@ export function ArtistApplicationForm() {
           <label htmlFor="message" className={labelClass}>
             Twoja wiadomość
           </label>
-          <textarea id="message" name="message" rows={5} className={`${inputClass} resize-none`} />
+          <textarea id="message" name="message" rows={5} className={`${textareaClass} resize-none`} />
         </div>
       </fieldset>
 
