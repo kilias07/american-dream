@@ -686,9 +686,9 @@ export interface MenuGalleryBlock {
   pdfDownload?: (number | null) | Media;
   pdfLabel?: string | null;
   /**
-   * Fixed shape for the two-column (split) tiles. Full-width tiles keep their own proportions.
+   * Fixed shape for the two-column (split) tiles. Images are shown whole (never cropped); pick the shape that matches the uploaded graphics — A4/A5 for menu sheets. Full-width tiles keep their own proportions.
    */
-  aspectRatio: '2/3' | '3/4' | '4/5' | '1/1' | '4/3' | '16/10';
+  aspectRatio: '707/1000' | '1000/707' | '2/3' | '3/4' | '4/5' | '1/1' | '4/3' | '16/10';
   /**
    * Each row is two tiles (left + right) or one full-width tile. Add as many rows as you need.
    */

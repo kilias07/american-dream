@@ -67,9 +67,10 @@ function BentoCard({ item }: { item: BentoItem }) {
   return (
     <div
       className={`relative rounded-2xl overflow-hidden group cursor-pointer ring-1 ring-brand-gold/70 ${
-        item.colSpan === 'full' ? 'col-span-2' : 'col-span-2 md:col-span-1'
+        item.colSpan === 'full'
+          ? 'col-span-2 aspect-[4/3] md:aspect-[3/2]'
+          : 'col-span-2 md:col-span-1 min-h-[320px]'
       }`}
-      style={{ minHeight: item.colSpan === 'full' ? 420 : 320 }}
     >
       {/* Background image */}
       {media?.url ? (

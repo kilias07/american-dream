@@ -1292,18 +1292,21 @@ async function run() {
     return id
   }
 
+  // Home venue cards. Each card owns its OWN media doc (via slotImg) so the client
+  // can replace one tile's photo in the CMS without it bleeding into other pages
+  // that also use the program/restauracja/bar/cigar placeholders.
   const venueCards = async () => [
     // CTAs match the PDF: section name (not "SPRAWDŹ MENU") + › arrow
-    { image: await img.program(), colSpan: 'full', label: 'Codziennie muzyka na żywo w weekendy.', title: 'KONCERTY I WYDARZENIA', ctaLabel: 'PROGRAM ›', ctaUrl: '/events' },
-    { image: await img.restauracja(), colSpan: 'full', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'RESTAURACJA ›', ctaUrl: '/restaurant' },
-    { image: await img.bar(), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
-    { image: await img.cigar(), colSpan: 'full', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-lounge' },
+    { image: await slotImg('home-bento-program', PLACEHOLDER('program'), 'Koncert na żywo'), colSpan: 'full', label: 'Codziennie muzyka na żywo w weekendy.', title: 'KONCERTY I WYDARZENIA', ctaLabel: 'PROGRAM ›', ctaUrl: '/events' },
+    { image: await slotImg('home-bento-restauracja', PLACEHOLDER('restauracja'), 'Restauracja — danie'), colSpan: 'full', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'RESTAURACJA ›', ctaUrl: '/restaurant' },
+    { image: await slotImg('home-bento-bar', PLACEHOLDER('bar'), 'Cocktail bar — koktajl'), colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
+    { image: await slotImg('home-bento-cigar', PLACEHOLDER('cigar'), 'Cigar room — wnętrze'), colSpan: 'full', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-lounge' },
   ]
   const venueCardsEn = async () => [
-    { image: await img.program(), colSpan: 'full', label: 'Live music every weekend.', title: 'CONCERTS & EVENTS', ctaLabel: 'PROGRAM ›', ctaUrl: '/events' },
-    { image: await img.restauracja(), colSpan: 'full', label: 'A kitchen inspired by the culture of different US states. Signature dishes in a modern style.', title: 'RESTAURANT', ctaLabel: 'RESTAURANT ›', ctaUrl: '/restaurant' },
-    { image: await img.bar(), colSpan: 'full', label: 'Signature cocktails and a selection of wines and spirits.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
-    { image: await img.cigar(), colSpan: 'full', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-lounge' },
+    { image: await slotImg('home-bento-program', PLACEHOLDER('program'), 'Koncert na żywo'), colSpan: 'full', label: 'Live music every weekend.', title: 'CONCERTS & EVENTS', ctaLabel: 'PROGRAM ›', ctaUrl: '/events' },
+    { image: await slotImg('home-bento-restauracja', PLACEHOLDER('restauracja'), 'Restauracja — danie'), colSpan: 'full', label: 'A kitchen inspired by the culture of different US states. Signature dishes in a modern style.', title: 'RESTAURANT', ctaLabel: 'RESTAURANT ›', ctaUrl: '/restaurant' },
+    { image: await slotImg('home-bento-bar', PLACEHOLDER('bar'), 'Cocktail bar — koktajl'), colSpan: 'full', label: 'Signature cocktails and a selection of wines and spirits.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
+    { image: await slotImg('home-bento-cigar', PLACEHOLDER('cigar'), 'Cigar room — wnętrze'), colSpan: 'full', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'CIGAR ROOM ›', ctaUrl: '/cigar-lounge' },
   ]
   // EN text for the testimonial items embedded in page blocks
   // (the [, , en] element of each `testis` tuple).
