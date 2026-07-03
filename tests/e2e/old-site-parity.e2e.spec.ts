@@ -162,37 +162,28 @@ test.describe('Navigation parity — old → new', () => {
 })
 
 // ── 4. Restaurant — menu content ─────────────────────────────────────────────
+// The menu is no longer text: both the à-la-carte card and the Towarzyska
+// Niedziela menu are client-uploaded graphics, so parity checks assert the
+// section headings and that menu images render.
 test.describe('Restaurant — menu content parity', () => {
-  test('menu categories present: Przystawki, Dania główne, Desery', async ({ page }) => {
+  test('menu section heading present', async ({ page }) => {
     await desktop(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('Przystawki')
-    await expect(page.locator('body')).toContainText('Dania główne')
-    await expect(page.locator('body')).toContainText('Desery')
+    await expect(page.locator('body')).toContainText('NASZE MENU')
   })
 
-  test('soups (Zupy) category present', async ({ page }) => {
+  test('menu graphics render', async ({ page }) => {
     await desktop(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('Zupy')
+    expect(await page.locator('main img').count()).toBeGreaterThan(2)
   })
 
-  test('Burgers category present', async ({ page }) => {
+  test('Towarzyska Niedziela panel present', async ({ page }) => {
     await desktop(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('Burg')
+    await expect(page.locator('body')).toContainText('Towarzyska Niedziela')
   })
 
-  test('specific dish: Texas Rib Eye Steak', async ({ page }) => {
+  test('Dinner Time set-menu section present', async ({ page }) => {
     await desktop(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('Texas Rib Eye Steak')
-  })
-
-  test('specific dish: Tatar wołowy', async ({ page }) => {
-    await desktop(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('Tatar')
-  })
-
-  test('steak price shown (119 zł)', async ({ page }) => {
-    await desktop(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('119')
+    await expect(page.locator('body')).toContainText('Dinner Time')
   })
 
   test('Polish & international cuisine description', async ({ page }) => {

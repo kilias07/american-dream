@@ -210,11 +210,11 @@ test.describe('Detail routes', () => {
 
 // ── 8. Key content blocks ────────────────────────────────────────────────────
 test.describe('Content blocks', () => {
-  test('/restaurant: menu categories are shown', async ({ page }) => {
+  test('/restaurant: menu section and special-menu panel are shown', async ({ page }) => {
+    // Menus are client-uploaded graphics now — assert headings, not dish text.
     await goto(page, '/restaurant')
-    await expect(page.locator('body')).toContainText('Przystawki')
-    await expect(page.locator('body')).toContainText('Dania główne')
-    await expect(page.locator('body')).toContainText('Desery')
+    await expect(page.locator('body')).toContainText('NASZE MENU')
+    await expect(page.locator('body')).toContainText('Towarzyska Niedziela')
   })
 
   test('/restaurant: BIG BEAT! promo block is shown', async ({ page }) => {

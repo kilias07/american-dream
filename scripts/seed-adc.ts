@@ -1321,7 +1321,7 @@ async function run() {
         { link: { type: 'custom', label: 'PROGRAM', url: '/events' }, icon: 'music' },
       ] },
     { blockType: 'aboutIntro', eyebrow: 'American Dream Club®', heading: 'Nowy Jork w centrum Poznania',
-      body: 'Przyjdź, poczuj atmosferę miejsca stworzonego dla muzyki, kolacji i rozmów. Tutaj w dobrym towarzystwie spędzisz cały wieczór: zjesz kolację, zapalisz cygaro i posłuchasz muzyki na żywo.',
+      body: 'Przyjdź, poczuj artystyczne wnętrze i atmosferę miejsca stworzonego dla muzyki, kolacji i rozmów. Tutaj w dobrym towarzystwie spędzisz cały wieczór: zjesz kolację, zapalisz cygaro, posłuchasz muzyki i pomyślisz:',
       pullQuote: 'To jest świetne miejsce, będę tu wracać!' },
     { blockType: 'eventsTeaser', eyebrow: 'Nadchodzące wydarzenia', heading: 'PROGRAM', viewAllLabel: 'SPRAWDŹ PEŁEN PROGRAM', viewAllUrl: '/events', limit: 6 },
     { blockType: 'bentoSection', subheading: 'Zorganizuj z nami', heading: 'AMERICAN DREAM CLUB', items: await venueCards() },
@@ -1343,7 +1343,7 @@ async function run() {
         { link: { type: 'custom', label: 'PROGRAM', url: '/events' }, icon: 'music' },
       ] },
     { blockType: 'aboutIntro', eyebrow: 'American Dream Club®', heading: 'New York in the heart of Poznań',
-      body: 'Come in and soak up the atmosphere of a place made for music, dinner and conversation. Here, in good company, you can spend a whole evening: have dinner, light a cigar and enjoy live music.',
+      body: 'Come in, experience the artistic interior and atmosphere of a place made for music, dinner and conversation. Here, in good company, you can spend a whole evening: have dinner, light a cigar, listen to music and think:',
       pullQuote: "This is a great place — I'll keep coming back!" },
     { blockType: 'eventsTeaser', eyebrow: 'Upcoming events', heading: 'PROGRAM', viewAllLabel: 'SEE THE FULL PROGRAM', viewAllUrl: '/events', limit: 6 },
     { blockType: 'bentoSection', subheading: 'Plan it with us', heading: 'AMERICAN DREAM CLUB', items: await venueCardsEn() },
@@ -1435,7 +1435,15 @@ async function run() {
     ],
   }
 
-  // TOWARZYSKA NIEDZIELA — gold panel: banner + two-column priced menu (design).
+  // TOWARZYSKA NIEDZIELA — gold panel: banner + the priced menu as ONE graphic
+  // (client request 2026-07-03: no inline dish list — the menu is a pasted image,
+  // like the à-la-carte tiles). Own slot so replacing it in /admin never bleeds
+  // into other tiles; the same doc serves PL and EN.
+  const specialMenuImage = await slotImg(
+    'restaurant-specialmenu-menu',
+    PLACEHOLDER('restauracja'),
+    'Towarzyska Niedziela — grafika menu',
+  )
   const specialMenuPl = {
     blockType: 'specialMenu',
     image: twoje,
@@ -1444,32 +1452,7 @@ async function run() {
     body: 'Zakończ tydzień razem z nami! Towarzyska Niedziela to wyjątkowy wieczór w klubowej atmosferze — od 16:00 do 21:00. W godzinach 17:00 – 20:00 tańce przy największych przebojach muzycznych XX wieku.',
     ctaLabel: 'ZAREZERWUJ STOLIK',
     ctaUrl: '/rezerwacje',
-    categories: [
-      { title: 'PRZYSTAWKI', column: 'left', items: [
-        { name: 'TATAR WOŁOWY', price: 55, dietary: 'none', ingredients: 'wołowina 60g / ogórek konserwowy / szalotka / borowik / musztarda francuska / kapary / oliwa z oliwek / sos worcestershire / papryka / żółtko / brioszka' },
-        { name: 'PIEROGI Z DYNIĄ', price: 49, dietary: 'vg', ingredients: 'dynia / pigwa / marchew / ziemniak / cebula / imbir / sos śliwkowy / chili / czosnek / pestki dyni' },
-      ] },
-      { title: 'ZUPY', column: 'left', items: [
-        { name: 'KREM Z DYNI', price: 55, dietary: 'v', ingredients: 'pieczona dynia / cebula / pomidory pelati / żółte curry / ziemniak / pestki dyni / oliwa' },
-      ] },
-      { title: 'PRZEKĄSKI', column: 'left', items: [
-        { name: 'SELEKCJA SERÓW', price: 67, dietary: 'v', ingredients: 'selekcja serów / krakersy / orzechy włoskie' },
-        { name: 'SELEKCJA WĘDLIN', price: 67, dietary: 'none', ingredients: 'selekcja wędlin / krakersy / żurawina suszona' },
-        { name: 'SELEKCJA SERÓW I WĘDLIN', price: 97, dietary: 'pair', ingredients: 'selekcja wędlin / krakersy / żurawina suszona' },
-      ] },
-      { title: 'DANIA GŁÓWNE', column: 'right', items: [
-        { name: 'BURGER BBQ', price: 49, dietary: 'none', ingredients: 'wołowina 180g / bułka maślana / ser cheddar / boczek / pomidor / marmolada z czerwonej cebuli / ogórek konserwowy / sos bbq / frytki' },
-        { name: 'SAŁATKA CEZAR Z KURCZAKIEM', price: 49, dietary: 'none', ingredients: 'sałata rzymska / kurczak / parmezan / pancetta / pomidorki cherry / grzanki / sos cezar' },
-        { name: 'SAŁATKA CEZAR Z KREWETKAMI', price: 65, dietary: 'none', ingredients: 'sałata rzymska / krewetki / parmezan / pancetta / pomidorki cherry / grzanki / sos cezar' },
-        { name: 'PAPPARDELLE Z KREWETKAMI W SOSIE SZAFRANOWO-POMARAŃCZOWYM', price: 77, dietary: 'none', ingredients: 'makaron pappardelle / krewetki / pomidorki koktajlowe / sos szafranowo-pomarańczowy / pietruszka' },
-      ] },
-      { title: 'DESERY', column: 'right', items: [
-        { name: 'SZARLOTKA NA CIEPŁO', price: 35, dietary: 'none', ingredients: 'szarlotka / lody waniliowe / bita śmietana' },
-        { name: 'TIRAMISÙ', price: 35, dietary: 'none', ingredients: 'biszkopty / kawa / likier amaretto / likier kawowy / mascarpone / jajka / cukier / kakao' },
-      ] },
-    ],
-    notice:
-      'Wszystkie podane ceny są w polskich złotych (PLN) i zawierają podatek VAT. W przypadku rezerwacji powyżej 9 osób pobierana jest opłata serwisowa w wysokości 10% wartości rachunku, przy mniejszej liczbie osób serwis nie jest wliczony w cenę.\n\nJeśli masz wymagania dietetyczne lub dotyczące alergenów poinformuj o tym nasz zespół.',
+    menuImage: specialMenuImage,
   }
   const specialMenuEn = {
     blockType: 'specialMenu',
@@ -1479,32 +1462,7 @@ async function run() {
     body: 'End the week together with us! Social Sunday is a special evening in a club atmosphere — from 4 pm to 9 pm. Between 5 pm and 8 pm, dancing to the greatest musical hits of the 20th century.',
     ctaLabel: 'BOOK A TABLE',
     ctaUrl: '/rezerwacje',
-    categories: [
-      { title: 'STARTERS', column: 'left', items: [
-        { name: 'BEEF TARTARE', price: 55, dietary: 'none', ingredients: 'beef 60g / pickled cucumber / shallot / porcini / French mustard / capers / olive oil / Worcestershire sauce / pepper / egg yolk / brioche' },
-        { name: 'PUMPKIN DUMPLINGS', price: 49, dietary: 'vg', ingredients: 'pumpkin / quince / carrot / potato / onion / ginger / plum sauce / chilli / garlic / pumpkin seeds' },
-      ] },
-      { title: 'SOUPS', column: 'left', items: [
-        { name: 'PUMPKIN CREAM SOUP', price: 55, dietary: 'v', ingredients: 'roasted pumpkin / onion / pelati tomatoes / yellow curry / potato / pumpkin seeds / olive oil' },
-      ] },
-      { title: 'SNACKS', column: 'left', items: [
-        { name: 'CHEESE SELECTION', price: 67, dietary: 'v', ingredients: 'cheese selection / crackers / walnuts' },
-        { name: 'CHARCUTERIE SELECTION', price: 67, dietary: 'none', ingredients: 'charcuterie / crackers / dried cranberries' },
-        { name: 'CHEESE & CHARCUTERIE SELECTION', price: 97, dietary: 'pair', ingredients: 'charcuterie / crackers / dried cranberries' },
-      ] },
-      { title: 'MAIN COURSES', column: 'right', items: [
-        { name: 'BBQ BURGER', price: 49, dietary: 'none', ingredients: 'beef 180g / butter bun / cheddar / bacon / tomato / red onion marmalade / pickled cucumber / bbq sauce / fries' },
-        { name: 'CAESAR SALAD WITH CHICKEN', price: 49, dietary: 'none', ingredients: 'romaine / chicken / parmesan / pancetta / cherry tomatoes / croutons / Caesar dressing' },
-        { name: 'CAESAR SALAD WITH PRAWNS', price: 65, dietary: 'none', ingredients: 'romaine / prawns / parmesan / pancetta / cherry tomatoes / croutons / Caesar dressing' },
-        { name: 'PAPPARDELLE WITH PRAWNS IN SAFFRON-ORANGE SAUCE', price: 77, dietary: 'none', ingredients: 'pappardelle / prawns / cocktail tomatoes / saffron-orange sauce / parsley' },
-      ] },
-      { title: 'DESSERTS', column: 'right', items: [
-        { name: 'WARM APPLE PIE', price: 35, dietary: 'none', ingredients: 'apple pie / vanilla ice cream / whipped cream' },
-        { name: 'TIRAMISÙ', price: 35, dietary: 'none', ingredients: 'ladyfingers / coffee / amaretto liqueur / coffee liqueur / mascarpone / eggs / sugar / cocoa' },
-      ] },
-    ],
-    notice:
-      'All prices are in Polish złoty (PLN) and include VAT. For reservations of more than 9 guests a 10% service charge applies; for smaller groups the service is not included in the price.\n\nIf you have any dietary requirements or allergens, please inform our team.',
+    menuImage: specialMenuImage,
   }
   await page('restaurant', 'Restauracja', [
     { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },

@@ -798,28 +798,9 @@ export interface SpecialMenuBlock {
   ctaLabel?: string | null;
   ctaUrl?: string | null;
   /**
-   * Menu sections (e.g. Przystawki, Zupy). Use the column field to place each one left or right.
+   * The priced menu as one ready-made graphic (incl. prices, icons and the VAT note). Clicking it on the site opens a full-screen enlargement.
    */
-  categories?:
-    | {
-        title?: string | null;
-        column?: ('left' | 'right') | null;
-        items?:
-          | {
-              name?: string | null;
-              price?: number | null;
-              ingredients?: string | null;
-              dietary?: ('none' | 'v' | 'vg' | 'pair') | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Fine print shown at the bottom (prices / VAT / allergens).
-   */
-  notice?: string | null;
+  menuImage?: (number | null) | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'specialMenu';
@@ -2376,23 +2357,7 @@ export interface SpecialMenuBlockSelect<T extends boolean = true> {
   body?: T;
   ctaLabel?: T;
   ctaUrl?: T;
-  categories?:
-    | T
-    | {
-        title?: T;
-        column?: T;
-        items?:
-          | T
-          | {
-              name?: T;
-              price?: T;
-              ingredients?: T;
-              dietary?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  notice?: T;
+  menuImage?: T;
   id?: T;
   blockName?: T;
 }

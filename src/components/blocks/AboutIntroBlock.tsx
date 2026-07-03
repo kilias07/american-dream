@@ -14,15 +14,15 @@ export function AboutIntroBlock({
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center">
           {eyebrow && (
-            <p className="text-brand-gold text-xs md:text-sm font-bold uppercase tracking-[0.18em] mb-4">
+            <p className="font-serif text-white text-2xl md:text-[32px] leading-tight mb-3">
               {eyebrow}
             </p>
           )}
 
           {heading && (
-            <h2 className="font-serif text-white text-3xl md:text-5xl leading-tight mb-4">
+            <h2 className="text-white font-semibold text-base md:text-lg tracking-[0.04em] mb-6">
               {heading}
             </h2>
           )}
@@ -32,12 +32,12 @@ export function AboutIntroBlock({
           )}
 
           {body && (
-            <p className="text-white/70 text-base md:text-lg leading-relaxed">{body}</p>
+            <p className="text-white/90 text-sm md:text-base leading-relaxed">{body}</p>
           )}
 
           {pullQuote && (
-            <p className="font-serif italic text-brand-gold text-xl md:text-2xl mt-8 leading-relaxed">
-              {pullQuote}
+            <p className="font-serif italic text-white text-xl md:text-2xl mt-6 leading-relaxed">
+              &ldquo;{pullQuote}&rdquo;
             </p>
           )}
         </div>

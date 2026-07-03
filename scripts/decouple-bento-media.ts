@@ -80,9 +80,12 @@ async function main() {
   // 3) Repoint the venue bento items, per locale (only the 4-item venue bento).
   for (const locale of LOCALES) {
     const page = await payload.findByID({ collection: 'pages', id: pageId, depth: 0, locale, draft: false })
-    const layout = Array.isArray(page.layout) ? page.layout : []
+    const layout = (Array.isArray(page.layout) ? page.layout : []) as unknown as Record<
+      string,
+      unknown
+    >[]
     let changed = false
-    const nextLayout = layout.map((block: Record<string, unknown>) => {
+    const nextLayout = layout.map((block) => {
       if (
         block.blockType === 'bentoSection' &&
         Array.isArray(block.items) &&

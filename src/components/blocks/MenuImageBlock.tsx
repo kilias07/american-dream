@@ -46,7 +46,7 @@ export function MenuImageBlock({ block }: { block: MenuImageBlockType; locale?: 
           </div>
         )}
 
-        <div className="mx-auto flex max-w-4xl flex-col gap-6">
+        <div className="flex flex-col gap-6">
           {items.map((it, i) => {
             const w = it.media.width || 1600
             const h = it.media.height || 1000
@@ -57,7 +57,7 @@ export function MenuImageBlock({ block }: { block: MenuImageBlockType; locale?: 
                 width={w}
                 height={h}
                 className="h-auto w-full"
-                sizes="(max-width: 1280px) 100vw, 1024px"
+                sizes="(max-width: 1280px) 100vw, 1200px"
               />
             )
             return (

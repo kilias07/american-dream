@@ -1,59 +1,32 @@
-import React from 'react'
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { SpecialMenuBlock as SpecialMenuBlockType, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
-import { getUILabels, pick } from '@/lib/ui-labels'
+import { Lightbox } from '@/components/Lightbox'
 
 function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
-type Dietary = 'none' | 'v' | 'vg' | 'pair' | null | undefined
-
-/** Small navy badge denoting a dish's dietary attribute (V / VG / for two). */
-function DietaryIcon({ kind }: { kind: Dietary }) {
-  if (!kind || kind === 'none') return null
-  const base =
-    'inline-flex items-center justify-center align-middle h-[18px] min-w-[18px] px-1 rounded-full bg-brand-navy text-brand-gold text-[10px] font-bold leading-none'
-  if (kind === 'pair') {
-    return (
-      <span className={base} aria-label="danie dla dwóch osób" title="danie dla dwóch osób">
-        <PairGlyph />
-      </span>
-    )
-  }
-  return (
-    <span className={base} aria-label={kind === 'vg' ? 'danie wegańskie' : 'danie wegetariańskie'}>
-      {kind === 'vg' ? 'VG' : 'V'}
-    </span>
-  )
-}
-
-function PairGlyph() {
-  return (
-    <svg width="15" height="10" viewBox="0 0 30 20" fill="currentColor" aria-hidden="true">
-      <circle cx="8" cy="5.5" r="4.5" />
-      <circle cx="22" cy="5.5" r="4.5" />
-      <path d="M0 20c0-4.6 3.6-8 8-8s8 3.4 8 8Z" />
-      <path d="M14 20c0-4.6 3.6-8 8-8s8 3.4 8 8Z" />
-    </svg>
-  )
-}
-
-export async function SpecialMenuBlock({
+export function SpecialMenuBlock({
   block,
   locale,
 }: {
   block: SpecialMenuBlockType
   locale: string
 }) {
-  const { heading, subtitle, body, ctaLabel, ctaUrl, categories, notice } = block
+  const { heading, subtitle, body, ctaLabel, ctaUrl } = block
   const image = isMedia(block.image) ? block.image : null
   const logo = isMedia(block.logo) ? block.logo : null
+  const menuImage = isMedia(block.menuImage) ? block.menuImage : null
 
-  if (!heading && !categories?.length) return null
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
+  if (!heading && !menuImage) return null
 
   const ctaHref = ctaUrl
     ? ctaUrl.startsWith('/')
@@ -62,21 +35,6 @@ export async function SpecialMenuBlock({
     : null
   const ctaClass =
     'inline-flex items-center justify-center gap-2 bg-white text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-7 py-3.5 rounded-full hover:bg-white/90 transition-colors'
-
-  const cats = categories ?? []
-  const leftCats = cats.filter((c) => c.column !== 'right')
-  const rightCats = cats.filter((c) => c.column === 'right')
-
-  const ui = await getUILabels(locale as Locale)
-  const fallbackLegend =
-    locale === 'en'
-      ? { pair: 'dish for two', v: 'vegetarian dish', vg: 'vegan dish' }
-      : { pair: 'danie dla dwóch osób', v: 'danie wegetariańskie', vg: 'danie wegańskie' }
-  const legend = {
-    pair: pick(ui?.menu?.legendPair, fallbackLegend.pair),
-    v: pick(ui?.menu?.legendVeg, fallbackLegend.v),
-    vg: pick(ui?.menu?.legendVegan, fallbackLegend.vg),
-  }
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -141,94 +99,44 @@ export async function SpecialMenuBlock({
             </div>
           </div>
 
-          {/* ── Priced menu: two columns of categories ── */}
-          {cats.length > 0 && (
-            <div className="px-8 md:px-12 pt-8 md:pt-10 pb-8">
-              <div className="grid md:grid-cols-2 gap-x-12 lg:gap-x-20 gap-y-2">
-                <div className="space-y-7">
-                  {leftCats.map((cat, i) => (
-                    <CategoryColumn key={cat.id || `l-${i}`} category={cat} />
-                  ))}
-                </div>
-                <div className="space-y-7">
-                  {rightCats.map((cat, i) => (
-                    <CategoryColumn key={cat.id || `r-${i}`} category={cat} align="right" />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Legend + fine print ── */}
-          {(cats.length > 0 || notice) && (
-            <div className="px-8 md:px-12 pb-10 md:pb-12">
-              <div className="border-t border-brand-navy/20 pt-6 grid md:grid-cols-2 gap-6">
-                <ul className="flex flex-col gap-2 text-sm font-semibold">
-                  <li className="flex items-center gap-2">
-                    <DietaryIcon kind="pair" /> {legend.pair}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <DietaryIcon kind="v" /> {legend.v}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <DietaryIcon kind="vg" /> {legend.vg}
-                  </li>
-                </ul>
-                {notice && (
-                  <p className="text-brand-navy/70 text-xs md:text-sm leading-relaxed whitespace-pre-line">
-                    {notice}
-                  </p>
-                )}
-              </div>
+          {/* ── Priced menu: one client-uploaded graphic, click to enlarge ── */}
+          {menuImage?.url && (
+            <div className="px-8 md:px-12 py-8 md:py-10">
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(0)}
+                aria-label="Powiększ menu"
+                className="group block w-full cursor-zoom-in overflow-hidden rounded-2xl ring-1 ring-brand-navy/15 transition-shadow hover:ring-brand-navy/40"
+              >
+                <span className="relative block">
+                  <Image
+                    src={menuImage.url}
+                    alt={menuImage.alt || heading || 'Menu'}
+                    width={menuImage.width || 1600}
+                    height={menuImage.height || 1000}
+                    className="h-auto w-full"
+                    sizes="(max-width: 1280px) 100vw, 1200px"
+                  />
+                  <span className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 8v6M8 11h6M19 11a8 8 0 11-16 0 8 8 0 0116 0z" />
+                    </svg>
+                  </span>
+                </span>
+              </button>
             </div>
           )}
         </div>
       </div>
-    </section>
-  )
-}
 
-type Category = NonNullable<SpecialMenuBlockType['categories']>[number]
-
-function CategoryColumn({ category, align }: { category: Category; align?: 'right' }) {
-  const items = category.items ?? []
-  const isRight = align === 'right'
-  return (
-    <div>
-      {category.title && (
-        <div className={isRight ? 'flex md:justify-end' : ''}>
-          {/* Tab anchored to the panel edge: negative margin cancels the panel's
-              padding so the badge touches the edge, inner padding keeps the text
-              aligned with the dishes. */}
-          <span
-            className={`inline-block bg-brand-navy text-brand-gold text-xs md:text-sm font-bold uppercase tracking-[0.14em] py-1.5 ${
-              isRight
-                ? 'pl-4 pr-8 md:pr-12 -mr-8 md:-mr-12 rounded-l'
-                : 'pr-4 pl-8 md:pl-12 -ml-8 md:-ml-12 rounded-r'
-            }`}
-          >
-            {category.title}
-          </span>
-        </div>
+      {menuImage?.url && (
+        <Lightbox
+          images={[{ src: menuImage.url, alt: menuImage.alt || heading || 'Menu' }]}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
       )}
-      <ul className="mt-4 space-y-4">
-        {items.map((item, j) => (
-          <li key={item.id || j}>
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="font-bold uppercase tracking-wide text-base md:text-[17px] flex items-center gap-2">
-                <span>{item.name}</span>
-                <DietaryIcon kind={item.dietary as Dietary} />
-              </p>
-              {typeof item.price === 'number' && (
-                <span className="shrink-0 font-bold whitespace-nowrap tabular-nums text-base md:text-[17px]">{item.price} zł</span>
-              )}
-            </div>
-            {item.ingredients && (
-              <p className="text-brand-navy/70 text-xs md:text-sm leading-snug mt-1">{item.ingredients}</p>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+    </section>
   )
 }
