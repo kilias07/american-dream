@@ -50,6 +50,7 @@ export const SiteSettings: GlobalConfig = {
           required: true,
           options: [
             { label: 'Google', value: 'google' },
+            { label: 'Google Maps (wizytówka)', value: 'googleMaps' },
             { label: 'Facebook', value: 'facebook' },
             { label: 'Instagram', value: 'instagram' },
             { label: 'YouTube', value: 'youtube' },

@@ -20,7 +20,13 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
     : null
 
   return (
-    <div className="relative rounded-2xl overflow-hidden group" style={{ minHeight: 380 }}>
+    /* Złota ramka jak na banerach bento + treść wyśrodkowana w pionie i poziomie
+       (uwaga klienta 2026-07: „dodać ramki wokół banerów… teksty i przycisk
+       wyśrodkowane w pionie i poziomie"); wielkość kart bez zmian. */
+    <div
+      className="relative rounded-2xl overflow-hidden ring-1 ring-brand-gold/70 group"
+      style={{ minHeight: 380 }}
+    >
       {/* Background image */}
       {media?.url ? (
         <Image
@@ -34,8 +40,8 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
         <div className="absolute inset-0 bg-brand-navy" />
       )}
 
-      {/* Navy gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/50 to-brand-navy/20" />
+      {/* Navy gradient overlay — mocniejszy środek pod wyśrodkowaną treść */}
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/60 to-brand-navy/25" />
 
       {/* Tag */}
       {card.tag && (
@@ -44,8 +50,8 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
         </span>
       )}
 
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 flex flex-col items-start">
+      {/* Content — wyśrodkowana w pionie i poziomie */}
+      <div className="absolute inset-0 p-6 md:p-8 flex flex-col items-center justify-center text-center">
         {card.title && (
           <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide mb-3">
             {card.title}
@@ -53,7 +59,7 @@ function OfferCard({ card, locale }: { card: OfferCard; locale: string }) {
         )}
 
         {card.body && (
-          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-5">{card.body}</p>
+          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-5 max-w-md">{card.body}</p>
         )}
 
         {card.ctaLabel && ctaHref && (

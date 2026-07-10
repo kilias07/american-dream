@@ -66,7 +66,8 @@ export function HeroBannerBlock({
   const videoMime = uploadedVideo?.mimeType || 'video/mp4'
 
   return (
-    <section className="relative min-h-[70vh] flex flex-col items-center justify-center text-center text-white overflow-hidden">
+    // Wysokość ~55vh (uwaga klienta 2026-07): na FullHD od razu widać wideo ORAZ tekst/sekcję pod nim.
+    <section className="relative min-h-[55vh] py-14 flex flex-col items-center justify-center text-center text-white overflow-hidden">
       {/* Background base: photo (also serves as the video poster / reduced-motion fallback) or brand gradient */}
       {image?.url ? (
         <Image
@@ -99,8 +100,8 @@ export function HeroBannerBlock({
         </video>
       )}
 
-      {/* Darkening overlay so the headings stay legible over the video */}
-      <div className="absolute inset-0 bg-brand-navy/55" />
+      {/* Przyciemnienie — rozjaśnione z /55 do /35 (uwaga klienta 2026-07), tekst nadal czytelny */}
+      <div className="absolute inset-0 bg-brand-navy/35" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center gap-6 px-6 max-w-3xl mx-auto">

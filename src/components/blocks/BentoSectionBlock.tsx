@@ -65,11 +65,13 @@ function BentoCard({ item }: { item: BentoItem }) {
   const media = isMedia(item.image) ? item.image : null
 
   return (
+    /* Wysokość banerów zmniejszona o połowę (uwaga klienta 2026-07 — świadomy
+       powrót do niższej wersji); treść wyśrodkowana w pionie i poziomie. */
     <div
       className={`relative rounded-2xl overflow-hidden group cursor-pointer ring-1 ring-brand-gold/70 ${
         item.colSpan === 'full'
-          ? 'col-span-2 aspect-[4/3] md:aspect-[3/2]'
-          : 'col-span-2 md:col-span-1 min-h-[320px]'
+          ? 'col-span-2 aspect-[8/3] md:aspect-[3/1]'
+          : 'col-span-2 md:col-span-1 min-h-[240px]'
       }`}
     >
       {/* Background image */}
@@ -86,16 +88,16 @@ function BentoCard({ item }: { item: BentoItem }) {
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a1040] via-brand-navy-royal to-brand-navy" />
       )}
 
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/40 to-transparent" />
+      {/* Dark gradient overlay — mocniejszy środek, bo treść jest teraz wyśrodkowana */}
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/55 to-brand-navy/25" />
 
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center">
+      {/* Content — wyśrodkowana w pionie i poziomie, fonty +1 pkt (uwaga klienta 2026-07) */}
+      <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center">
         {item.label && (
-          <p className="text-white/80 text-sm mb-2 max-w-xs leading-snug">{item.label}</p>
+          <p className="text-white/80 text-[15px] mb-2 max-w-md leading-snug">{item.label}</p>
         )}
 
-        <h3 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-wide mb-4 flex items-center gap-2">
+        <h3 className="text-white text-[26px] md:text-[32px] font-bold uppercase tracking-wide mb-4 flex items-center gap-2">
           {item.title}
           <span className="text-white">›</span>
         </h3>

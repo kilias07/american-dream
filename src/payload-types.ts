@@ -1143,6 +1143,9 @@ export interface EventsTeaserBlock {
   heading?: string | null;
   viewAllLabel?: string | null;
   viewAllUrl?: string | null;
+  /**
+   * Maksymalna liczba nadchodzących wydarzeń w karuzeli (użytkownik przewija strzałkami — ok. 2–3 tygodnie do przodu przy 30).
+   */
   limit?: number | null;
   onlyFeatured?: boolean | null;
   id?: string | null;
@@ -3279,7 +3282,7 @@ export interface SiteSetting {
    */
   social?:
     | {
-        platform: 'google' | 'facebook' | 'instagram' | 'youtube' | 'tiktok';
+        platform: 'google' | 'googleMaps' | 'facebook' | 'instagram' | 'youtube' | 'tiktok';
         url: string;
         id?: string | null;
       }[]

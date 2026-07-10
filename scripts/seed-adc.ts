@@ -294,6 +294,9 @@ async function run() {
       { platform: 'facebook', url: 'https://www.facebook.com/americandreamclubpoznan' },
       { platform: 'instagram', url: 'https://www.instagram.com/americandreamclubpoznan/' },
       { platform: 'youtube', url: 'https://www.youtube.com/@americandreamclubpoznan' },
+      // Wizytówka Google (uwaga klienta 2026-07: „pierwsza po prawej") — ostatnia
+      // w tablicy = skrajnie prawa w top barze.
+      { platform: 'googleMaps', url: 'https://share.google/rvlxbSYG9HNop2tiE' },
     ],
     mapEmbedUrl:
       'https://www.google.com/maps?q=ul.+Dominika%C5%84ska+9,+61-762+Pozna%C5%84&output=embed',
@@ -1323,7 +1326,7 @@ async function run() {
     { blockType: 'aboutIntro', eyebrow: 'American Dream Club®', heading: 'Nowy Jork w centrum Poznania',
       body: 'Przyjdź, poczuj artystyczne wnętrze i atmosferę miejsca stworzonego dla muzyki, kolacji i rozmów. Tutaj w dobrym towarzystwie spędzisz cały wieczór: zjesz kolację, zapalisz cygaro, posłuchasz muzyki i pomyślisz:',
       pullQuote: 'To jest świetne miejsce, będę tu wracać!' },
-    { blockType: 'eventsTeaser', eyebrow: 'Nadchodzące wydarzenia', heading: 'PROGRAM', viewAllLabel: 'SPRAWDŹ PEŁEN PROGRAM', viewAllUrl: '/events', limit: 6 },
+    { blockType: 'eventsTeaser', eyebrow: 'Nadchodzące wydarzenia', heading: 'PROGRAM', viewAllLabel: 'SPRAWDŹ PEŁEN PROGRAM', viewAllUrl: '/events', limit: 30 },
     { blockType: 'bentoSection', subheading: 'Zorganizuj z nami', heading: 'AMERICAN DREAM CLUB', items: await venueCards() },
     { blockType: 'offerCards', eyebrow: 'Zorganizuj z nami', heading: 'TWOJE WYDARZENIE', cards: [
       { tag: 'IMPREZY PRYWATNE', title: 'URODZINY I ROCZNICE W CENTRUM POZNANIA',
@@ -1345,7 +1348,7 @@ async function run() {
     { blockType: 'aboutIntro', eyebrow: 'American Dream Club®', heading: 'New York in the heart of Poznań',
       body: 'Come in, experience the artistic interior and atmosphere of a place made for music, dinner and conversation. Here, in good company, you can spend a whole evening: have dinner, light a cigar, listen to music and think:',
       pullQuote: "This is a great place — I'll keep coming back!" },
-    { blockType: 'eventsTeaser', eyebrow: 'Upcoming events', heading: 'PROGRAM', viewAllLabel: 'SEE THE FULL PROGRAM', viewAllUrl: '/events', limit: 6 },
+    { blockType: 'eventsTeaser', eyebrow: 'Upcoming events', heading: 'PROGRAM', viewAllLabel: 'SEE THE FULL PROGRAM', viewAllUrl: '/events', limit: 30 },
     { blockType: 'bentoSection', subheading: 'Plan it with us', heading: 'AMERICAN DREAM CLUB', items: await venueCardsEn() },
     { blockType: 'offerCards', eyebrow: 'Plan it with us', heading: 'YOUR EVENT', cards: [
       { tag: 'PRIVATE EVENTS', title: 'BIRTHDAYS & ANNIVERSARIES IN THE HEART OF POZNAŃ',
@@ -1619,7 +1622,7 @@ async function run() {
       { image: await img.bar(), title: 'WIECZÓR KLUBOWY', timeLabel: '21:00–23:00', body: 'Po części koncertowej zapraszamy do dalszego spędzenia czasu w naszej przestrzeni. Na gości czeka projekcja koncertu na dużym ekranie oraz starannie przygotowana oferta kuchni i baru. Rezerwacja stolika pozostaje bezpłatna.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'REZERWACJA', teamMember: reservationContactId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
-    { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/contact' },
+    { blockType: 'notice21Plus', heading: 'Szanowni Goście', body: 'Uprzejmie informujemy, że American Dream Club jest miejscem przeznaczonym wyłącznie dla osób dorosłych powyżej 21. roku życia. Dziękujemy za zrozumienie i zapraszamy serdecznie wszystkich pełnoletnich miłośników dobrej zabawy!', ctaLabel: 'REGULAMIN KLUBU 21+', ctaUrl: '/regulamin' },
   ], 'Reservation', [
     { blockType: 'pageHero', eyebrow: 'Plan your evening', title: 'Reservation', titleStyle: 'serif', backgroundImage: await heroImg('rezerwacje', PLACEHOLDER('restauracja'), 'Rezerwacja — Hero') },
     { blockType: 'aboutIntro', heading: 'Plan your evening', body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll take care of the full organisation." },
@@ -1629,7 +1632,7 @@ async function run() {
       { image: await img.bar(), title: 'CLUB NIGHT', timeLabel: '21:00–23:00', body: 'After the concert, stay on and enjoy more time in our space. Guests can watch the concert on a large screen and enjoy a carefully prepared food and bar offering. Booking a table remains free of charge.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'RESERVATION', teamMember: reservationContactId, callLabel: 'CALL US', emailLabel: 'WRITE TO US', style: 'gold' },
-    { blockType: 'notice21Plus', heading: 'Dear Guests', body: 'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over.', ctaLabel: 'CLUB RULES 21+', ctaUrl: '/contact' },
+    { blockType: 'notice21Plus', heading: 'Dear Guests', body: 'Please note that American Dream Club is a venue reserved exclusively for adults aged 21 and over.', ctaLabel: 'CLUB RULES 21+', ctaUrl: '/regulamin' },
   ])
 
   // KONTAKT

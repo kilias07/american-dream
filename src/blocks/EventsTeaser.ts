@@ -43,7 +43,11 @@ export const EventsTeaser: Block = {
     {
       name: 'limit',
       type: 'number',
-      defaultValue: 6,
+      defaultValue: 30,
+      admin: {
+        description:
+          'Maksymalna liczba nadchodzących wydarzeń w karuzeli (użytkownik przewija strzałkami — ok. 2–3 tygodnie do przodu przy 30).',
+      },
     },
     {
       name: 'onlyFeatured',

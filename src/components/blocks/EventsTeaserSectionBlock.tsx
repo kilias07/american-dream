@@ -32,7 +32,10 @@ export async function EventsTeaserSectionBlock({
       or: [{ showOnHomepage: { equals: true } }, { showOnHomepage: { exists: false } }],
     },
     sort: 'date',
-    limit: block.limit || 6,
+    // Uwaga klienta 2026-07: karuzela pokazuje więcej niż 5 wydarzeń — użytkownik
+    // przewija strzałkami nawet 2–3 tygodnie do przodu. Stare dane mogą mieć
+    // limit=6, więc podnosimy do min. 30.
+    limit: Math.max(block.limit || 0, 30),
     locale: locale as 'pl' | 'en' | 'all',
     depth: 1,
   })
