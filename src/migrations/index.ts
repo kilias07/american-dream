@@ -26,6 +26,7 @@ import * as migration_20260626_120000_evening_phase_link_to_calendar from './202
 import * as migration_20260703_080000_special_menu_image from './20260703_080000_special_menu_image';
 import * as migration_20260710_150000_page_hero_body from './20260710_150000_page_hero_body';
 import * as migration_20260710_160000_contact_rezerwacje_cigar from './20260710_160000_contact_rezerwacje_cigar';
+import * as migration_20260710_170000_testimonials_leave_review from './20260710_170000_testimonials_leave_review';
 
 export const migrations = [
   {
@@ -167,5 +168,10 @@ export const migrations = [
     up: migration_20260710_160000_contact_rezerwacje_cigar.up,
     down: migration_20260710_160000_contact_rezerwacje_cigar.down,
     name: '20260710_160000_contact_rezerwacje_cigar',
+  },
+  {
+    up: migration_20260710_170000_testimonials_leave_review.up,
+    down: migration_20260710_170000_testimonials_leave_review.down,
+    name: '20260710_170000_testimonials_leave_review',
   },
 ];

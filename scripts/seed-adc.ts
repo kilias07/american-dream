@@ -1364,7 +1364,7 @@ async function run() {
         body: 'Eleganckie przestrzenie z dobrym wyposażeniem technicznym i full gastro na życzenie.',
         ctaLabel: 'DOWIEDZ SIĘ WIĘCEJ', ctaUrl: '/business' },
     ] },
-    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google',
+    { blockType: 'testimonials', heading: 'CO MÓWIĄ NASI GOŚCIE', reviewSummary: '478 opinii · 4,8/5 w Google', leaveReviewLabel: 'ZOSTAW OPINIĘ', leaveReviewUrl: 'https://g.page/r/CdcevpeaTZVhEBM/review',
       items: testis.map(([name, text]) => ({ name, stars: 5, text })) },
   ], 'Home', [
     { blockType: 'heroBanner', heading: 'Restaurant & Jazz Club', subtext: 'Dinner and drinks during a live concert', backgroundImage: await heroImg('home', PLACEHOLDER('home'), 'Strona główna — Hero'), backgroundVideo: await heroVideo(),
@@ -1386,7 +1386,7 @@ async function run() {
         body: 'Elegant spaces with excellent technical equipment and full catering on request.',
         ctaLabel: 'FIND OUT MORE', ctaUrl: '/business' },
     ] },
-    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google',
+    { blockType: 'testimonials', heading: 'WHAT OUR GUESTS SAY', reviewSummary: '478 reviews · 4.8/5 on Google', leaveReviewLabel: 'LEAVE A REVIEW', leaveReviewUrl: 'https://g.page/r/CdcevpeaTZVhEBM/review',
       items: testiItemsEn },
   ])
 

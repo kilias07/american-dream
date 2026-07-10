@@ -11,7 +11,7 @@ import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { EventsCalendarBlock } from './blocks/EventsCalendarBlock'
 import { BentoSectionBlock } from './blocks/BentoSectionBlock'
-import { TestimonialsBlock } from './blocks/TestimonialsBlock'
+import { TestimonialsSection } from './blocks/TestimonialsSection'
 // ── American Dream Club blocks ──────────────────────────────────────────────
 import { PageHeroBlock } from './blocks/PageHeroBlock'
 import { AboutIntroBlock } from './blocks/AboutIntroBlock'
@@ -69,7 +69,7 @@ function renderBlock(
     case 'eventsCalendar':
       return <EventsCalendarBlock key={i} block={block} locale={locale} />
     case 'testimonials':
-      return <TestimonialsBlock key={i} block={block} />
+      return <TestimonialsSection key={i} block={block} locale={loc} />
     case 'bentoSection':
       return (
         <BentoSectionBlock

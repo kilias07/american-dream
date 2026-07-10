@@ -1463,6 +1463,8 @@ export interface ArtistFormBlock {
 export interface TestimonialsBlock {
   heading?: string | null;
   reviewSummary?: string | null;
+  leaveReviewLabel?: string | null;
+  leaveReviewUrl?: string | null;
   items?:
     | {
         name: string;
@@ -2641,6 +2643,8 @@ export interface ArtistFormBlockSelect<T extends boolean = true> {
 export interface TestimonialsBlockSelect<T extends boolean = true> {
   heading?: T;
   reviewSummary?: T;
+  leaveReviewLabel?: T;
+  leaveReviewUrl?: T;
   items?:
     | T
     | {
