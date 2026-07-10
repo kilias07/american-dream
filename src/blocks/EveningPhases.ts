@@ -72,6 +72,20 @@ export const EveningPhases: Block = {
           ],
         },
         {
+          // Uwaga klienta 2026-07: zróżnicować ikony — rezerwacja stolika vs
+          // bilet (środkowy baner wydarzenia muzycznego = KUP BILET).
+          name: 'primaryCtaIcon',
+          type: 'select',
+          defaultValue: 'reserve',
+          options: [
+            { label: 'Rezerwacja (stolik)', value: 'reserve' },
+            { label: 'Bilet', value: 'ticket' },
+          ],
+          admin: {
+            description: 'Ikona na głównym przycisku tej karty.',
+          },
+        },
+        {
           type: 'row',
           fields: [
             {

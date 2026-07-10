@@ -30,6 +30,20 @@ export const MenuImage: Block = {
       localized: true,
       admin: { placeholder: 'Cygara' },
     },
+    // „Pobierz PDF" jak w restauracji (uwaga klienta 2026-07, Cigar Room).
+    // Przycisk pokazuje się dopiero, gdy PDF jest wgrany.
+    {
+      name: 'pdfDownload',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Opcjonalny PDF menu do pobrania (przycisk obok nagłówka).' },
+    },
+    {
+      name: 'pdfLabel',
+      type: 'text',
+      localized: true,
+      admin: { placeholder: 'POBIERZ MENU (PDF)' },
+    },
     {
       name: 'images',
       type: 'array',

@@ -177,6 +177,7 @@ export async function EveningPhasesBlock({
       imageAlt: image?.alt || phase.title || '',
       primaryCtaLabel: phase.primaryCtaLabel ?? null,
       primaryCtaEnabled: Boolean(phase.primaryCtaLabel && phase.primaryCtaUrl),
+      primaryCtaIcon: (phase.primaryCtaIcon as 'reserve' | 'ticket' | null) ?? null,
       secondaryCtaLabel: phase.secondaryCtaLabel ?? null,
       secondaryCtaUrl: prefix(phase.secondaryCtaUrl),
       linkToCalendar: Boolean(phase.linkToCalendar),

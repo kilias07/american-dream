@@ -111,6 +111,23 @@ export const UILabels: GlobalConfig = {
         },
       ],
     },
+    {
+      // Popup 18+ (uwaga klienta 2026-07, Cigar Room) — teksty edytowalne.
+      type: 'collapsible',
+      label: 'Bramka wiekowa (18+)',
+      fields: [
+        {
+          name: 'ageGate',
+          type: 'group',
+          fields: [
+            text('title'), // Strona tylko dla użytkowników 18+
+            text('body'), // Czy jesteś pełnoletni/-a?
+            text('confirmLabel'), // JESTEM PEŁNOLETNI — TAK
+            text('declineLabel'), // NIE
+          ],
+        },
+      ],
+    },
   ],
   hooks: {
     afterChange: [

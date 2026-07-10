@@ -33,13 +33,14 @@ export type PhaseData = {
   imageAlt: string
   primaryCtaLabel: string | null
   primaryCtaEnabled: boolean
+  primaryCtaIcon: 'reserve' | 'ticket' | null
   secondaryCtaLabel: string | null
   secondaryCtaUrl: string | null
   linkToCalendar: boolean
 }
 
 const cardWrap =
-  'flex flex-col md:flex-row items-stretch gap-5 md:gap-8 bg-brand-navy-royal rounded-2xl p-4 md:p-5'
+  'flex flex-col md:flex-row items-stretch gap-5 md:gap-8 rounded-2xl p-4 md:p-5'
 // Image is a gold-framed, rounded panel inset from the card edge (per design).
 const imgWrap =
   'relative w-full md:w-[42%] aspect-[16/10] md:aspect-auto md:min-h-[230px] flex-shrink-0 rounded-xl overflow-hidden border-2 border-brand-gold'
@@ -68,6 +69,21 @@ function TicketIcon() {
       <path d="M13 17v2" />
     </svg>
   )
+}
+
+/** Ikona rezerwacji stolika (sztućce) — odróżnia rezerwację od kupna biletu
+ *  (uwaga klienta 2026-07: „zróżnicować ikony: rezerwacja i bilet"). */
+function ReserveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden>
+      <path d="M7 2v7a2 2 0 0 0 2 2v11h2V11a2 2 0 0 0 2-2V2h-1.5v6H10V2H8.5v6H7V2Zm10 0c-1.7 0-3 2-3 5s1 4 2 4v9h2V2Z" />
+    </svg>
+  )
+}
+
+/** Ikona głównego CTA wg pola `primaryCtaIcon` (default: rezerwacja). */
+function PrimaryCtaIcon({ icon }: { icon: 'reserve' | 'ticket' | null }) {
+  return icon === 'ticket' ? <TicketIcon /> : <ReserveIcon />
 }
 
 function CardImage({ url, alt }: { url: string | null; alt: string }) {
@@ -138,7 +154,7 @@ function EventCard({
         controls={
           <>
             <ReserveTrigger date={event.dateISO} className={primaryBtn}>
-              <TicketIcon />
+              <PrimaryCtaIcon icon={phase.primaryCtaIcon} />
               {phase.primaryCtaLabel || reserveLabel}
             </ReserveTrigger>
             {event.detailsUrl && (
@@ -166,7 +182,7 @@ function PhaseCard({ phase }: { phase: PhaseData }) {
           <>
             {phase.primaryCtaEnabled && (
               <ReserveTrigger className={primaryBtn}>
-                <TicketIcon />
+                <PrimaryCtaIcon icon={phase.primaryCtaIcon} />
                 {phase.primaryCtaLabel}
               </ReserveTrigger>
             )}

@@ -504,6 +504,10 @@ export interface Page {
           }
       )[]
     | null;
+  /**
+   * Gość musi potwierdzić pełnoletność; „NIE" przenosi na stronę główną.
+   */
+  requireAgeGate?: boolean | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -719,6 +723,11 @@ export interface MenuGalleryBlock {
 export interface MenuImageBlock {
   eyebrow?: string | null;
   heading?: string | null;
+  /**
+   * Opcjonalny PDF menu do pobrania (przycisk obok nagłówka).
+   */
+  pdfDownload?: (number | null) | Media;
+  pdfLabel?: string | null;
   /**
    * Upload the menu as a graphic. Add more than one only for multi-page menus.
    */
@@ -1355,6 +1364,10 @@ export interface EveningPhasesBlock {
         body?: string | null;
         primaryCtaLabel?: string | null;
         primaryCtaUrl?: string | null;
+        /**
+         * Ikona na głównym przycisku tej karty.
+         */
+        primaryCtaIcon?: ('reserve' | 'ticket') | null;
         secondaryCtaLabel?: string | null;
         secondaryCtaUrl?: string | null;
         id?: string | null;
@@ -2205,6 +2218,7 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  requireAgeGate?: T;
   meta?:
     | T
     | {
@@ -2310,6 +2324,8 @@ export interface MenuGalleryBlockSelect<T extends boolean = true> {
 export interface MenuImageBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
+  pdfDownload?: T;
+  pdfLabel?: T;
   images?:
     | T
     | {
@@ -2540,6 +2556,7 @@ export interface EveningPhasesBlockSelect<T extends boolean = true> {
         body?: T;
         primaryCtaLabel?: T;
         primaryCtaUrl?: T;
+        primaryCtaIcon?: T;
         secondaryCtaLabel?: T;
         secondaryCtaUrl?: T;
         id?: T;
@@ -3478,6 +3495,12 @@ export interface UiLabel {
     reserveTable?: string | null;
     specialEvent?: string | null;
   };
+  ageGate?: {
+    title?: string | null;
+    body?: string | null;
+    confirmLabel?: string | null;
+    declineLabel?: string | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3702,6 +3725,14 @@ export interface UiLabelsSelect<T extends boolean = true> {
     | {
         reserveTable?: T;
         specialEvent?: T;
+      };
+  ageGate?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+        confirmLabel?: T;
+        declineLabel?: T;
       };
   updatedAt?: T;
   createdAt?: T;

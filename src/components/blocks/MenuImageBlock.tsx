@@ -9,9 +9,16 @@ function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
-export function MenuImageBlock({ block }: { block: MenuImageBlockType; locale?: string }) {
+export function MenuImageBlock({ block, locale }: { block: MenuImageBlockType; locale?: string }) {
   const { eyebrow, heading } = block
   const enableLightbox = block.enableLightbox !== false
+
+  // „Pobierz PDF" jak w restauracji (uwaga klienta 2026-07) — przycisk tylko
+  // gdy PDF faktycznie wgrany (bez fallbacku, żeby nie linkować w 404).
+  const pdf = isMedia(block.pdfDownload) ? block.pdfDownload : null
+  const pdfLabel = pdf?.url
+    ? block.pdfLabel || (locale === 'en' ? 'DOWNLOAD MENU (PDF)' : 'POBIERZ MENU (PDF)')
+    : null
 
   const items = (block.images ?? [])
     .filter((item) => isMedia(item.image) && item.image.url)
@@ -37,11 +44,21 @@ export function MenuImageBlock({ block }: { block: MenuImageBlockType; locale?: 
   return (
     <section id="menu" className="bg-brand-navy py-12 md:py-16">
       <div className="container mx-auto max-w-[1280px] px-6 md:px-10">
-        {(eyebrow || heading) && (
+        {(eyebrow || heading || pdfLabel) && (
           <div className="mb-8 text-center">
             {eyebrow && <p className="mb-1 text-sm text-white/55 md:text-base">{eyebrow}</p>}
             {heading && (
               <h2 className="font-serif text-3xl leading-tight text-white md:text-5xl">{heading}</h2>
+            )}
+            {pdfLabel && pdf?.url && (
+              <a
+                href={pdf.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-3 rounded-full hover:bg-brand-gold-dark transition-colors whitespace-nowrap"
+              >
+                {pdfLabel}
+              </a>
             )}
           </div>
         )}

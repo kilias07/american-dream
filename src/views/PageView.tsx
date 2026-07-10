@@ -5,6 +5,8 @@ import { unstable_cache } from 'next/cache'
 import type { Media, Page } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
+import { AgeGate } from '@/components/AgeGate'
+import { getUILabels } from '@/lib/ui-labels'
 import { buildMetadata, brandTitle, getAuditEntry } from '@/lib/audit-seo'
 import { localeHref } from '@/utilities/href'
 
@@ -49,9 +51,15 @@ export async function renderPage(slug: string, locale: Locale) {
   // visual design is preserved while the page exposes exactly one (audit) <h1>.
   const audit = getAuditEntry(slug, locale)
 
+  // Bramka wiekowa 18+ (uwaga klienta 2026-07) — tylko na stronach z checkboxem.
+  const ageGateLabels = page.requireAgeGate ? (await getUILabels(locale))?.ageGate : null
+
   return (
     <>
       {audit && <h1 className="sr-only">{audit.h1}</h1>}
+      {page.requireAgeGate && (
+        <AgeGate labels={ageGateLabels} locale={locale} homeHref={localeHref(locale, '/')} />
+      )}
       <BlockRenderer blocks={page.layout} locale={locale} demoteHeroHeading={Boolean(audit)} />
     </>
   )

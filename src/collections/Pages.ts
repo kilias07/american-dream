@@ -108,6 +108,18 @@ export const Pages: CollectionConfig = {
       ],
       localized: true,
     },
+    {
+      // Popup 18+ przy wejściu na stronę (uwaga klienta 2026-07 — Cigar Room).
+      // Teksty popupu edytowalne w globalu „Teksty interfejsu (UI)".
+      name: 'requireAgeGate',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Bramka wiekowa 18+ (popup przy wejściu)',
+      admin: {
+        position: 'sidebar',
+        description: 'Gość musi potwierdzić pełnoletność; „NIE" przenosi na stronę główną.',
+      },
+    },
   ],
   hooks: {
     afterChange: [

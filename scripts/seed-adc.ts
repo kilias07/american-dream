@@ -353,6 +353,12 @@ async function run() {
       reserveTable: 'Zarezerwuj stolik',
       specialEvent: 'Wydarzenie specjalne',
     },
+    ageGate: {
+      title: 'Strona tylko dla użytkowników 18+',
+      body: 'Ta część serwisu przeznaczona jest wyłącznie dla osób pełnoletnich. Czy masz ukończone 18 lat?',
+      confirmLabel: 'TAK — JESTEM PEŁNOLETNI',
+      declineLabel: 'NIE',
+    },
   }, {
     common: {
       readMore: 'Read more',
@@ -393,6 +399,12 @@ async function run() {
     event: {
       reserveTable: 'Reserve a table',
       specialEvent: 'Special event',
+    },
+    ageGate: {
+      title: 'This page is for adults (18+) only',
+      body: 'This section of the site is intended for adults only. Are you 18 or older?',
+      confirmLabel: 'YES — I AM 18+',
+      declineLabel: 'NO',
     },
   })
 
@@ -1551,7 +1563,10 @@ async function run() {
       { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'RESTAURANT ›', ctaUrl: '/restaurant' },
       { image: await img.bar(), colSpan: 'half', label: 'Signature cocktails, a selection of premium spirits and wines from around the world.', title: 'COCKTAIL BAR', ctaLabel: 'COCKTAIL BAR ›', ctaUrl: '/bar-and-cocktails' },
     ] },
-  ])
+  ]).then((id) =>
+    // Popup 18+ przy wejściu na Cigar Room (uwaga klienta 2026-07).
+    payload.update({ collection: 'pages', id, data: { requireAgeGate: true } as never }),
+  )
 
   // PROGRAM
   await page('program', 'Program', [
@@ -1634,7 +1649,8 @@ async function run() {
     { blockType: 'aboutIntro', heading: 'Zaplanuj swój wieczór', body: 'Twoje wyjątkowe wydarzenie wymaga specjalnej oprawy. Zaproś Gości do American Dream Club, a my zajmiemy się pełną organizacją.' },
     { blockType: 'eveningPhases', heading: 'ZAPLANUJ SWÓJ WIECZÓR', phases: [
       { image: await img.restauracja(), title: 'OTWARCIE WIECZORU', timeLabel: 'od 17:00', body: 'Zapraszamy do rozpoczęcia wieczoru w spokojnej, klubowej atmosferze. Rezerwacja stolika jest bezpłatna. Planujesz zostać na koncert? Prosimy o wcześniejszy zakup biletu.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
-      { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', linkToCalendar: true, timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo. Subtelne brzmienia fortepianu i saksofonu, elegancka improwizacja oraz klimat klasycznego jazzu tworzą niezapomniane doświadczenie muzyczne.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'KUP BILET', secondaryCtaUrl: '/events' },
+      // Środkowy baner (uwaga klienta 2026-07): primary = KUP BILET z ikoną biletu.
+      { image: await img.program(), title: 'KONCERTY I WYDARZENIA MUZYCZNE', linkToCalendar: true, timeLabel: 'od 19:00', body: 'Wyjątkowy wieczór z muzyką na żywo. Subtelne brzmienia fortepianu i saksofonu, elegancka improwizacja oraz klimat klasycznego jazzu tworzą niezapomniane doświadczenie muzyczne.', primaryCtaLabel: 'KUP BILET', primaryCtaUrl: 'tel:+48500210333', primaryCtaIcon: 'ticket', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/events' },
       { image: await img.bar(), title: 'WIECZÓR KLUBOWY', timeLabel: '21:00–23:00', body: 'Po części koncertowej zapraszamy do dalszego spędzenia czasu w naszej przestrzeni. Na gości czeka projekcja koncertu na dużym ekranie oraz starannie przygotowana oferta kuchni i baru. Rezerwacja stolika pozostaje bezpłatna.', primaryCtaLabel: 'ZAREZERWUJ STOLIK', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'REZERWACJA', teamMember: reservationContactId, callLabel: 'ZADZWOŃ', emailLabel: 'NAPISZ WIADOMOŚĆ', style: 'gold' },
@@ -1644,7 +1660,7 @@ async function run() {
     { blockType: 'aboutIntro', heading: 'Plan your evening', body: "Your special occasion deserves a special setting. Invite your guests to American Dream Club and we'll take care of the full organisation." },
     { blockType: 'eveningPhases', heading: 'PLAN YOUR EVENING', phases: [
       { image: await img.restauracja(), title: 'START OF THE EVENING', timeLabel: 'od 17:00', body: 'Start your evening in a calm, club atmosphere. Booking a table is free of charge. Planning to stay for the concert? Please buy a ticket in advance.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
-      { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', linkToCalendar: true, timeLabel: 'od 19:00', body: 'A special evening of live music. The subtle sounds of piano and saxophone, elegant improvisation and the atmosphere of classic jazz create an unforgettable musical experience.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333', secondaryCtaLabel: 'BUY TICKET', secondaryCtaUrl: '/events' },
+      { image: await img.program(), title: 'CONCERTS & MUSIC EVENTS', linkToCalendar: true, timeLabel: 'od 19:00', body: 'A special evening of live music. The subtle sounds of piano and saxophone, elegant improvisation and the atmosphere of classic jazz create an unforgettable musical experience.', primaryCtaLabel: 'BUY TICKET', primaryCtaUrl: 'tel:+48500210333', primaryCtaIcon: 'ticket', secondaryCtaLabel: 'PROGRAM', secondaryCtaUrl: '/events' },
       { image: await img.bar(), title: 'CLUB NIGHT', timeLabel: '21:00–23:00', body: 'After the concert, stay on and enjoy more time in our space. Guests can watch the concert on a large screen and enjoy a carefully prepared food and bar offering. Booking a table remains free of charge.', primaryCtaLabel: 'BOOK A TABLE', primaryCtaUrl: 'tel:+48500210333' },
     ] },
     { blockType: 'salesContact', heading: 'RESERVATION', teamMember: reservationContactId, callLabel: 'CALL US', emailLabel: 'WRITE TO US', style: 'gold' },
