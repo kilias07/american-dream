@@ -1274,15 +1274,31 @@ async function run() {
   // PAGES (assembled from blocks)
   // ════════════════════════════════════════════════════════════════════════
   log('Seeding pages…')
+  // Uwaga klienta 2026-07 (ETAP 1): tekst spod hero przenosi się NA hero.
+  // Zamiast ręcznie edytować każdą stronę, transformujemy layout w jednym
+  // miejscu: jeśli zaraz po `pageHero` stoi `aboutIntro` z `body`, przenosimy
+  // to `body` do hero i usuwamy blok aboutIntro (heading/subheading aboutIntro
+  // celowo znikają — projekt klienta pokazuje na hero tylko eyebrow+title+body).
+  function moveAboutIntroBodyToHero(layout: unknown[]): unknown[] {
+    const blocks = layout as Record<string, unknown>[]
+    const heroIdx = blocks.findIndex((b) => b.blockType === 'pageHero')
+    const next = blocks[heroIdx + 1]
+    if (heroIdx === -1 || !next || next.blockType !== 'aboutIntro' || !next.body) return layout
+    return blocks
+      .map((b, i) => (i === heroIdx ? { ...b, body: next.body } : b))
+      .filter((_, i) => i !== heroIdx + 1)
+  }
   // `title` and the whole `layout` blocks field are localized — so the EN pass
   // re-writes both with their English equivalents (same block structure/order).
   async function page(
     slug: string,
     title: string,
-    layout: unknown[],
+    rawLayout: unknown[],
     titleEn?: string,
-    layoutEn?: unknown[],
+    rawLayoutEn?: unknown[],
   ) {
+    const layout = moveAboutIntroBodyToHero(rawLayout)
+    const layoutEn = rawLayoutEn ? moveAboutIntroBodyToHero(rawLayoutEn) : undefined
     const id = await upsert(
       'pages',
       { slug: { equals: slug } },

@@ -18,7 +18,8 @@ export function PageHeroBlock({
   locale: string
   headingLevel?: 'h1' | 'h2'
 }) {
-  const { eyebrow, title, titleStyle, backgroundImage, inlineLinkLabel, inlineLinkUrl } = block
+  const { eyebrow, title, titleStyle, body, backgroundImage, inlineLinkLabel, inlineLinkUrl } =
+    block
 
   if (!title) return null
 
@@ -32,7 +33,9 @@ export function PageHeroBlock({
     : null
 
   return (
-    <section className="relative min-h-[70vh] flex flex-col justify-end overflow-hidden">
+    /* Uwaga klienta 2026-07: hero niższe (~48vh, było 70vh); tekst spod hero
+       przeniesiony NA hero (pole `body` pod tytułem). */
+    <section className="relative min-h-[48vh] flex flex-col justify-end overflow-hidden">
       {/* Background image */}
       {image?.url ? (
         <Image
@@ -52,9 +55,10 @@ export function PageHeroBlock({
       <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/50 to-brand-navy/20" />
 
       {/* Content - bottom left */}
-      <div className="relative z-10 container max-w-[1280px] mx-auto px-6 md:px-10 pb-12 md:pb-16">
+      <div className="relative z-10 container max-w-[1280px] mx-auto px-6 md:px-10 pb-10 md:pb-12 pt-32">
+        {/* Eyebrow — biały/neutralny (uwaga klienta: „obecnie żółte, a nie powinno być") */}
         {eyebrow && (
-          <p className="text-brand-gold text-xs md:text-sm font-bold uppercase tracking-[0.18em] mb-3">
+          <p className="text-white/80 text-xs md:text-sm font-bold uppercase tracking-[0.18em] mb-3">
             {eyebrow}
           </p>
         )}
@@ -68,6 +72,13 @@ export function PageHeroBlock({
         >
           {title}
         </Heading>
+
+        {/* Body — akapit opisu na hero (przeniesiony spod hero) */}
+        {body && (
+          <p className="mt-5 max-w-3xl text-white/90 text-sm md:text-base leading-relaxed border border-white/25 rounded-xl px-5 py-4 bg-brand-navy/30 backdrop-blur-[2px]">
+            {body}
+          </p>
+        )}
 
         {inlineLinkLabel && inlineHref && (
           <Link

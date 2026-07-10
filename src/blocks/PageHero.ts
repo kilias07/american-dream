@@ -28,6 +28,16 @@ export const PageHero: Block = {
       ],
     },
     {
+      // Uwaga klienta 2026-07: tekst spod hero przeniesiony NA hero —
+      // hero ma 3 pola treści: eyebrow, title, body.
+      name: 'body',
+      type: 'textarea',
+      localized: true,
+      admin: {
+        description: 'Akapit opisu wyświetlany na hero, pod tytułem.',
+      },
+    },
+    {
       name: 'backgroundImage',
       type: 'upload',
       relationTo: 'media',

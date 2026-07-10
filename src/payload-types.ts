@@ -524,6 +524,10 @@ export interface PageHeroBlock {
   eyebrow?: string | null;
   title: string;
   titleStyle?: ('serif' | 'uppercase') | null;
+  /**
+   * Akapit opisu wyświetlany na hero, pod tytułem.
+   */
+  body?: string | null;
   backgroundImage?: (number | null) | Media;
   inlineLinkLabel?: string | null;
   inlineLinkUrl?: string | null;
@@ -2220,6 +2224,7 @@ export interface PageHeroBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   title?: T;
   titleStyle?: T;
+  body?: T;
   backgroundImage?: T;
   inlineLinkLabel?: T;
   inlineLinkUrl?: T;

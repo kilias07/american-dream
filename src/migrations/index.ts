@@ -24,6 +24,7 @@ import * as migration_20260621_192721_cigar_menu_image_and_gallery_layout from '
 import * as migration_20260626_090000_ui_labels from './20260626_090000_ui_labels';
 import * as migration_20260626_120000_evening_phase_link_to_calendar from './20260626_120000_evening_phase_link_to_calendar';
 import * as migration_20260703_080000_special_menu_image from './20260703_080000_special_menu_image';
+import * as migration_20260710_150000_page_hero_body from './20260710_150000_page_hero_body';
 
 export const migrations = [
   {
@@ -155,5 +156,10 @@ export const migrations = [
     up: migration_20260703_080000_special_menu_image.up,
     down: migration_20260703_080000_special_menu_image.down,
     name: '20260703_080000_special_menu_image',
+  },
+  {
+    up: migration_20260710_150000_page_hero_body.up,
+    down: migration_20260710_150000_page_hero_body.down,
+    name: '20260710_150000_page_hero_body',
   },
 ];
