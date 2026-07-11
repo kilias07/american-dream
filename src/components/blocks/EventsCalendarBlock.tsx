@@ -2,7 +2,14 @@ import React from 'react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
-import { expandEvents, toOccurrences, todayWarsaw, warsawParts } from '@/lib/recurring-events'
+import {
+  addDaysKey,
+  expandEvents,
+  toOccurrences,
+  todayWarsaw,
+  warsawDayKey,
+  weekTueKey,
+} from '@/lib/recurring-events'
 import type { EventDoc } from '@/lib/recurring-events'
 import { EventsTeaserBlock } from './EventsTeaserBlock'
 import { EventsFullCalendar } from './EventsFullCalendar'
@@ -51,27 +58,25 @@ export async function EventsCalendarBlock({
   if (variant === 'full') {
     const occurrences = toOccurrences(allEvents)
 
-    // Bounds (Europe/Warsaw): forward to current month + 3; back to the month of
-    // the earliest event (never past the current month).
+    // Widok tygodniowy (uwagi klienta 2026-07). Granice (Europe/Warsaw):
+    // w przód do bieżącego tygodnia + 13 (≈3 miesiące), w tył do tygodnia
+    // najwcześniejszego wydarzenia (nigdy później niż bieżący tydzień).
     const today = todayWarsaw()
-    const currentAbs = today.year * 12 + today.month
-    const maxMonthAbs = currentAbs + 3
-    let minMonthAbs = currentAbs
-    if (occurrences.length > 0) {
-      const first = warsawParts(new Date(occurrences[0].dateISO))
-      const firstAbs = first.year * 12 + first.month
-      if (firstAbs < minMonthAbs) minMonthAbs = firstAbs
-    }
     const todayKey = `${today.year}-${String(today.month + 1).padStart(2, '0')}-${String(today.day).padStart(2, '0')}`
+    const todayTue = weekTueKey(todayKey)
+    const maxWeekKey = addDaysKey(todayTue, 7 * 13)
+    let minWeekKey = todayTue
+    if (occurrences.length > 0) {
+      const firstTue = weekTueKey(warsawDayKey(occurrences[0].dateISO))
+      if (firstTue < minWeekKey) minWeekKey = firstTue
+    }
 
     return (
       <EventsFullCalendar
         occurrences={occurrences}
-        initialYear={today.year}
-        initialMonth={today.month}
-        minMonthAbs={minMonthAbs}
-        maxMonthAbs={maxMonthAbs}
         todayKey={todayKey}
+        minWeekKey={minWeekKey}
+        maxWeekKey={maxWeekKey}
         heading={heading}
         ctaLabel={ctaLabel}
         ctaUrl={ctaUrl}

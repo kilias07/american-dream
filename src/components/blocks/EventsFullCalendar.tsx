@@ -3,18 +3,30 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { AnimatePresence, motion } from 'motion/react'
 import type { EventOccurrence } from '@/lib/recurring-events'
 import {
-  dayKey,
+  addDaysKey,
   formatTime,
   getDayAbbr,
-  getMonthName,
   getWeekDays,
   groupByDay,
   warsawDayKey,
+  weekTueKey,
 } from '@/lib/recurring-events'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+
+/**
+ * Kalendarz PROGRAM — widok TYGODNIOWY (uwagi klienta 2026-07):
+ *  - u góry zawsze bieżący tydzień (wyróżniony złotym pasem, spójnie z home),
+ *    pod nim 2 nadchodzące tygodnie; bez strzałek miesięcy u góry;
+ *  - pod kalendarzem przyciski prawo-lewo — tygodnie rolują góra-dół w ramach
+ *    tej samej wysokości komponentu (minione tygodnie wyszarzone);
+ *  - 3-literowe labelki miesięcy (STY…GRU) w lewej rynnie;
+ *  - kafelki z KOLOROWYM zdjęciem + granatową przesłoną (bez grayscale).
+ * Poniedziałki (klub zamknięty) pominięte — tydzień = wt→nd, 6 kolumn.
+ */
 
 /** Each event links to its own detail page. */
 function eventHref(occ: EventOccurrence, locale: string): string {
@@ -23,59 +35,60 @@ function eventHref(occ: EventOccurrence, locale: string): string {
 
 type Props = {
   occurrences: EventOccurrence[]
-  initialYear: number
-  initialMonth: number // 0-indexed
-  /** Earliest navigable month as year*12 + month. */
-  minMonthAbs: number
-  /** Latest navigable month as year*12 + month (current + 3). */
-  maxMonthAbs: number
   /** Today's Europe/Warsaw day key (YYYY-MM-DD), from the server. */
   todayKey: string
+  /** Tuesday-key of the earliest navigable club week (wt→nd). */
+  minWeekKey: string
+  /** Tuesday-key of the latest navigable club week. */
+  maxWeekKey: string
   heading?: string | null
   ctaLabel?: string | null
   ctaUrl?: string | null
   locale: string
 }
 
-type Cell = { date: Date; key: string; inMonth: boolean; isPast: boolean; isToday: boolean }
+type Cell = { key: string; dayNum: number; isPast: boolean; isToday: boolean }
+type Week = { tueKey: string; month: number; cells: Cell[]; containsToday: boolean }
 
-// The club is closed on Mondays, so the calendar omits them entirely: the grid is
-// built Monday-first (column 0 = Monday) and every Monday cell is skipped, leaving
-// 6 cells per week (Tue→Sun).
-const COLUMNS = 6
+const COLUMNS = 6 // wt→nd (poniedziałki pominięte)
+const VISIBLE_WEEKS = 3 // bieżący + 2 nadchodzące
+const ROW_H = 150
 
-function buildCells(year: number, month: number, todayKey: string): Cell[] {
-  const first = new Date(year, month, 1)
-  const startOffset = (first.getDay() + 6) % 7 // Monday-first
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const numWeeks = Math.ceil((startOffset + daysInMonth) / 7)
-  const totalCells = numWeeks * 7
+const MONTHS_3_PL = ['STY', 'LUT', 'MAR', 'KWI', 'MAJ', 'CZE', 'LIP', 'SIE', 'WRZ', 'PAŹ', 'LIS', 'GRU']
+const MONTHS_3_EN = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
-  const cells: Cell[] = []
-  const cursor = new Date(year, month, 1 - startOffset)
-  for (let i = 0; i < totalCells; i++) {
-    // i % 7 === 0 is always a Monday in this Monday-first layout — drop it.
-    if (i % 7 !== 0) {
-      const key = dayKey(cursor.getFullYear(), cursor.getMonth(), cursor.getDate())
+function buildWeeks(minWeekKey: string, maxWeekKey: string, todayKey: string): Week[] {
+  const weeks: Week[] = []
+  for (let tue = minWeekKey; tue <= maxWeekKey; tue = addDaysKey(tue, 7)) {
+    const cells: Cell[] = []
+    for (let i = 0; i < COLUMNS; i++) {
+      const key = addDaysKey(tue, i)
       cells.push({
-        date: new Date(cursor),
         key,
-        inMonth: cursor.getMonth() === month,
+        dayNum: Number(key.slice(-2)),
         isPast: key < todayKey,
         isToday: key === todayKey,
       })
     }
-    cursor.setDate(cursor.getDate() + 1)
+    weeks.push({
+      tueKey: tue,
+      month: Number(tue.slice(5, 7)) - 1,
+      cells,
+      containsToday: tue === weekTueKey(todayKey),
+    })
   }
-  return cells
+  return weeks
 }
 
-/** Add `days` to a YYYY-MM-DD key and return the resulting key (pure calendar math). */
-function addDaysKey(key: string, days: number): string {
+/** Czytelna data dla ARIA (z klucza dnia — UTC, bez przesunięć stref). */
+function ariaDate(key: string, locale: string): string {
   const [y, m, d] = key.split('-').map(Number)
-  const dt = new Date(Date.UTC(y, m - 1, d))
-  dt.setUTCDate(dt.getUTCDate() + days)
-  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  })
 }
 
 const AGENDA_WEEK_STEP = 2 // weeks revealed initially and per "show more" click
@@ -94,17 +107,18 @@ function EventCard({ occ, locale, todayKey }: { occ: EventOccurrence; locale: st
       aria-label={`${occ.title}, ${dayAbbr} ${dayNum}, ${startTime}`}
     >
       {occ.image?.url ? (
+        /* Kolorowe zdjęcie z granatową przesłoną (uwaga klienta: bez czarno-białych) */
         <Image
           src={occ.image.url}
           alt={occ.image.alt || occ.title}
           fill
-          className="object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-300"
+          className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 768px) 50vw, 14vw"
         />
       ) : (
         <div className="absolute inset-0 bg-brand-navy/90" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/50 to-brand-navy/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/60 to-brand-navy/30" />
 
       {/* Day badge — gold for today's events, blue for upcoming days */}
       <div
@@ -153,14 +167,14 @@ function AgendaItem({ occ, locale, todayKey }: { occ: EventOccurrence; locale: s
         <span className="text-2xl font-black leading-none">{dayNum}</span>
       </div>
 
-      {/* Thumb */}
+      {/* Thumb — kolor (bez grayscale) */}
       {occ.image?.url && (
         <div className="relative w-16 shrink-0 bg-brand-navy">
           <Image
             src={occ.image.url}
             alt={occ.image.alt || occ.title}
             fill
-            className="object-cover grayscale"
+            className="object-cover"
             sizes="64px"
           />
         </div>
@@ -188,116 +202,124 @@ function AgendaItem({ occ, locale, todayKey }: { occ: EventOccurrence; locale: s
 
 export function EventsFullCalendar({
   occurrences,
-  initialYear,
-  initialMonth,
-  minMonthAbs,
-  maxMonthAbs,
   todayKey,
+  minWeekKey,
+  maxWeekKey,
   heading,
   ctaLabel,
   ctaUrl,
   locale,
 }: Props) {
   const router = useRouter()
-  const [year, setYear] = useState(initialYear)
-  const [month, setMonth] = useState(initialMonth)
-
-  const cellRefs = useRef<Record<string, HTMLDivElement | null>>({})
-
-  const monthAbs = year * 12 + month
-  const prevDisabled = monthAbs <= minMonthAbs
-  const nextDisabled = monthAbs >= maxMonthAbs
 
   const byDay = useMemo(() => groupByDay(occurrences), [occurrences])
   const weekDays = getWeekDays(locale)
-  const cells = useMemo(() => buildCells(year, month, todayKey), [year, month, todayKey])
+  const weeks = useMemo(() => buildWeeks(minWeekKey, maxWeekKey, todayKey), [minWeekKey, maxWeekKey, todayKey])
+  const months3 = locale === 'pl' ? MONTHS_3_PL : MONTHS_3_EN
 
-  // Events in the displayed month (Europe/Warsaw), for the mobile agenda list.
-  const monthOccurrences = useMemo(() => {
-    const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`
-    return occurrences.filter((o) => warsawDayKey(o.dateISO).startsWith(prefix))
-  }, [occurrences, year, month])
+  const maxAnchor = Math.max(0, weeks.length - VISIBLE_WEEKS)
+  const todayAnchor = useMemo(() => {
+    const idx = weeks.findIndex((w) => w.tueKey === weekTueKey(todayKey))
+    return Math.max(0, Math.min(maxAnchor, idx === -1 ? 0 : idx))
+  }, [weeks, todayKey, maxAnchor])
 
-  // Mobile agenda is progressively disclosed: start ~2 weeks ahead, reveal more.
+  // Anchor = indeks górnego widocznego tygodnia; start: bieżący tydzień.
+  const [anchor, setAnchor] = useState(todayAnchor)
+  const dirRef = useRef(1) // 1 = w przód (rolowanie w górę), -1 = w tył
+  const visible = weeks.slice(anchor, anchor + VISIBLE_WEEKS)
+
+  const prevDisabled = anchor <= 0
+  const nextDisabled = anchor >= maxAnchor
+
+  function prevWeeks() {
+    if (prevDisabled) return
+    dirRef.current = -1
+    setAnchor((a) => Math.max(0, a - 1))
+  }
+  function nextWeeks() {
+    if (nextDisabled) return
+    dirRef.current = 1
+    setAnchor((a) => Math.min(maxAnchor, a + 1))
+  }
+
+  // Mobile agenda — od bieżącego tygodnia w przód, odsłaniana po ~2 tygodnie.
   const [agendaWeeks, setAgendaWeeks] = useState(AGENDA_WEEK_STEP)
-  useEffect(() => setAgendaWeeks(AGENDA_WEEK_STEP), [year, month])
-
-  // Anchor: today for the current month (forward-looking), else the month's first event.
-  const agendaAnchorKey = useMemo(() => {
-    if (monthOccurrences.length === 0) return todayKey
-    const isCurrentMonth = `${year}-${String(month + 1).padStart(2, '0')}` === todayKey.slice(0, 7)
-    const firstKey = warsawDayKey(monthOccurrences[0].dateISO)
-    if (isCurrentMonth && todayKey > firstKey) return todayKey
-    return firstKey
-  }, [monthOccurrences, year, month, todayKey])
-
-  const agendaFromAnchor = useMemo(
-    () => monthOccurrences.filter((o) => warsawDayKey(o.dateISO) >= agendaAnchorKey),
-    [monthOccurrences, agendaAnchorKey],
-  )
+  const agendaFromAnchor = useMemo(() => {
+    const start = weekTueKey(todayKey)
+    return occurrences.filter((o) => warsawDayKey(o.dateISO) >= start)
+  }, [occurrences, todayKey])
   const visibleAgenda = useMemo(() => {
-    const cutoff = addDaysKey(agendaAnchorKey, agendaWeeks * 7)
+    const cutoff = addDaysKey(weekTueKey(todayKey), agendaWeeks * 7)
     return agendaFromAnchor.filter((o) => warsawDayKey(o.dateISO) < cutoff)
-  }, [agendaFromAnchor, agendaAnchorKey, agendaWeeks])
+  }, [agendaFromAnchor, todayKey, agendaWeeks])
   const agendaHasMore = visibleAgenda.length < agendaFromAnchor.length
 
-  // Roving tabindex: which cell currently owns tabIndex 0.
-  const defaultActive = useMemo(() => {
-    const todayCell = cells.find((c) => c.isToday && c.inMonth)
-    if (todayCell) return todayCell.key
-    const firstInMonth = cells.find((c) => c.inMonth)
-    return firstInMonth?.key ?? cells[0]?.key
-  }, [cells])
-  const [activeKey, setActiveKey] = useState<string>(defaultActive)
-  useEffect(() => setActiveKey(defaultActive), [defaultActive])
+  // Roving tabindex + focus po przewinięciu tygodni strzałkami góra/dół.
+  const cellRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const pendingFocusRef = useRef<string | null>(null)
+  const visibleCells = useMemo(() => visible.flatMap((w) => w.cells), [visible])
+  const [activeKey, setActiveKey] = useState<string>(() => {
+    const todayCell = visibleCells.find((c) => c.isToday)
+    return todayCell?.key ?? visibleCells[0]?.key ?? ''
+  })
+  useEffect(() => {
+    if (pendingFocusRef.current) {
+      const el = cellRefs.current[pendingFocusRef.current]
+      if (el) {
+        setActiveKey(pendingFocusRef.current)
+        el.focus()
+      }
+      pendingFocusRef.current = null
+    }
+  }, [anchor])
 
-  function prevMonth() {
-    if (prevDisabled) return
-    if (month === 0) {
-      setYear((y) => y - 1)
-      setMonth(11)
-    } else setMonth((m) => m - 1)
-  }
-  function nextMonth() {
-    if (nextDisabled) return
-    if (month === 11) {
-      setYear((y) => y + 1)
-      setMonth(0)
-    } else setMonth((m) => m + 1)
-  }
-
-  function focusCell(index: number) {
-    const clamped = Math.max(0, Math.min(cells.length - 1, index))
-    const key = cells[clamped].key
-    setActiveKey(key)
-    cellRefs.current[key]?.focus()
+  function focusKey(key: string) {
+    const el = cellRefs.current[key]
+    if (el) {
+      setActiveKey(key)
+      el.focus()
+    }
   }
 
-  function onCellKeyDown(e: React.KeyboardEvent, index: number, cell: Cell) {
+  function onCellKeyDown(e: React.KeyboardEvent, cell: Cell) {
+    const move = (days: number) => {
+      const target = addDaysKey(cell.key, days)
+      const targetTue = weekTueKey(target)
+      if (targetTue < minWeekKey || targetTue > maxWeekKey) return
+      const idx = weeks.findIndex((w) => w.tueKey === targetTue)
+      if (idx < anchor || idx >= anchor + VISIBLE_WEEKS) {
+        dirRef.current = idx < anchor ? -1 : 1
+        pendingFocusRef.current = target
+        setAnchor(Math.max(0, Math.min(maxAnchor, idx < anchor ? idx : idx - VISIBLE_WEEKS + 1)))
+      } else {
+        focusKey(target)
+      }
+    }
     switch (e.key) {
       case 'ArrowRight':
         e.preventDefault()
-        focusCell(index + 1)
+        // niedziela → wtorek następnego tygodnia (pomijamy poniedziałek)
+        move(cell.key === addDaysKey(weekTueKey(cell.key), 5) ? 2 : 1)
         break
       case 'ArrowLeft':
         e.preventDefault()
-        focusCell(index - 1)
+        move(cell.key === weekTueKey(cell.key) ? -2 : -1)
         break
       case 'ArrowDown':
         e.preventDefault()
-        focusCell(index + COLUMNS)
+        move(7)
         break
       case 'ArrowUp':
         e.preventDefault()
-        focusCell(index - COLUMNS)
+        move(-7)
         break
       case 'Home':
         e.preventDefault()
-        focusCell(index - (index % COLUMNS))
+        focusKey(weekTueKey(cell.key))
         break
       case 'End':
         e.preventDefault()
-        focusCell(index - (index % COLUMNS) + (COLUMNS - 1))
+        focusKey(addDaysKey(weekTueKey(cell.key), 5))
         break
       case 'Enter':
       case ' ': {
@@ -311,71 +333,40 @@ export function EventsFullCalendar({
     }
   }
 
-  const monthLabel = getMonthName(year, month, locale)
-  const nextMonthName = getMonthName(
-    month === 11 ? year + 1 : year,
-    month === 11 ? 0 : month + 1,
-    locale,
-  )
+  const rangeLabel = visible.length
+    ? `${ariaDate(visible[0].cells[0].key, locale)} – ${ariaDate(visible[visible.length - 1].cells[5].key, locale)}`
+    : ''
 
   return (
     <section className="py-12 bg-white">
       <div className="container">
-        {/* Header */}
+        {/* Header — bez strzałek miesięcy (nawigacja przyciskami POD kalendarzem) */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={prevMonth}
-              disabled={prevDisabled}
-              className="w-9 h-9 rounded-full border border-brand-navy/20 flex items-center justify-center hover:bg-brand-navy/5 transition-colors disabled:opacity-30"
-              aria-label={locale === 'pl' ? 'Poprzedni miesiąc' : 'Previous month'}
+          <h2 className="text-brand-navy text-2xl md:text-3xl font-black uppercase tracking-tight">
+            {heading || (locale === 'pl' ? 'KALENDARZ' : 'CALENDAR')}
+          </h2>
+          <span className="sr-only" aria-live="polite">
+            {rangeLabel}
+          </span>
+
+          {ctaLabel && ctaUrl && (
+            <Link
+              href={ctaUrl.startsWith('/') ? localeHref(locale as Locale, ctaUrl) : ctaUrl}
+              className="hidden md:flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full hover:bg-brand-navy/80 transition-colors whitespace-nowrap"
             >
-              <svg className="w-4 h-4 text-brand-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
               </svg>
-            </button>
-
-            <h2 className="text-brand-navy text-2xl md:text-3xl font-black uppercase tracking-tight" aria-live="polite">
-              {heading ? `${heading} — ` : ''}
-              {monthLabel}
-            </h2>
-
-            <button
-              onClick={nextMonth}
-              disabled={nextDisabled}
-              className="w-9 h-9 rounded-full border border-brand-navy/20 flex items-center justify-center hover:bg-brand-navy/5 transition-colors disabled:opacity-30"
-              aria-label={locale === 'pl' ? 'Następny miesiąc' : 'Next month'}
-            >
-              <svg className="w-4 h-4 text-brand-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          {ctaLabel &&
-            ctaUrl &&
-            (() => {
-              const calCtaClass =
-                'hidden md:flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full hover:bg-brand-navy/80 transition-colors whitespace-nowrap'
-              const icon = (
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
-                </svg>
-              )
-              const calHref = ctaUrl.startsWith('/') ? localeHref(locale as Locale, ctaUrl) : ctaUrl
-              return (
-                <Link href={calHref} className={calCtaClass}>
-                  {icon}
-                  {ctaLabel}
-                </Link>
-              )
-            })()}
+              {ctaLabel}
+            </Link>
+          )}
         </div>
 
-        {/* Calendar grid — desktop/tablet */}
-        <div role="grid" aria-label={monthLabel} className="hidden sm:block">
-          {/* Day headers */}
-          <div role="row" className="grid grid-cols-6 gap-2 mb-2">
+        {/* Calendar grid — desktop/tablet: bieżący tydzień + 2 nadchodzące */}
+        <div role="grid" aria-label={rangeLabel} className="hidden sm:block">
+          {/* Day headers (z pustą rynną miesięcy po lewej) */}
+          <div role="row" className="grid grid-cols-[2.75rem_repeat(6,1fr)] gap-2 mb-2">
+            <div aria-hidden />
             {weekDays.map((day) => (
               <div
                 key={day}
@@ -387,62 +378,113 @@ export function EventsFullCalendar({
             ))}
           </div>
 
-          {/* Weeks */}
-          {Array.from({ length: cells.length / COLUMNS }).map((_, wi) => (
-            <div role="row" key={wi} className="grid grid-cols-6 gap-2 mb-2">
-              {cells.slice(wi * COLUMNS, wi * COLUMNS + COLUMNS).map((cell, ci) => {
-                const index = wi * COLUMNS + ci
-                const dayEvents = byDay[cell.key] ?? []
-                const hasEvents = dayEvents.length > 0
+          {/* Weeks — stała wysokość, rolowanie góra-dół (Motion) */}
+          <div className="overflow-hidden" style={{ height: VISIBLE_WEEKS * (ROW_H + 8) }}>
+            <AnimatePresence mode="popLayout" initial={false}>
+              {visible.map((week, wi) => {
+                const showMonth = wi === 0 || week.month !== visible[wi - 1].month
+                const isPastWeek = week.cells[5].key < todayKey
                 return (
-                  <div
-                    role="gridcell"
-                    key={cell.key}
-                    ref={(el) => {
-                      cellRefs.current[cell.key] = el
-                    }}
-                    tabIndex={activeKey === cell.key ? 0 : -1}
-                    aria-current={cell.isToday ? 'date' : undefined}
-                    aria-label={cell.date.toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                    })}
-                    onKeyDown={(e) => onCellKeyDown(e, index, cell)}
-                    onFocus={() => setActiveKey(cell.key)}
-                    className={`flex flex-col gap-1 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold ${
-                      cell.inMonth ? '' : 'opacity-40'
-                    } ${cell.isToday ? 'ring-2 ring-brand-gold' : ''}`}
-                    style={{ minHeight: 150 }}
+                  <motion.div
+                    role="row"
+                    key={week.tueKey}
+                    initial={{ y: dirRef.current * 48, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: dirRef.current * -48, opacity: 0 }}
+                    transition={{ duration: 0.28, ease: 'easeInOut' }}
+                    className={`grid grid-cols-[2.75rem_repeat(6,1fr)] gap-2 mb-2 rounded-xl ${
+                      week.containsToday ? 'bg-brand-gold p-1.5 -mx-1.5' : ''
+                    } ${isPastWeek ? 'opacity-50' : ''}`}
                   >
-                    {hasEvents ? (
-                      dayEvents.map((occ) => (
-                        <div key={occ.id} style={{ height: 150 }}>
-                          <EventCard occ={occ} locale={locale} todayKey={todayKey} />
+                    {/* Rynna: 3-literowy miesiąc (STY…GRU) */}
+                    <div
+                      aria-hidden
+                      className={`flex items-center justify-center text-[11px] font-black tracking-wider ${
+                        week.containsToday ? 'text-brand-navy' : 'text-brand-navy/45'
+                      }`}
+                    >
+                      {showMonth ? months3[week.month] : ''}
+                    </div>
+
+                    {week.cells.map((cell) => {
+                      const dayEvents = byDay[cell.key] ?? []
+                      const hasEvents = dayEvents.length > 0
+                      return (
+                        <div
+                          role="gridcell"
+                          key={cell.key}
+                          ref={(el) => {
+                            cellRefs.current[cell.key] = el
+                          }}
+                          tabIndex={activeKey === cell.key ? 0 : -1}
+                          aria-current={cell.isToday ? 'date' : undefined}
+                          aria-label={ariaDate(cell.key, locale)}
+                          onKeyDown={(e) => onCellKeyDown(e, cell)}
+                          onFocus={() => setActiveKey(cell.key)}
+                          className={`flex flex-col gap-1 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold ${
+                            cell.isPast ? 'opacity-60' : ''
+                          } ${cell.isToday ? 'ring-2 ring-brand-navy' : ''}`}
+                          style={{ minHeight: ROW_H }}
+                        >
+                          {hasEvents ? (
+                            dayEvents.map((occ) => (
+                              <div key={occ.id} style={{ height: ROW_H }}>
+                                <EventCard occ={occ} locale={locale} todayKey={todayKey} />
+                              </div>
+                            ))
+                          ) : (
+                            <div
+                              className={`h-full rounded-xl flex items-start p-2 ${
+                                cell.isToday
+                                  ? 'bg-white/60'
+                                  : week.containsToday
+                                    ? 'bg-white/40'
+                                    : 'bg-gray-50'
+                              }`}
+                            >
+                              {cell.isToday ? (
+                                <span className="bg-brand-navy text-white text-[12px] font-bold px-2 py-0.5 rounded-md leading-none">
+                                  {cell.dayNum}
+                                </span>
+                              ) : (
+                                <span className="text-brand-navy/30 text-[13px] font-medium">
+                                  {cell.dayNum}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      ))
-                    ) : (
-                      <div
-                        className={`h-full rounded-xl flex items-start p-2 ${
-                          cell.isToday ? 'bg-brand-gold/10' : 'bg-gray-50'
-                        }`}
-                      >
-                        {cell.isToday ? (
-                          <span className="bg-brand-gold text-brand-navy text-[12px] font-bold px-2 py-0.5 rounded-md leading-none">
-                            {cell.date.getDate()}
-                          </span>
-                        ) : (
-                          <span className="text-brand-navy/30 text-[13px] font-medium">
-                            {cell.date.getDate()}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      )
+                    })}
+                  </motion.div>
                 )
               })}
-            </div>
-          ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Przyciski prawo-lewo POD kalendarzem — rolują tygodnie góra-dół */}
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <button
+              onClick={prevWeeks}
+              disabled={prevDisabled}
+              className="w-11 h-11 rounded-full border border-brand-navy/20 flex items-center justify-center text-brand-navy hover:bg-brand-navy/5 transition-colors disabled:opacity-30"
+              aria-label={locale === 'pl' ? 'Poprzednie tygodnie' : 'Previous weeks'}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={nextWeeks}
+              disabled={nextDisabled}
+              className="w-11 h-11 rounded-full border border-brand-navy/20 flex items-center justify-center text-brand-navy hover:bg-brand-navy/5 transition-colors disabled:opacity-30"
+              aria-label={locale === 'pl' ? 'Następne tygodnie' : 'Next weeks'}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Mobile agenda — chronological list, progressively disclosed (~2 weeks at a time) */}
@@ -471,23 +513,9 @@ export function EventsFullCalendar({
             </>
           ) : (
             <p className="text-brand-navy/50 text-sm py-8 text-center">
-              {locale === 'pl' ? 'Brak nadchodzących wydarzeń w tym miesiącu.' : 'No upcoming events this month.'}
+              {locale === 'pl' ? 'Brak nadchodzących wydarzeń.' : 'No upcoming events.'}
             </p>
           )}
-        </div>
-
-        {/* Next month button */}
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={nextMonth}
-            disabled={nextDisabled}
-            className="flex items-center gap-3 bg-brand-navy text-white text-[13px] font-bold uppercase tracking-[0.1em] px-8 py-3 rounded-full hover:bg-brand-navy/80 transition-colors disabled:opacity-30"
-          >
-            {nextMonthName}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
         </div>
       </div>
     </section>

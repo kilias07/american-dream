@@ -191,6 +191,28 @@ export function formatTime(iso: string | null | undefined): string {
   return `${pad(p.hour)}:${pad(p.minute)}`
 }
 
+// ── Week helpers (pure YYYY-MM-DD string math, DST-safe) ────────────────────
+
+/** Add `days` to a YYYY-MM-DD key and return the resulting key. */
+export function addDaysKey(key: string, days: number): string {
+  const [y, m, d] = key.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() + days)
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
+}
+
+/**
+ * Klucz WTORKU tygodnia klubowego (wt→nd) zawierającego dany dzień.
+ * Poniedziałek (klub zamknięty, dzień „pomiędzy" tygodniami) wskazuje na
+ * NADCHODZĄCY tydzień (jutro), nie na miniony.
+ */
+export function weekTueKey(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay() // 0=Sun … 6=Sat
+  if (dow === 1) return addDaysKey(key, 1) // Monday → next Tuesday
+  return addDaysKey(key, -((dow + 5) % 7)) // Tue→0, Wed→1, …, Sun→5
+}
+
 // ── Locale helpers ──────────────────────────────────────────────────────────
 
 const DAY_ABBR_PL = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So']
