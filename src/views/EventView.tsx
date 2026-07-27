@@ -12,8 +12,15 @@ import { localeHref } from '@/utilities/href'
 import { EventJsonLd } from '@/components/seo/EventJsonLd'
 import { ShareBar } from '@/components/ui/ShareBar'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
-import { UpcomingEventsCarousel } from '@/components/ui/UpcomingEventsCarousel'
-import { warsawParts, getDayAbbr } from '@/lib/recurring-events'
+import { EventsTeaserSectionBlock } from '@/components/blocks/EventsTeaserSectionBlock'
+import { NewsletterCTASection } from '@/components/blocks/NewsletterCTASection'
+import { RecurringSeriesTeaserBlock } from '@/components/blocks/RecurringSeriesTeaserBlock'
+import type {
+  EventsTeaserBlock as EventsTeaserBlockType,
+  NewsletterCtaBlock as NewsletterCTABlockType,
+  RecurringSeriesTeaserBlock as RecurringSeriesTeaserBlockType,
+} from '@/payload-types'
+import { warsawParts } from '@/lib/recurring-events'
 import { getSiteContact } from '@/lib/site-contact'
 import { getUILabels, pick } from '@/lib/ui-labels'
 
@@ -46,26 +53,6 @@ async function getEvent(slug: string, locale: Locale): Promise<Event | null> {
   }
 }
 
-async function getUpcomingEvents(currentId: string, locale: Locale): Promise<Event[]> {
-  try {
-    const payload = await getPayload({ config: configPromise })
-    const result = await payload.find({
-      collection: 'events',
-      where: {
-        and: [{ date: { greater_than_equal: new Date().toISOString() } }, { id: { not_equals: currentId } }],
-      },
-      sort: 'date',
-      locale,
-      fallbackLocale: defaultLocale,
-      depth: 1,
-      limit: 5,
-    })
-    return result.docs as Event[]
-  } catch {
-    return []
-  }
-}
-
 function formatDateParts(value: string | null | undefined, locale: Locale) {
   if (!value) return { weekday: '', dayMonth: '', time: '' }
   const date = new Date(value)
@@ -91,14 +78,6 @@ export async function renderEvent(slug: string, locale: Locale) {
     redirect(localeHref(locale, '/events'))
   }
 
-  const eventId = String(event.id)
-  const cachedUpcoming = unstable_cache(
-    () => getUpcomingEvents(eventId, locale),
-    [`event-upcoming-${eventId}-${locale}`],
-    { tags: ['events'] },
-  )
-  const upcoming = await cachedUpcoming()
-
   // Venue address for the .ics / Google Calendar export (from site-settings).
   const contact = await getSiteContact(locale)
   const ui = await getUILabels(locale)
@@ -119,8 +98,10 @@ export async function renderEvent(slug: string, locale: Locale) {
   return (
     <div className="bg-brand-navy text-white">
       <EventJsonLd event={event} locale={locale} />
-      {/* Hero */}
-      <section className="relative min-h-[78vh] flex flex-col overflow-hidden">
+      {/* Hero — CAŁOŚĆ wydarzenia na zdjęciu, bez przewijania na desktopie
+          (uwagi klienta 2026-07, E1/E2): data+godzina POWIĘKSZONE w prawym
+          górnym rogu; tagi, tytuł, OPIS, wykonawcy i share osadzone na hero. */}
+      <section className="relative min-h-[100svh] flex flex-col overflow-hidden">
         {hero?.url ? (
           <Image
             src={hero.url}
@@ -135,7 +116,7 @@ export async function renderEvent(slug: string, locale: Locale) {
         )}
         {/* Top darkening for the date/label, bottom gradient for the title block */}
         <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-brand-navy/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/70 to-brand-navy/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/80 to-brand-navy/15" />
 
         {/* Special event ribbon — anchored to the left edge */}
         {isSpecial && (
@@ -144,22 +125,22 @@ export async function renderEvent(slug: string, locale: Locale) {
           </span>
         )}
 
-        {/* Date & time — top right */}
+        {/* Date & time — top right, powiększone (E2: „data i godzina — powiększyć!") */}
         {(weekday || dayMonth || time) && (
           <div
-            className={`relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 text-right md:pt-14 ${
+            className={`relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 text-right md:pt-12 ${
               isSpecial ? 'pt-24 sm:pt-10' : 'pt-10'
             }`}
           >
             {(weekday || dayMonth) && (
-              <p className="text-xl md:text-2xl font-bold leading-tight">
+              <p className="text-3xl md:text-5xl font-bold leading-tight">
                 {weekday && <span className="text-white">{weekday} </span>}
                 <span className="text-brand-gold">{dayMonth}</span>
               </p>
             )}
             {time && (
-              <p className="mt-1 flex items-center justify-end gap-2 text-white/80 text-sm md:text-base">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <p className="mt-2 flex items-center justify-end gap-2 text-white/90 text-lg md:text-2xl font-semibold">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 7v5l3 2" />
                 </svg>
@@ -169,10 +150,10 @@ export async function renderEvent(slug: string, locale: Locale) {
           </div>
         )}
 
-        {/* Title block — bottom, two columns */}
-        <div className="relative z-10 mt-auto w-full max-w-[1280px] mx-auto px-6 md:px-10 pb-12 md:pb-16">
+        {/* Blok treści — dół hero, dwie kolumny; opis + wykonawcy + share NA zdjęciu */}
+        <div className="relative z-10 mt-auto w-full max-w-[1280px] mx-auto px-6 md:px-10 pb-10 md:pb-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl min-w-0">
               {genres.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 mb-4">
                   {genres.map((g) => (
@@ -190,22 +171,68 @@ export async function renderEvent(slug: string, locale: Locale) {
                 <p className="text-white/90 text-base md:text-lg mb-2">{event.leadTitle}</p>
               )}
 
-              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight">
                 {event.title}
               </h1>
+
+              {/* Opis na hero — przycięty (CSS clamp), pełna treść w SEO/JSON-LD */}
+              {event.body && (
+                <div className="mt-5 max-w-2xl text-white/85 text-sm md:text-base leading-relaxed line-clamp-4 lg:line-clamp-5 [&_p]:mb-2">
+                  <RichTextRenderer content={event.body} />
+                </div>
+              )}
+
+              {/* Wykonawcy — kompaktowo, na hero */}
+              {performers.length > 0 && (
+                <div className="flex flex-wrap gap-x-8 gap-y-4 mt-6">
+                  {performers.map((p, i) => {
+                    const musician = p.musician as Musician
+                    const photo = isMedia(musician.photo) ? musician.photo : null
+                    return (
+                      <div key={p.id ?? i} className="flex items-center gap-3 text-left">
+                        <div className="relative w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-brand-navy ring-2 ring-brand-gold">
+                          {photo?.url ? (
+                            <Image
+                              src={photo.url}
+                              alt={photo.alt || musician.name}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-brand-gold text-lg font-serif">
+                              {musician.name?.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-xs uppercase tracking-wide leading-tight">
+                            {musician.name}
+                          </p>
+                          {(p.instrument || musician.instrument) && (
+                            <p className="text-brand-gold text-xs mt-0.5">
+                              {p.instrument || musician.instrument}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col items-start gap-4 lg:items-end shrink-0">
               {event.price != null && (
-                <span className="flex items-center gap-2 text-2xl font-bold text-white">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <span className="flex items-center gap-2 text-2xl md:text-3xl font-bold text-white">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4Z" />
                     <path d="M9 7v10" strokeDasharray="2 2" />
                   </svg>
                   {event.price} PLN
                 </span>
               )}
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 lg:justify-end">
                 <Link href={localeHref(locale, '/rezerwacje')} className={ctaClass}>
                   {ctaLabel}
                 </Link>
@@ -225,128 +252,69 @@ export async function renderEvent(slug: string, locale: Locale) {
                   />
                 )}
               </div>
+              {/* Udostępnij — na hero, pod przyciskami */}
+              {event.shareEnabled && (
+                <ShareBar
+                  label={event.shareLabel || (locale === 'pl' ? 'Udostępnij to wydarzenie' : 'Share this event')}
+                />
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Description band */}
-      {(event.descriptionHeading || event.body || performers.length > 0) && (
-        <section className="py-14 md:py-20 bg-brand-navy-royal border-t-2 border-brand-gold">
-          <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-            {(event.descriptionHeading || event.shareEnabled) && (
-              <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-start md:justify-between">
-                {event.descriptionHeading ? (
-                  <h2 className="font-serif text-3xl md:text-4xl font-bold">
-                    {event.descriptionHeading}
-                  </h2>
-                ) : (
-                  <span />
-                )}
-                {event.shareEnabled && (
-                  <div className="shrink-0 md:pt-2">
-                    <ShareBar
-                      label={event.shareLabel || (locale === 'pl' ? 'Udostępnij to wydarzenie' : 'Share this event')}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-            {event.body && (
-              <div className="prose prose-invert max-w-[860px] text-white/85">
-                <RichTextRenderer content={event.body} />
-              </div>
-            )}
-
-            {/* Performers — same navy band, directly under the body, no heading (per design) */}
-            {performers.length > 0 && (
-              <div className="flex flex-wrap gap-x-10 gap-y-6 mt-12">
-                {performers.map((p, i) => {
-                  const musician = p.musician as Musician
-                  const photo = isMedia(musician.photo) ? musician.photo : null
-                  return (
-                    <div key={p.id ?? i} className="flex items-center gap-4 text-left">
-                      <div className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden bg-brand-navy ring-2 ring-brand-gold">
-                        {photo?.url ? (
-                          <Image
-                            src={photo.url}
-                            alt={photo.alt || musician.name}
-                            fill
-                            className="object-cover"
-                            sizes="64px"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-brand-gold text-xl font-serif">
-                            {musician.name?.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-sm uppercase tracking-wide leading-tight">
-                          {musician.name}
-                        </p>
-                        {(p.instrument || musician.instrument) && (
-                          <p className="text-brand-gold text-sm mt-0.5">
-                            {p.instrument || musician.instrument}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </section>
+      {/* E3 (uwaga klienta 2026-07): nadchodzące wydarzenia = komponent z home
+          (żółte tło, przewijana karuzela) zamiast osobnej karuzeli. */}
+      {event.showUpcoming !== false && (
+        <EventsTeaserSectionBlock
+          locale={locale}
+          excludeId={event.id}
+          ignoreHomepageFlag
+          block={
+            {
+              blockType: 'eventsTeaser',
+              heading:
+                event.upcomingHeading ||
+                (locale === 'pl' ? 'NADCHODZĄCE WYDARZENIA' : 'UPCOMING EVENTS'),
+              viewAllLabel: locale === 'pl' ? 'SPRAWDŹ PEŁEN PROGRAM' : 'SEE THE FULL PROGRAM',
+              viewAllUrl: '/events',
+              limit: 30,
+            } as EventsTeaserBlockType
+          }
+        />
       )}
 
-      {/* Upcoming events strip — light background with date-badge cards (per design) */}
-      {event.showUpcoming !== false && upcoming.length > 0 && (
-        <section
-          className="py-14 md:py-16 bg-[#F4F1EA]"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(90deg, rgba(17,13,53,0.08) 0, rgba(17,13,53,0.08) 1px, transparent 1px, transparent 11px)',
-          }}
-        >
-          <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-            <div className="flex items-center justify-between gap-4 mb-8">
-              <h2 className="flex items-center gap-2 font-serif text-2xl md:text-4xl font-bold uppercase text-brand-navy">
-                {event.upcomingHeading || (locale === 'pl' ? 'Nadchodzące wydarzenia' : 'Upcoming events')}
-                <svg className="w-6 h-6 text-brand-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </h2>
-              <span className="hidden sm:block shrink-0">
-                <Link
-                  href={localeHref(locale, '/rezerwacje')}
-                  className="inline-flex items-center gap-2 bg-brand-navy text-white text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-navy/85 transition-colors"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M22 10V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.46c-1.19.69-2 1.99-2 3.46s.81 2.77 2 3.46V18H4v-2.54c1.19-.69 2-1.99 2-3.46 0-1.48-.8-2.77-2-3.46V6h16v2.54z" />
-                  </svg>
-                  {ctaLabel}
-                </Link>
-              </span>
-            </div>
-            <UpcomingEventsCarousel
-              cards={upcoming.map((ev) => {
-                const img = isMedia(ev.image) ? ev.image : isMedia(ev.posterImage) ? ev.posterImage : null
-                const evDate = ev.date ? new Date(ev.date) : null
-                return {
-                  id: ev.id,
-                  href: localeHref(locale, `/events/${ev.slug}`),
-                  title: ev.title ?? '',
-                  dayAbbr: evDate ? getDayAbbr(evDate, locale) : '',
-                  dayNum: evDate ? String(warsawParts(evDate).day).padStart(2, '0') : '',
-                  isSpecial: ev.eventType === 'special',
-                  image: img?.url ? { url: img.url, alt: img.alt || ev.title || '' } : null,
-                }
-              })}
-            />
-          </div>
-        </section>
-      )}
+      {/* E4: Newsletter */}
+      <NewsletterCTASection
+        locale={locale}
+        block={
+          {
+            blockType: 'newsletterCTA',
+            heading: 'NEWSLETTER',
+            body:
+              locale === 'pl'
+                ? 'Zapisz się i bądź na bieżąco z programem koncertów.'
+                : 'Sign up and stay up to date with the concert programme.',
+            placeholder: locale === 'pl' ? 'Adres email' : 'Email address',
+            buttonLabel: locale === 'pl' ? 'ZAPISZ SIĘ' : 'SIGN UP',
+            consentText:
+              locale === 'pl' ? 'Akceptuję politykę prywatności' : 'I accept the privacy policy',
+          } as NewsletterCTABlockType
+        }
+      />
+
+      {/* E5: Wydarzenia cykliczne (blok z pustą listą sam pobiera wszystkie serie) */}
+      <RecurringSeriesTeaserBlock
+        locale={locale}
+        block={
+          {
+            blockType: 'recurringSeriesTeaser',
+            eyebrow: locale === 'pl' ? 'Powtarzające się' : 'Recurring',
+            heading: locale === 'pl' ? 'WYDARZENIA CYKLICZNE' : 'RECURRING EVENTS',
+            series: [],
+          } as unknown as RecurringSeriesTeaserBlockType
+        }
+      />
     </div>
   )
 }

@@ -7,8 +7,9 @@ function isMedia(value: number | Media | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
 }
 
-/** A fixed-shape tile (the two-column / split layout). Menu graphics carry
- * text, so the image is shown whole (contain) — never cropped. */
+/** A fixed-shape tile (the two-column / split layout). The image FILLS the
+ * tile (cover) — client request 2026-07-03; upload graphics matching the
+ * block's aspect ratio (A4 by default) to avoid cropping. */
 function SplitTile({ media, ratio, alt }: { media: Media | null; ratio: string; alt: string }) {
   return (
     <div
@@ -20,7 +21,7 @@ function SplitTile({ media, ratio, alt }: { media: Media | null; ratio: string; 
           src={media.url}
           alt={media.alt || alt}
           fill
-          className="object-contain object-center"
+          className="object-cover object-center"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
       )}
@@ -71,7 +72,7 @@ export function MenuGalleryBlock({
             <div>
               {eyebrow && <p className="text-white/55 text-sm md:text-base mb-1">{eyebrow}</p>}
               {heading && (
-                <h2 className="font-serif text-white text-3xl md:text-5xl leading-tight inline-flex items-center gap-3">
+                <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight inline-flex items-center gap-3">
                   {heading}
                   <span className="text-brand-gold">›</span>
                 </h2>

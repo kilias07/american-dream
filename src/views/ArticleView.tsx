@@ -215,7 +215,7 @@ export async function renderArticle(slug: string, locale: Locale) {
       {related.length > 0 && (
         <section className="py-12 md:py-16 bg-brand-navy-royal">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold mb-8 uppercase">
+            <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
               {locale === 'pl' ? 'Zobacz również' : 'Related news'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

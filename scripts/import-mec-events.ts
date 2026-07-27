@@ -295,21 +295,27 @@ async function run() {
       shareLabel: 'Udostępnij to wydarzenie',
     }
 
-    const existing = await payload.find({
-      collection: 'events',
-      where: { slug: { equals: slug } },
-      limit: 1,
-      depth: 0,
-      locale: LOCALE,
-    })
-    if (existing.docs[0]) {
-      await payload.update({ collection: 'events', id: existing.docs[0].id, data: data as never, locale: LOCALE })
-      updated += 1
-      log(`↻ updated  ${ev.start.slice(0, 10)}  ${title}`)
-    } else {
-      await payload.create({ collection: 'events', data: data as never, locale: LOCALE })
-      created += 1
-      log(`✚ created  ${ev.start.slice(0, 10)}  ${title}${performers.length ? `  (${performers.length} performers)` : ''}${priceZl ? `  ${priceZl} zł` : ''}`)
+    // Jeden zepsuty rekord z MEC (np. niepoprawna data) nie może ubijać całego
+    // importu — logujemy i idziemy dalej (fix 2026-07-27).
+    try {
+      const existing = await payload.find({
+        collection: 'events',
+        where: { slug: { equals: slug } },
+        limit: 1,
+        depth: 0,
+        locale: LOCALE,
+      })
+      if (existing.docs[0]) {
+        await payload.update({ collection: 'events', id: existing.docs[0].id, data: data as never, locale: LOCALE })
+        updated += 1
+        log(`↻ updated  ${ev.start.slice(0, 10)}  ${title}`)
+      } else {
+        await payload.create({ collection: 'events', data: data as never, locale: LOCALE })
+        created += 1
+        log(`✚ created  ${ev.start.slice(0, 10)}  ${title}${performers.length ? `  (${performers.length} performers)` : ''}${priceZl ? `  ${priceZl} zł` : ''}`)
+      }
+    } catch (e) {
+      log(`⚠ skipped  ${String(ev.start).slice(0, 10)}  "${title}": ${(e as Error).message}`)
     }
   }
 

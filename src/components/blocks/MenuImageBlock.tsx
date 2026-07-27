@@ -48,7 +48,7 @@ export function MenuImageBlock({ block, locale }: { block: MenuImageBlockType; l
           <div className="mb-8 text-center">
             {eyebrow && <p className="mb-1 text-sm text-white/55 md:text-base">{eyebrow}</p>}
             {heading && (
-              <h2 className="font-serif text-3xl leading-tight text-white md:text-5xl">{heading}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight text-white">{heading}</h2>
             )}
             {pdfLabel && pdf?.url && (
               <a

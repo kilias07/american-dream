@@ -125,7 +125,7 @@ export function AgeGate({
             <p className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border-2 border-brand-gold text-brand-gold text-lg font-black">
               18+
             </p>
-            <h2 id="age-gate-title" className="font-serif text-white text-2xl md:text-3xl leading-tight mb-3">
+            <h2 id="age-gate-title" className="text-white text-2xl md:text-3xl font-bold uppercase tracking-tight leading-tight mb-3">
               {title}
             </h2>
             <p className="text-white/80 text-sm md:text-base leading-relaxed mb-7">{body}</p>

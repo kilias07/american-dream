@@ -505,7 +505,7 @@ export interface Page {
       )[]
     | null;
   /**
-   * Gość musi potwierdzić pełnoletność; „NIE" przenosi na stronę główną.
+   * Gość musi potwierdzić pełnoletność; „NIE" przenosi na stronę główną. UWAGA: po zaznaczeniu kliknij „Opublikuj zmiany" — sam autozapis (szkic) nie zmienia strony publicznej.
    */
   requireAgeGate?: boolean | null;
   meta?: {
@@ -3477,6 +3477,9 @@ export interface UiLabel {
     saturday?: string | null;
     sunday?: string | null;
   };
+  /**
+   * Pola, podpowiedzi (placeholdery) i komunikaty formularza kontaktowego na stronie Kontakt. Puste pole = tekst domyślny.
+   */
   forms?: {
     name?: string | null;
     phone?: string | null;

@@ -69,7 +69,7 @@ export async function MusiciansGridBlock({
               </p>
             )}
             {heading && (
-              <h2 className="text-white font-serif text-3xl md:text-4xl font-bold uppercase tracking-tight">
+              <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight">
                 {heading}
               </h2>
             )}

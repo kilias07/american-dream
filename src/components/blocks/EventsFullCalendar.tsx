@@ -131,16 +131,35 @@ function EventCard({ occ, locale, todayKey }: { occ: EventOccurrence; locale: st
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
-        <h3 className="text-white font-bold text-[11px] uppercase leading-tight mb-1">
-          {occ.title} <span className="text-white/60">›</span>
+        <h3 className="text-white font-bold text-[11px] uppercase leading-tight">
+          {occ.title} <span className="text-brand-gold">›</span>
         </h3>
-        {startTime && (
-          <p className="text-white/70 text-[10px]">
-            {startTime}
-            {occ.endTime ? ` - ${occ.endTime}` : ''}
-          </p>
-        )}
-        {occ.price != null && <p className="text-white/70 text-[10px]">{occ.price} PLN</p>}
+
+        {/* Godzina + cena — ukryte, odsłaniane na hover/focus; dokładnie ten sam
+            mechanizm co kafelki na żółtym tle na home (uwaga klienta 2026-07). */}
+        <div className="grid grid-rows-[0fr] opacity-0 transition-all duration-300 group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-within:grid-rows-[1fr] group-focus-within:opacity-100">
+          <div className="overflow-hidden">
+            <div className="flex flex-col gap-0.5 pt-1.5 text-white/85 text-[10px] font-medium">
+              {startTime && (
+                <span className="flex items-center gap-1">
+                  <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                  </svg>
+                  {startTime}
+                  {occ.endTime ? ` - ${occ.endTime}` : ''}
+                </span>
+              )}
+              {occ.price != null && (
+                <span className="flex items-center gap-1">
+                  <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22 10V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2z" />
+                  </svg>
+                  {occ.price} PLN
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </Link>
   )
@@ -422,14 +441,19 @@ export function EventsFullCalendar({
                           onKeyDown={(e) => onCellKeyDown(e, cell)}
                           onFocus={() => setActiveKey(cell.key)}
                           className={`flex flex-col gap-1 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold ${
-                            cell.isPast ? 'opacity-60' : ''
-                          } ${cell.isToday ? 'ring-2 ring-brand-navy' : ''}`}
+                            cell.isToday ? 'ring-2 ring-brand-navy' : ''
+                          }`}
                           style={{ minHeight: ROW_H }}
                         >
                           {hasEvents ? (
                             dayEvents.map((occ) => (
-                              <div key={occ.id} style={{ height: ROW_H }}>
-                                <EventCard occ={occ} locale={locale} todayKey={todayKey} />
+                              /* Nieprzezroczysta biała podkładka pod kafelkiem — minione dni
+                                 wyszarzają się przez opacity NA podkładce, więc żółte tło
+                                 bieżącego tygodnia nie prześwituje (bug-fix, uwaga 2026-07). */
+                              <div key={occ.id} style={{ height: ROW_H }} className="bg-white rounded-xl">
+                                <div className={`h-full ${cell.isPast ? 'opacity-60' : ''}`}>
+                                  <EventCard occ={occ} locale={locale} todayKey={todayKey} />
+                                </div>
                               </div>
                             ))
                           ) : (
@@ -437,9 +461,11 @@ export function EventsFullCalendar({
                               className={`h-full rounded-xl flex items-start p-2 ${
                                 cell.isToday
                                   ? 'bg-white/60'
-                                  : week.containsToday
-                                    ? 'bg-white/40'
-                                    : 'bg-gray-50'
+                                  : cell.isPast
+                                    ? 'bg-gray-50'
+                                    : week.containsToday
+                                      ? 'bg-white/40'
+                                      : 'bg-gray-50'
                               }`}
                             >
                               {cell.isToday ? (

@@ -50,7 +50,7 @@ function PricedList({ groups }: { groups: Group[] }) {
         {groups.map((group) => (
           <div key={group.key} className="mb-9 break-inside-avoid">
             {group.title && (
-              <h3 className="font-serif text-brand-gold text-xl md:text-2xl mb-4 pb-2 border-b border-brand-gold/40">
+              <h3 className="text-brand-gold text-lg md:text-xl font-bold uppercase tracking-[0.08em] mb-4 pb-2 border-b border-brand-gold/40">
                 {group.title}
               </h3>
             )}
@@ -112,7 +112,7 @@ function CocktailCard({ item, reversed }: { item: MenuItem; reversed: boolean })
         )}
       </div>
       <div className="flex-1 flex flex-col justify-center p-6 md:p-10">
-        <h3 className="font-serif text-white text-2xl md:text-4xl leading-tight mb-3">{item.name}</h3>
+        <h3 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-tight leading-tight mb-3">{item.name}</h3>
         {item.ingredients && (
           <p className="text-white/70 text-sm md:text-base leading-relaxed mb-4">{item.ingredients}</p>
         )}
@@ -187,7 +187,7 @@ function CardGrid({ groups, cocktails }: { groups: Group[]; cocktails?: boolean 
               )}
 
               <div className="mt-auto">
-                <h3 className="font-serif text-white text-2xl md:text-3xl leading-tight mb-2">
+                <h3 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-tight leading-tight mb-2">
                   {item.name}
                 </h3>
                 {sub && <p className="text-white/70 text-sm leading-snug mb-4">{sub}</p>}
@@ -251,7 +251,7 @@ export async function MenuSectionBlock({
               </p>
             )}
             {block.heading && (
-              <h2 className="font-serif text-white text-3xl md:text-5xl leading-tight">
+              <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight">
                 {block.heading}
               </h2>
             )}

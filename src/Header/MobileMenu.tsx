@@ -181,7 +181,7 @@ export const MobileMenu: React.FC<Props> = ({
             <div onClick={() => setIsOpen(false)}>
               <Link
                 href={ctaHref}
-                className="block w-full text-center bg-brand-gold text-white px-6 py-3 rounded-full text-[12px] font-bold uppercase tracking-[0.06em] hover:bg-brand-gold-dark transition-colors"
+                className="block w-full text-center bg-brand-gold text-brand-navy px-6 py-3 rounded-full text-[12px] font-bold uppercase tracking-[0.06em] hover:bg-brand-gold-dark transition-colors"
               >
                 {ctaButton.label}
               </Link>

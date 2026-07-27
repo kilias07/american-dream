@@ -85,7 +85,7 @@ function PosterCard({
               {card.leadTitle}
             </p>
           )}
-          <h3 className="text-white font-serif text-2xl leading-tight">{card.title}</h3>
+          <h3 className="text-white text-xl font-bold uppercase tracking-tight leading-tight">{card.title}</h3>
           {card.performers.length > 0 && (
             <ul className="mt-2 space-y-0.5">
               {card.performers.slice(0, 4).map((p, i) => (

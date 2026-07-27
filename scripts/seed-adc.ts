@@ -296,10 +296,11 @@ async function run() {
       { platform: 'youtube', url: 'https://www.youtube.com/@americandreamclubpoznan' },
       // Wizytówka Google (uwaga klienta 2026-07: „pierwsza po prawej") — ostatnia
       // w tablicy = skrajnie prawa w top barze.
-      { platform: 'googleMaps', url: 'https://share.google/rvlxbSYG9HNop2tiE' },
+      { platform: 'googleMaps', url: 'https://maps.google.com/?cid=7031611719575019223' },
     ],
+    // Pinezka wizytówki Google (nazwa klubu), nie adres pocztowy — uwaga klienta 2026-07.
     mapEmbedUrl:
-      'https://www.google.com/maps?q=ul.+Dominika%C5%84ska+9,+61-762+Pozna%C5%84&output=embed',
+      'https://www.google.com/maps?q=American+Dream+Club+%E2%80%93+Restauracja+z+muzyk%C4%85+na+%C5%BCywo+przy+Starym+Rynku+w+Poznaniu&output=embed',
     reservationUrl: 'tel:+48500210333',
     reviewAggregate: '478 opinii · 4,8/5 w Google',
     metaDescription:
@@ -1496,7 +1497,7 @@ async function run() {
     menuImage: specialMenuImage,
   }
   await page('restaurant', 'Restauracja', [
-    { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'NASZE MENU', inlineLinkUrl: '#menu' },
+    { blockType: 'pageHero', eyebrow: 'Kolacja, która dopełnia wieczór', title: 'Restauracja', titleStyle: 'serif', backgroundImage: rest },
     { blockType: 'aboutIntro', eyebrow: 'Nasza kuchnia', heading: 'Dania inspirowane kulturą różnych stanów USA', body: 'Karta dań nawiązuje do kuchni amerykańskiej z akcentami europejskimi. Menu stanowi dopełnienie wieczoru — tworząc wraz z muzyką i rozmową jedną spójną, klubową całość. Dania i napoje możesz zamówić przed koncertem lub w jego trakcie — obsługa pozostaje do pełnej dyspozycji. W karcie oferta wegetariańska oraz starannie dobrane wina i koktajle.' },
     { blockType: 'menuGallery', eyebrow: 'Karta dań', heading: 'NASZE MENU', pdfLabel: 'ZOBACZ CAŁE MENU (PDF)', aspectRatio: '707/1000', rows: menuTiles },
     setMenuPl,
@@ -1505,7 +1506,7 @@ async function run() {
       { image: bar, colSpan: 'full', label: 'Autorskie koktajle, selekcja alkoholi mocnych i win z całego świata.', title: 'COCKTAIL BAR', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/bar-and-cocktails' },
     ] },
   ], 'Restaurant', [
-    { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: rest, inlineLinkLabel: 'OUR MENU', inlineLinkUrl: '#menu' },
+    { blockType: 'pageHero', eyebrow: 'Dinner that completes the evening', title: 'Restaurant', titleStyle: 'serif', backgroundImage: rest },
     { blockType: 'aboutIntro', eyebrow: 'Our kitchen', heading: 'Dishes inspired by the culture of different US states', body: 'The menu draws on American cuisine with European accents. It is a complement to the evening — forming, together with the music and conversation, one coherent, club-like whole. You can order dishes and drinks before the concert or during it — the staff remain fully at your disposal. The menu includes a vegetarian offer and carefully selected wines and cocktails.' },
     { blockType: 'menuGallery', eyebrow: 'The menu', heading: 'OUR MENU', pdfLabel: 'SEE THE FULL MENU (PDF)', aspectRatio: '707/1000', rows: menuTiles },
     setMenuEn,
@@ -1515,11 +1516,20 @@ async function run() {
     ] },
   ])
 
-  // BAR
+  // BAR — menu jako kafelki graficzne (menuGallery), 1:1 z układem RESTAURACJI
+  // (uwaga klienta 2026-07: „ta podstrona ma być zbudowana tak jak RESTAURACJA,
+  // tzn. bento box na obrazki jak menu restauracyjne"). Klient podmienia
+  // placeholdery na prawdziwe karty barowe w /admin.
+  const barTile = (key: string) =>
+    slotImg(`bar-menu-${key}`, PLACEHOLDER('bar'), 'Cocktail Bar — kafelek menu')
+  const barMenuTiles = [
+    sp(await barTile('r1-left'), await barTile('r1-right')),
+    sp(await barTile('r2-left'), await barTile('r2-right')),
+  ]
   await page('bar-and-cocktails', 'Cocktail Bar', [
     { blockType: 'pageHero', eyebrow: 'Starannie dobrana selekcja win oraz autorskie koktajle', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await heroImg('bar-and-cocktails', PLACEHOLDER('bar'), 'Cocktail Bar — Hero') },
     { blockType: 'aboutIntro', heading: 'Przestrzeń spotkań z wyjątkowym smakiem', subheading: 'Dopełnienie klubowego charakteru wieczoru', body: 'Oferujemy starannie dobraną selekcję win oraz autorskie koktajle przygotowywane przez doświadczonych barmanów. Wina, drinki i koktajle serwowane są zarówno przy barze, jak i bezpośrednio do stolików, tak aby goście mogli swobodnie rozmawiać, słuchać muzyki i pozostać przy stole przez cały wieczór. W karcie znajdują się wina, alkohole premium oraz klasyczne i autorskie koktajle — skomponowane z myślą o klubowym charakterze wieczoru.' },
-    { blockType: 'menuSection', sectionTag: 'KOKTAJLE AUTORSKIE', heading: 'Koktajle', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
+    { blockType: 'menuGallery', eyebrow: 'Karta baru', heading: 'NASZE MENU', pdfLabel: 'ZOBACZ CAŁE MENU (PDF)', aspectRatio: '707/1000', rows: barMenuTiles },
     { blockType: 'bentoSection', heading: 'WIĘCEJ', items: [
       { image: await img.restauracja(), colSpan: 'half', label: 'Kuchnia inspirowana kulturą różnych stanów USA. Autorskie dania w nowoczesnej formie.', title: 'RESTAURACJA', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/restaurant' },
       { image: await img.cigar(), colSpan: 'half', label: 'Profesjonalna przestrzeń dla miłośników cygar. Starannie dobrana oferta cygar i alkoholi.', title: 'CIGAR ROOM', ctaLabel: 'SPRAWDŹ MENU', ctaUrl: '/cigar-lounge' },
@@ -1527,12 +1537,15 @@ async function run() {
   ], 'Cocktail Bar', [
     { blockType: 'pageHero', eyebrow: 'A carefully curated wine selection and signature cocktails', title: 'Cocktail Bar', titleStyle: 'serif', backgroundImage: await heroImg('bar-and-cocktails', PLACEHOLDER('bar'), 'Cocktail Bar — Hero') },
     { blockType: 'aboutIntro', heading: 'A meeting space with exceptional flavour', subheading: 'The finishing touch to the club character of the evening', body: 'We offer a carefully curated selection of wines and signature cocktails prepared by experienced bartenders. Wines, drinks and cocktails are served both at the bar and directly to the tables, so guests can chat freely, listen to the music and stay at their table all evening long. The menu features wines, premium spirits and classic and signature cocktails — composed with the club character of the evening in mind.' },
-    { blockType: 'menuSection', sectionTag: 'SIGNATURE COCKTAILS', heading: 'Cocktails', menuType: 'cocktails', layout: 'cardGrid', groupByCategory: false },
+    { blockType: 'menuGallery', eyebrow: 'The bar menu', heading: 'OUR MENU', pdfLabel: 'SEE THE FULL MENU (PDF)', aspectRatio: '707/1000', rows: barMenuTiles },
     { blockType: 'bentoSection', heading: 'MORE', items: [
       { image: await img.restauracja(), colSpan: 'half', label: 'A kitchen inspired by the culture of different US states. Signature dishes with a modern touch.', title: 'RESTAURANT', ctaLabel: 'SEE THE MENU', ctaUrl: '/restaurant' },
       { image: await img.cigar(), colSpan: 'half', label: 'A professional space for cigar lovers. A carefully curated selection of cigars and spirits.', title: 'CIGAR ROOM', ctaLabel: 'SEE THE MENU', ctaUrl: '/cigar-lounge' },
     ] },
-  ])
+  ]).then((id) =>
+    // Popup 18+ także na Cocktail Barze (uwaga klienta 2026-07).
+    payload.update({ collection: 'pages', id, data: { requireAgeGate: true } as never }),
+  )
 
   // CIGAR ROOM
   await page('cigar-lounge', 'Cigar Room', [

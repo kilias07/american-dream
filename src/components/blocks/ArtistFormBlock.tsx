@@ -14,7 +14,7 @@ export function ArtistFormBlock({ block }: { block: ArtistFormBlockType; locale:
               </p>
             )}
             {block.heading && (
-              <h2 className="font-serif text-white text-3xl md:text-5xl leading-tight mb-3">
+              <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight mb-3">
                 {block.heading}
               </h2>
             )}

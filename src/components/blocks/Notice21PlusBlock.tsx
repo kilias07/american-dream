@@ -31,7 +31,7 @@ export function Notice21PlusBlock({
           </div>
 
           {heading && (
-            <h2 className="font-serif text-white text-2xl md:text-3xl leading-tight">{heading}</h2>
+            <h2 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-tight leading-tight">{heading}</h2>
           )}
 
           {body && <p className="text-white/70 text-base md:text-lg leading-relaxed">{body}</p>}

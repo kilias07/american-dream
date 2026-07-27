@@ -111,7 +111,7 @@ export function ContactFormClient({ formHeading, locale, labels: overrides }: Pr
   return (
     <div>
       {formHeading && (
-        <h3 className="font-serif text-white text-2xl md:text-3xl leading-tight mb-6">
+        <h3 className="text-white text-2xl md:text-3xl font-bold uppercase tracking-tight leading-tight mb-6">
           {formHeading}
         </h3>
       )}

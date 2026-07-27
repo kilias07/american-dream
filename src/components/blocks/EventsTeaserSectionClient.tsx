@@ -120,7 +120,7 @@ function EventCard({
               {/* CTA — prowadzi do strony rezerwacji; pointer-events-auto + z-30 by klik trafiał w przycisk, nie w link karty */}
               <Link
                 href={localeHref(locale as Locale, '/rezerwacje')}
-                className="pointer-events-auto relative z-30 flex-shrink-0 inline-flex items-center bg-brand-gold text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
+                className="pointer-events-auto relative z-30 flex-shrink-0 inline-flex items-center bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
               >
                 {reserveLabel}
               </Link>

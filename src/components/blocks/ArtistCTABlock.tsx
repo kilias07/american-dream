@@ -55,7 +55,7 @@ export function ArtistCTABlock({
           )}
 
           {heading && (
-            <h2 className="font-serif text-white text-3xl md:text-4xl leading-tight">{heading}</h2>
+            <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight">{heading}</h2>
           )}
 
           {ctaLabel && ctaHref && (

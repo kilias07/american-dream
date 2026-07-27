@@ -77,7 +77,7 @@ function EventCard({ occ, locale, featured }: { occ: EventOccurrence; locale: st
             href={occ.ticketUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 bg-brand-gold text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-brand-gold-dark transition-colors"
+            className="inline-flex items-center gap-1 bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-brand-gold-dark transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -182,7 +182,7 @@ export function EventsTeaserBlock({ occurrences, heading, ctaLabel, ctaUrl, loca
           {ctaLabel && ctaUrl && (
             <Link
               href={ctaUrl}
-              className={`hidden md:flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full transition-colors whitespace-nowrap ${isGold ? 'bg-brand-navy text-white hover:bg-brand-navy/80' : 'bg-brand-gold text-white hover:bg-brand-gold/80'}`}
+              className={`hidden md:flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full transition-colors whitespace-nowrap ${isGold ? 'bg-brand-navy text-white hover:bg-brand-navy/80' : 'bg-brand-gold text-brand-navy hover:bg-brand-gold/80'}`}
             >
               {ctaLabel}
             </Link>
@@ -238,7 +238,7 @@ export function EventsTeaserBlock({ occurrences, heading, ctaLabel, ctaUrl, loca
         <div className="mt-6 flex justify-center w-full max-w-[1280px] mx-auto px-6 md:hidden">
           <Link
             href={ctaUrl}
-            className={`inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full ${isGold ? 'bg-brand-navy text-white' : 'bg-brand-gold text-white'}`}
+            className={`inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] px-5 py-2.5 rounded-full ${isGold ? 'bg-brand-navy text-white' : 'bg-brand-gold text-brand-navy'}`}
           >
             {ctaLabel}
           </Link>

@@ -55,7 +55,8 @@ export async function ContactInfoBlock({
             <div className="text-center">
               {address && (
                 <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                  /* Wizytówka Google (pinezka AMERICAN DREAM CLUB) — uwaga klienta 2026-07 */
+                  href="https://maps.google.com/?cid=7031611719575019223"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block text-white/90 text-lg md:text-xl leading-snug hover:text-brand-gold transition-colors mb-6"
@@ -66,7 +67,7 @@ export async function ContactInfoBlock({
 
               {phones.length > 0 && (
                 <div className="mb-6">
-                  <p className="text-brand-gold font-serif text-2xl mb-2">
+                  <p className="text-brand-gold text-xl md:text-2xl font-bold uppercase tracking-tight mb-2">
                     {pick(ui?.common?.callUs, locale === 'pl' ? 'Zadzwoń do nas' : 'Call us')}
                   </p>
                   <ul className="space-y-1">
@@ -89,7 +90,7 @@ export async function ContactInfoBlock({
 
               {emails.length > 0 && (
                 <div>
-                  <p className="text-brand-gold font-serif text-2xl mb-2">
+                  <p className="text-brand-gold text-xl md:text-2xl font-bold uppercase tracking-tight mb-2">
                     {pick(ui?.common?.writeToUs, locale === 'pl' ? 'Napisz do nas' : 'Write to us')}
                   </p>
                   <ul className="space-y-1">

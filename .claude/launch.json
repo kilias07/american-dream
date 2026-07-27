@@ -6,10 +6,7 @@
       "runtimeExecutable": "/Users/kamilkiliasinski/Library/pnpm/pnpm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
-      "autoPort": false,
-      "env": {
-        "PORT": "3000"
-      }
+      "autoPort": true
     }
   ]
 }

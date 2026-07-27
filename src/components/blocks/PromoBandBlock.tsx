@@ -50,7 +50,7 @@ export function PromoBandBlock({
           {/* Right: content */}
           <div className={media?.url ? '' : 'md:col-span-2 max-w-2xl'}>
             {heading && (
-              <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4">{heading}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight mb-4">{heading}</h2>
             )}
 
             {subtitle && (

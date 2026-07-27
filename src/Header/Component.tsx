@@ -145,7 +145,9 @@ export async function Header({ locale }: { locale: Locale }) {
             )}
             {address && (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                /* Wizytówka Google (pinezka AMERICAN DREAM CLUB), nie wyszukiwarka
+                   adresu — uwaga klienta 2026-07. CID z linku wizytówki. */
+                href="https://maps.google.com/?cid=7031611719575019223"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden sm:flex items-center gap-1.5 hover:opacity-70 transition-opacity"

@@ -15,7 +15,7 @@ const textareaClass =
 const labelClass = 'block text-white/70 text-xs font-bold uppercase tracking-[0.14em] mb-2'
 
 const sectionHeadingClass =
-  'font-serif text-white text-2xl md:text-3xl leading-tight mb-6 pb-3 border-b border-white/10'
+  'text-white text-2xl md:text-3xl font-bold uppercase tracking-tight leading-tight mb-6 pb-3 border-b border-white/10'
 
 const fieldWrapClass = 'flex flex-col'
 

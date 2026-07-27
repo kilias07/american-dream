@@ -66,17 +66,22 @@ export const UILabels: GlobalConfig = {
         {
           name: 'forms',
           type: 'group',
+          label: 'Formularz kontaktowy',
+          admin: {
+            description:
+              'Pola, podpowiedzi (placeholdery) i komunikaty formularza kontaktowego na stronie Kontakt. Puste pole = tekst domyślny.',
+          },
           fields: [
-            text('name'), // Imię
-            text('phone'), // Telefon
-            text('email'), // Adres email
-            text('message'), // Wiadomość
-            text('consent'), // Akceptuję politykę prywatności
-            text('submit'), // Wyślij wiadomość
-            text('sending'), // Wysyłanie…
-            text('success'), // Dziękujemy! Wiadomość została wysłana.
-            text('error'), // Wystąpił błąd. Spróbuj ponownie później.
-            text('contactHeading'), // SKONTAKTUJ SIĘ Z NAMI
+            { ...text('name'), label: 'Podpowiedź pola „Imię"' },
+            { ...text('phone'), label: 'Podpowiedź pola „Telefon"' },
+            { ...text('email'), label: 'Podpowiedź pola „Adres email"' },
+            { ...text('message'), label: 'Podpowiedź pola „Wiadomość" (treść wiadomości)' },
+            { ...text('consent'), label: 'Zgoda (checkbox) — np. „Akceptuję politykę prywatności"' },
+            { ...text('submit'), label: 'Przycisk wysyłki — np. „Wyślij wiadomość"' },
+            { ...text('sending'), label: 'Komunikat w trakcie wysyłki — np. „Wysyłanie…"' },
+            { ...text('success'), label: 'Komunikat po sukcesie' },
+            { ...text('error'), label: 'Komunikat błędu' },
+            { ...text('contactHeading'), label: 'Nagłówek formularza — np. „SKONTAKTUJ SIĘ Z NAMI"' },
           ],
         },
       ],

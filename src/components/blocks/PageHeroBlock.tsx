@@ -73,9 +73,10 @@ export function PageHeroBlock({
           {title}
         </Heading>
 
-        {/* Body — akapit opisu na hero (przeniesiony spod hero) */}
+        {/* Body — akapit opisu na hero; sam tekst, bez ramki i bez dodatkowego
+            tła (uwaga klienta 2026-07: „bez ramki wokół i bez dodatkowego tła"). */}
         {body && (
-          <p className="mt-5 max-w-3xl text-white/90 text-sm md:text-base leading-relaxed border border-white/25 rounded-xl px-5 py-4 bg-brand-navy/30 backdrop-blur-[2px]">
+          <p className="mt-5 max-w-3xl text-white/90 text-sm md:text-base leading-relaxed">
             {body}
           </p>
         )}

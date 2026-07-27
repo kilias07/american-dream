@@ -15,9 +15,15 @@ function isMedia(value: Media | number | null | undefined): value is Media {
 export async function EventsTeaserSectionBlock({
   block,
   locale,
+  excludeId,
+  ignoreHomepageFlag,
 }: {
   block: EventsTeaserBlockType
   locale: string
+  /** Pomija to wydarzenie (strona wydarzenia nie pokazuje samej siebie). */
+  excludeId?: string | number
+  /** Na stronie wydarzenia pokazujemy WSZYSTKIE nadchodzące, nie tylko homepage'owe. */
+  ignoreHomepageFlag?: boolean
 }) {
   const payload = await getPayload({ config })
 
@@ -27,9 +33,12 @@ export async function EventsTeaserSectionBlock({
       // Only upcoming events — past ones drop off this section automatically.
       date: { greater_than_equal: new Date().toISOString() },
       ...(block.onlyFeatured ? { featured: { equals: true } } : {}),
+      ...(excludeId != null ? { id: { not_equals: excludeId } } : {}),
       // Editors can untick "Show on homepage" to hide a single event here.
       // Shown by default: include events flagged true or with no flag set yet.
-      or: [{ showOnHomepage: { equals: true } }, { showOnHomepage: { exists: false } }],
+      ...(ignoreHomepageFlag
+        ? {}
+        : { or: [{ showOnHomepage: { equals: true } }, { showOnHomepage: { exists: false } }] }),
     },
     sort: 'date',
     // Uwaga klienta 2026-07: karuzela pokazuje więcej niż 5 wydarzeń — użytkownik

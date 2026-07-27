@@ -144,7 +144,7 @@ export function HeroBannerBlock({
           <CMSLink
             {...ctaLink}
             locale={locale}
-            className="inline-flex items-center gap-2.5 bg-brand-gold text-white px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-brand-gold-dark transition-colors shadow-lg"
+            className="inline-flex items-center gap-2.5 bg-brand-gold text-brand-navy px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-brand-gold-dark transition-colors shadow-lg"
           >
             {ctaIcon && ctaIcon !== 'none' && <IconMap icon={ctaIcon} />}
           </CMSLink>

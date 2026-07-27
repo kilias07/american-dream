@@ -117,7 +117,8 @@ export const Pages: CollectionConfig = {
       label: 'Bramka wiekowa 18+ (popup przy wejściu)',
       admin: {
         position: 'sidebar',
-        description: 'Gość musi potwierdzić pełnoletność; „NIE" przenosi na stronę główną.',
+        description:
+          'Gość musi potwierdzić pełnoletność; „NIE" przenosi na stronę główną. UWAGA: po zaznaczeniu kliknij „Opublikuj zmiany" — sam autozapis (szkic) nie zmienia strony publicznej.',
       },
     },
   ],

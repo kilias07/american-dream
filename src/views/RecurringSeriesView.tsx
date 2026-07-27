@@ -200,7 +200,7 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
         <section className="py-12 md:py-16 bg-brand-gold">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-              <h2 className="font-serif text-2xl md:text-3xl font-bold uppercase text-brand-navy">
+              <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-brand-navy">
                 {series.upcomingHeading ||
                   (locale === 'pl' ? 'Nadchodzące wydarzenia w cyklu' : 'Upcoming events in this series')}
               </h2>
@@ -284,7 +284,7 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
       {series.showOtherSeries !== false && others.length > 0 && (
         <section className="py-12 md:py-16 bg-brand-navy-royal">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold mb-8 uppercase">
+            <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
               {series.otherSeriesHeading ||
                 (locale === 'pl' ? 'Pozostałe wydarzenia cykliczne' : 'Other recurring series')}
             </h2>
@@ -341,7 +341,7 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
         <section className="py-12 md:py-16 bg-brand-navy">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <div className="flex items-center gap-3 mb-8">
-              <h2 className="font-serif text-2xl md:text-3xl font-bold uppercase">
+              <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">
                 {series.newsHeading || (locale === 'pl' ? 'Aktualności' : 'News')}
               </h2>
               <Link

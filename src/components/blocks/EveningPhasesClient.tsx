@@ -224,7 +224,7 @@ export function EveningPhasesClient({
       <div className="container max-w-[1280px] mx-auto px-6 md:px-10">
         {heading && (
           <div className="flex items-center gap-3 mb-8">
-            <h2 className="text-white font-serif text-3xl md:text-4xl font-bold uppercase tracking-tight">
+            <h2 className="text-white text-3xl md:text-4xl font-bold uppercase tracking-tight">
               {heading}
             </h2>
             <span className="text-brand-gold text-2xl md:text-3xl font-bold">›</span>
