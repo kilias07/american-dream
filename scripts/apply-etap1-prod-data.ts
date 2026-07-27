@@ -59,7 +59,9 @@ async function run() {
     const doc = restaurant.docs[0]
     if (!doc) throw new Error('restaurant page not found')
     const layout = (doc.layout ?? []).map((b) =>
-      b.blockType === 'pageHero' ? { ...b, inlineLinkLabel: null, inlineLinkUrl: null } : b,
+      b.blockType === 'pageHero'
+        ? ({ ...b, inlineLinkLabel: null, inlineLinkUrl: null } as typeof b)
+        : b,
     )
     await payload.update({
       collection: 'pages',
@@ -102,7 +104,7 @@ async function run() {
     r2l: await slotMedia('bar-menu-r2-left'),
     r2r: await slotMedia('bar-menu-r2-right'),
   }
-  const rows = [
+  const rows: Array<{ layout: string; left: number | null; right: number | null; full: number | null }> = [
     { layout: 'split', left: tiles.r1l, right: tiles.r1r, full: null },
     { layout: 'split', left: tiles.r2l, right: tiles.r2r, full: null },
   ]
