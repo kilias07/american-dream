@@ -14,6 +14,24 @@ export const HeroBanner: Block = {
       localized: true,
     },
     {
+      // Uwaga klienta 2026-07: dłuższy nagłówek (np. „Restauracja z muzyką na
+      // żywo") wymaga mniejszego fonta — rozmiar wybierany w CMS.
+      name: 'headingSize',
+      type: 'select',
+      label: 'Wielkość nagłówka',
+      defaultValue: 'xl',
+      options: [
+        { label: 'XL — bardzo duży (domyślny, krótki tytuł)', value: 'xl' },
+        { label: 'L — duży', value: 'lg' },
+        { label: 'M — średni (dłuższy tytuł)', value: 'md' },
+        { label: 'S — mały (bardzo długi tytuł)', value: 'sm' },
+      ],
+      admin: {
+        description:
+          'Dobierz do długości tekstu — im dłuższy nagłówek, tym mniejszy rozmiar, żeby mieścił się w jednej–dwóch liniach.',
+      },
+    },
+    {
       name: 'subtext',
       type: 'textarea',
       localized: true,

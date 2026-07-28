@@ -448,7 +448,7 @@ async function run() {
       { link: { type: 'custom', label: 'RESTAURACJA', url: '/restaurant' } },
       { link: { type: 'custom', label: 'PROGRAM', url: '/events' } },
       { link: { type: 'custom', label: 'TWOJE WYDARZENIE', url: '/business' } },
-      { link: { type: 'custom', label: 'BAR', url: '/bar-and-cocktails' } },
+      { link: { type: 'custom', label: 'COCKTAIL BAR', url: '/bar-and-cocktails' } },
       { link: { type: 'custom', label: 'CIGAR ROOM', url: '/cigar-lounge' } },
       { link: { type: 'custom', label: 'KONTAKT', url: '/contact' } },
     ],
@@ -1551,7 +1551,7 @@ async function run() {
   await page('cigar-lounge', 'Cigar Room', [
     { blockType: 'pageHero', eyebrow: 'Uzupełnienie wieczoru w otoczeniu klubowej elegancji', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await heroImg('cigar-lounge', PLACEHOLDER('cigar'), 'Cigar Room — Hero') },
     { blockType: 'aboutIntro', heading: 'Profesjonalna przestrzeń dla miłośników cygar', subheading: 'Starannie dobrana oferta cygar i alkoholi', body: 'Palarnia cygar w American Dream Club to przestrzeń stworzona z myślą o gościach, którzy cenią spokojną rozmowę i kulturę celebrowania cygara czy fajki. Zapewnia komfortowe warunki oraz atmosferę sprzyjającą dłuższemu pobytowi. Oferujemy starannie dobraną selekcję cygar, przechowywanych w odpowiednich warunkach i podawanych z należytą dbałością. Do wyboru starannie dobrane trunki, szlachetne whisky i koniaki naturalnie wpisujące się w charakter tego miejsca. Palarnia stanowi uzupełnienie wieczoru — przed koncertem, w przerwie lub po jego zakończeniu. Dedykowana dla osób, które oczekują dyskrecji, spokoju i poczucia bezpieczeństwa, w otoczeniu klubowej elegancji.' },
-    { blockType: 'menuImage', eyebrow: 'CYGARA', heading: 'Cygara', enableLightbox: true, images: [
+    { blockType: 'menuImage', eyebrow: 'CYGARA', heading: 'Cygara', pdfLabel: 'POBIERZ MENU (PDF)', enableLightbox: true, images: [
       { image: await img.cigarMenu(), caption: 'Starannie dobrana oferta cygar' },
     ] },
     { blockType: 'imageGallery', columns: '3', enableLightbox: true, images: [
@@ -1565,7 +1565,7 @@ async function run() {
   ], 'Cigar Room', [
     { blockType: 'pageHero', eyebrow: 'A perfect close to the evening amid club elegance', title: 'Cigar Room', titleStyle: 'serif', backgroundImage: await heroImg('cigar-lounge', PLACEHOLDER('cigar'), 'Cigar Room — Hero') },
     { blockType: 'aboutIntro', heading: 'A professional space for cigar lovers', subheading: 'A carefully curated selection of cigars and spirits', body: 'The cigar lounge at American Dream Club is a space created for guests who value calm conversation and the culture of savouring a fine cigar or pipe. It offers comfortable conditions and an atmosphere that invites a longer stay. We offer a carefully curated selection of cigars, stored in the right conditions and served with due care. To go with them, a selection of fine spirits, noble whiskies and cognacs that naturally fit the character of this place. The lounge is a complement to the evening — before the concert, during the interval or after it ends. Dedicated to those who expect discretion, calm and a sense of security, amid club elegance.' },
-    { blockType: 'menuImage', eyebrow: 'CIGARS', heading: 'Cigars', enableLightbox: true, images: [
+    { blockType: 'menuImage', eyebrow: 'CIGARS', heading: 'Cigars', pdfLabel: 'DOWNLOAD MENU (PDF)', enableLightbox: true, images: [
       { image: await img.cigarMenu(), caption: 'A carefully curated selection of cigars' },
     ] },
     { blockType: 'imageGallery', columns: '3', enableLightbox: true, images: [

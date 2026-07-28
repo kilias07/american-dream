@@ -13,12 +13,12 @@ export function MenuImageBlock({ block, locale }: { block: MenuImageBlockType; l
   const { eyebrow, heading } = block
   const enableLightbox = block.enableLightbox !== false
 
-  // „Pobierz PDF" jak w restauracji (uwaga klienta 2026-07) — przycisk tylko
-  // gdy PDF faktycznie wgrany (bez fallbacku, żeby nie linkować w 404).
+  // „Pobierz PDF" — dokładnie ta sama konwencja co menuGallery na Restauracji
+  // i Cocktail Barze (uwaga klienta 2026-07): przycisk gdy ustawiona etykieta,
+  // link = wgrany PDF albo statyczny fallback /menu/cigar-{locale}.pdf.
   const pdf = isMedia(block.pdfDownload) ? block.pdfDownload : null
-  const pdfLabel = pdf?.url
-    ? block.pdfLabel || (locale === 'en' ? 'DOWNLOAD MENU (PDF)' : 'POBIERZ MENU (PDF)')
-    : null
+  const pdfHref = pdf?.url || `/menu/cigar-${locale === 'en' ? 'en' : 'pl'}.pdf`
+  const pdfLabel = block.pdfLabel || null
 
   const items = (block.images ?? [])
     .filter((item) => isMedia(item.image) && item.image.url)
@@ -50,9 +50,9 @@ export function MenuImageBlock({ block, locale }: { block: MenuImageBlockType; l
             {heading && (
               <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-tight leading-tight text-white">{heading}</h2>
             )}
-            {pdfLabel && pdf?.url && (
+            {pdfLabel && (
               <a
-                href={pdf.url}
+                href={pdfHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-5 inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-3 rounded-full hover:bg-brand-gold-dark transition-colors whitespace-nowrap"

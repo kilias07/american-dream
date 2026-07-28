@@ -126,11 +126,12 @@ function parseDescription(html: string) {
 }
 
 // Short card/popover description: first line of the intro, cut at a sentence
-// boundary when it runs long.
+// boundary when it runs long. Limit 400 znaków (uwaga klienta 2026-07 — 300
+// było za mało), spójnie z maxLength pola `description` w kolekcji Events.
 function shortDescription(lines: string[]): string {
   const first = lines[0] ?? ''
-  if (first.length <= 300) return first
-  const cut = first.slice(0, 300)
+  if (first.length <= 400) return first
+  const cut = first.slice(0, 400)
   const lastStop = cut.lastIndexOf('. ')
   return lastStop > 80 ? cut.slice(0, lastStop + 1) : cut
 }

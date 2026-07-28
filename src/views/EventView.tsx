@@ -101,7 +101,9 @@ export async function renderEvent(slug: string, locale: Locale) {
       {/* Hero — CAŁOŚĆ wydarzenia na zdjęciu, bez przewijania na desktopie
           (uwagi klienta 2026-07, E1/E2): data+godzina POWIĘKSZONE w prawym
           górnym rogu; tagi, tytuł, OPIS, wykonawcy i share osadzone na hero. */}
-      <section className="relative min-h-[100svh] flex flex-col overflow-hidden">
+      {/* Wysokość = viewport MINUS fixed header (uwaga klienta 2026-07: cała
+          karta wydarzenia widoczna na jednym ekranie bez przewijania). */}
+      <section className="relative min-h-[calc(100svh-var(--header-h,122px))] flex flex-col overflow-hidden">
         {hero?.url ? (
           <Image
             src={hero.url}

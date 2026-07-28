@@ -24,6 +24,21 @@ export function SpecialMenuBlock({
   const logo = isMedia(block.logo) ? block.logo : null
   const menuImage = isMedia(block.menuImage) ? block.menuImage : null
 
+  // Personalizacja banera z CMS (uwaga klienta 2026-07): dowolny Google Font
+  // dla nagłówka + kolory nagłówka i opisu. Font doładowywany <link>-iem
+  // (React hoistuje go do <head>); fallback: dotychczasowy Playfair italic.
+  const headingFont = block.headingFont?.trim() || null
+  const headingColor = block.headingColor?.trim() || null
+  const bodyColor = block.bodyColor?.trim() || null
+  const fontHref = headingFont
+    ? `https://fonts.googleapis.com/css2?family=${headingFont.replace(/ /g, '+')}:ital,wght@0,400;0,700;1,400&display=swap`
+    : null
+  const headingStyle = {
+    ...(headingFont ? { fontFamily: `'${headingFont}', var(--font-serif)` } : {}),
+    ...(headingColor ? { color: headingColor } : {}),
+  }
+  const bodyStyle = bodyColor ? { color: bodyColor } : undefined
+
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   if (!heading && !menuImage) return null
@@ -70,17 +85,33 @@ export function SpecialMenuBlock({
                   />
                 ) : (
                   heading && (
-                    <h2 className="font-serif italic text-brand-navy text-5xl md:text-6xl leading-[0.95] drop-shadow-sm">
-                      {heading}
-                    </h2>
+                    <>
+                      {fontHref && (
+                        <>
+                          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                          <link rel="stylesheet" href={fontHref} />
+                        </>
+                      )}
+                      <h2
+                        className={`${headingFont ? '' : 'font-serif italic '}text-brand-navy text-5xl md:text-6xl leading-[0.95] drop-shadow-sm`}
+                        style={headingStyle}
+                      >
+                        {heading}
+                      </h2>
+                    </>
                   )
                 )}
 
                 {subtitle && (
-                  <p className="text-white text-lg md:text-xl font-semibold mt-8 drop-shadow">{subtitle}</p>
+                  <p className="text-white text-lg md:text-xl font-semibold mt-8 drop-shadow" style={bodyStyle}>
+                    {subtitle}
+                  </p>
                 )}
                 {body && (
-                  <p className="text-white/90 text-sm md:text-base leading-relaxed mt-4 drop-shadow">
+                  <p
+                    className="text-white/90 text-sm md:text-base leading-relaxed mt-4 drop-shadow"
+                    style={bodyStyle}
+                  >
                     {body}
                   </p>
                 )}

@@ -110,7 +110,12 @@ export const Events: CollectionConfig = {
       name: 'description',
       type: 'textarea',
       localized: true,
-      admin: { description: 'Short description shown on event cards and the calendar popover' },
+      // 400 znaków (uwaga klienta 2026-07: ~300 było zbyt mało).
+      maxLength: 400,
+      admin: {
+        description:
+          'Short description shown on event cards and the calendar popover (do 400 znaków)',
+      },
     },
     {
       type: 'row',

@@ -30,6 +30,52 @@ export const SpecialMenu: Block = {
       localized: true,
       admin: { placeholder: 'Towarzyska Niedziela' },
     },
+    // Personalizacja banera (uwaga klienta 2026-07: kontener wielokrotnego
+    // użytku — różne eventy potrzebują różnych fontów i kolorów).
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'headingFont',
+          type: 'text',
+          label: 'Czcionka nagłówka (Google Font)',
+          admin: {
+            width: '50%',
+            placeholder: 'np. Great Vibes, Lobster, Playfair Display',
+            description:
+              'Dokładna nazwa fontu z fonts.google.com — zostanie doładowany automatycznie. Puste = domyślna (Playfair Display italic).',
+          },
+        },
+        {
+          name: 'headingColor',
+          type: 'text',
+          label: 'Kolor nagłówka',
+          validate: (value: string | null | undefined) =>
+            !value || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+              ? true
+              : 'Podaj kolor w formacie HEX, np. #14213D',
+          admin: {
+            width: '25%',
+            placeholder: '#14213D',
+            description: 'HEX, np. #14213D. Puste = granatowy.',
+          },
+        },
+        {
+          name: 'bodyColor',
+          type: 'text',
+          label: 'Kolor tekstu opisu',
+          validate: (value: string | null | undefined) =>
+            !value || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+              ? true
+              : 'Podaj kolor w formacie HEX, np. #FFFFFF',
+          admin: {
+            width: '25%',
+            placeholder: '#FFFFFF',
+            description: 'HEX. Puste = biały.',
+          },
+        },
+      ],
+    },
     {
       name: 'subtitle',
       type: 'text',

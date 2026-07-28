@@ -27,6 +27,7 @@ import * as migration_20260703_080000_special_menu_image from './20260703_080000
 import * as migration_20260710_150000_page_hero_body from './20260710_150000_page_hero_body';
 import * as migration_20260710_160000_contact_rezerwacje_cigar from './20260710_160000_contact_rezerwacje_cigar';
 import * as migration_20260710_170000_testimonials_leave_review from './20260710_170000_testimonials_leave_review';
+import * as migration_20260728_090000_batch2_hero_size_banner_fonts_contact_form from './20260728_090000_batch2_hero_size_banner_fonts_contact_form';
 
 export const migrations = [
   {
@@ -173,5 +174,10 @@ export const migrations = [
     up: migration_20260710_170000_testimonials_leave_review.up,
     down: migration_20260710_170000_testimonials_leave_review.down,
     name: '20260710_170000_testimonials_leave_review',
+  },
+  {
+    up: migration_20260728_090000_batch2_hero_size_banner_fonts_contact_form.up,
+    down: migration_20260728_090000_batch2_hero_size_banner_fonts_contact_form.down,
+    name: '20260728_090000_batch2_hero_size_banner_fonts_contact_form',
   },
 ];

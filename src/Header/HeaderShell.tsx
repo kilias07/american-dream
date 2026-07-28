@@ -16,11 +16,14 @@ export function HeaderShell({ topBar, nav }: { topBar: React.ReactNode; nav: Rea
   const [spacerH, setSpacerH] = useState<number>() // rezerwa miejsca pod fixed headerem
 
   // Pomiar pełnej wysokości nagłówka (wstęga + nav) na potrzeby spacera.
+  // Wysokość idzie też do CSS var `--header-h`, żeby sekcje pełnoekranowe
+  // (np. hero wydarzenia) mogły zająć DOKŁADNIE resztę viewportu.
   useEffect(() => {
     const measure = () => {
       const t = topRef.current?.offsetHeight ?? 0
       const n = navRef.current?.offsetHeight ?? 0
       setSpacerH(t + n)
+      document.documentElement.style.setProperty('--header-h', `${t + n}px`)
     }
     measure()
     window.addEventListener('resize', measure)

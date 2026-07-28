@@ -1,7 +1,12 @@
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { ContactInfoBlock as ContactInfoBlockType, SiteSetting, OpeningHour } from '@/payload-types'
+import type {
+  ContactInfoBlock as ContactInfoBlockType,
+  SiteSetting,
+  OpeningHour,
+  ContactForm as ContactFormGlobal,
+} from '@/payload-types'
 import { ContactFormClient } from './ContactFormClient'
 import { getUILabels, pick } from '@/lib/ui-labels'
 import type { Locale } from '@/config/locales'
@@ -39,8 +44,21 @@ export async function ContactInfoBlock({
   const ui = await getUILabels(locale as Locale)
   const uiDays = ui?.days as Record<string, string | null | undefined> | undefined
   const closedLabel = pick(ui?.common?.closed, locale === 'pl' ? 'ZAMKNIĘTE' : 'CLOSED')
+
+  // Teksty formularza: global „Formularz kontaktowy" (grupa admina „Formularze
+  // (Forms)" — uwaga klienta 2026-07) → fallback ui-labels → fallback w kodzie.
+  let contactForm: ContactFormGlobal | null = null
+  try {
+    contactForm = await payload.findGlobal({
+      slug: 'contact-form',
+      locale: locale as 'pl' | 'en' | 'all',
+    })
+  } catch {
+    contactForm = null
+  }
   const formHeading =
     block.formHeading ||
+    pick(contactForm?.heading, '') ||
     pick(ui?.forms?.contactHeading, locale === 'pl' ? 'SKONTAKTUJ SIĘ Z NAMI' : 'CONTACT US')
 
   return (
@@ -118,24 +136,26 @@ export async function ContactInfoBlock({
                 formHeading={formHeading}
                 locale={locale}
                 labels={{
-                  name: ui?.forms?.name,
-                  phone: ui?.forms?.phone,
-                  email: ui?.forms?.email,
-                  message: ui?.forms?.message,
-                  consent: ui?.forms?.consent,
-                  submit: ui?.forms?.submit,
-                  submitting: ui?.forms?.sending,
-                  sent: ui?.forms?.success,
-                  error: ui?.forms?.error,
+                  name: contactForm?.name || ui?.forms?.name,
+                  phone: contactForm?.phone || ui?.forms?.phone,
+                  email: contactForm?.email || ui?.forms?.email,
+                  message: contactForm?.message || ui?.forms?.message,
+                  consent: contactForm?.consent || ui?.forms?.consent,
+                  submit: contactForm?.submit || ui?.forms?.submit,
+                  submitting: contactForm?.sending || ui?.forms?.sending,
+                  sent: contactForm?.success || ui?.forms?.success,
+                  error: contactForm?.error || ui?.forms?.error,
                 }}
               />
             )}
           </div>
         </div>
 
-        {/* Row B — opening hours (left) | map (right). Forms the bottom of the 2×2 quadrant. */}
+        {/* Row B — opening hours (left) | map (right). Forms the bottom of the 2×2
+            quadrant. Bez items-start: mapa rozciąga się na pełną wysokość wiersza,
+            więc jej dół równa się z godzinami w niedzielę (uwaga klienta 2026-07). */}
         {(days.length > 0 || (block.showMap && mapUrl)) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12 md:mt-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12 md:mt-16">
             <div>
               {days.length > 0 && (
                 <div>
@@ -170,7 +190,7 @@ export async function ContactInfoBlock({
                 </div>
               )}
             </div>
-            <div>
+            <div className="h-full">
               {block.showMap && mapUrl && (
                 <div className="overflow-hidden rounded-2xl h-full min-h-[320px]">
                   <iframe

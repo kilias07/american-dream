@@ -54,6 +54,16 @@ export function HeroBannerBlock({
   headingLevel?: 'h1' | 'h2'
 }) {
   const { heading, subtext, backgroundImage } = block
+
+  // Rozmiar nagłówka wybierany w CMS (uwaga klienta 2026-07) — dłuższy tytuł
+  // (np. „Restauracja z muzyką na żywo") potrzebuje mniejszego stopnia pisma.
+  const headingSizeClass =
+    {
+      sm: 'text-2xl md:text-3xl lg:text-4xl',
+      md: 'text-3xl md:text-4xl lg:text-5xl',
+      lg: 'text-4xl md:text-[2.75rem] lg:text-[3.4rem]',
+      xl: 'text-4xl md:text-5xl lg:text-6xl',
+    }[block.headingSize ?? 'xl'] ?? 'text-4xl md:text-5xl lg:text-6xl'
   const Heading = headingLevel
   const secondaryLinks = (block as any).secondaryLinks as Array<{ link: any; icon: string }> | undefined
   const ctaLink = (block as any).ctaLink as any
@@ -111,7 +121,7 @@ export function HeroBannerBlock({
         </Link>
 
         {/* Heading */}
-        <Heading className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+        <Heading className={`font-serif ${headingSizeClass} font-bold tracking-tight leading-[1.05]`}>
           {heading}
         </Heading>
 

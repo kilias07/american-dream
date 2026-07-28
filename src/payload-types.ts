@@ -127,6 +127,7 @@ export interface Config {
     'reservation-settings': ReservationSetting;
     legal: Legal;
     'ui-labels': UiLabel;
+    'contact-form': ContactForm;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -136,6 +137,7 @@ export interface Config {
     'reservation-settings': ReservationSettingsSelect<false> | ReservationSettingsSelect<true>;
     legal: LegalSelect<false> | LegalSelect<true>;
     'ui-labels': UiLabelsSelect<false> | UiLabelsSelect<true>;
+    'contact-form': ContactFormSelect<false> | ContactFormSelect<true>;
   };
   locale: 'en' | 'pl';
   widgets: {
@@ -224,6 +226,10 @@ export interface Page {
         | PageHeroBlock
         | {
             heading?: string | null;
+            /**
+             * Dobierz do długości tekstu — im dłuższy nagłówek, tym mniejszy rozmiar, żeby mieścił się w jednej–dwóch liniach.
+             */
+            headingSize?: ('xl' | 'lg' | 'md' | 'sm') | null;
             subtext?: string | null;
             /**
              * Używane jako plakat filmu (przed załadowaniem) i fallback dla osób z ograniczoną animacją. Bez filmu — pełne tło.
@@ -806,6 +812,18 @@ export interface SpecialMenuBlock {
    */
   logo?: (number | null) | Media;
   heading?: string | null;
+  /**
+   * Dokładna nazwa fontu z fonts.google.com — zostanie doładowany automatycznie. Puste = domyślna (Playfair Display italic).
+   */
+  headingFont?: string | null;
+  /**
+   * HEX, np. #14213D. Puste = granatowy.
+   */
+  headingColor?: string | null;
+  /**
+   * HEX. Puste = biały.
+   */
+  bodyColor?: string | null;
   subtitle?: string | null;
   body?: string | null;
   ctaLabel?: string | null;
@@ -866,7 +884,7 @@ export interface Event {
    */
   leadTitle?: string | null;
   /**
-   * Short description shown on event cards and the calendar popover
+   * Short description shown on event cards and the calendar popover (do 400 znaków)
    */
   description?: string | null;
   /**
@@ -2058,6 +2076,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               heading?: T;
+              headingSize?: T;
               subtext?: T;
               backgroundImage?: T;
               backgroundVideo?: T;
@@ -2379,6 +2398,9 @@ export interface SpecialMenuBlockSelect<T extends boolean = true> {
   image?: T;
   logo?: T;
   heading?: T;
+  headingFont?: T;
+  headingColor?: T;
+  bodyColor?: T;
   subtitle?: T;
   body?: T;
   ctaLabel?: T;
@@ -3512,6 +3534,27 @@ export interface UiLabel {
   createdAt?: string | null;
 }
 /**
+ * Nagłówek, podpowiedzi pól (placeholdery) i komunikaty formularza na stronie Kontakt. Puste pole = tekst domyślny.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-form".
+ */
+export interface ContactForm {
+  id: number;
+  heading?: string | null;
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  message?: string | null;
+  consent?: string | null;
+  submit?: string | null;
+  sending?: string | null;
+  success?: string | null;
+  error?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3741,6 +3784,25 @@ export interface UiLabelsSelect<T extends boolean = true> {
         confirmLabel?: T;
         declineLabel?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-form_select".
+ */
+export interface ContactFormSelect<T extends boolean = true> {
+  heading?: T;
+  name?: T;
+  phone?: T;
+  email?: T;
+  message?: T;
+  consent?: T;
+  submit?: T;
+  sending?: T;
+  success?: T;
+  error?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
