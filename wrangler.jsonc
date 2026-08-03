@@ -2,7 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "american-dream",
-  "account_id": "bd607571e7f04e97a5b814b406bd53d5",
+  // Konto Cloudflare KLIENTA (Admin@americandreamclub.pl) — migracja 2026-08-03.
+  "account_id": "728f583cb91698be32ab0744f50b80f9",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": [
     // Enable Node.js API
@@ -28,13 +29,13 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_id": "d84f50f1-2b6d-4cbf-a731-8fbf7a456947",
+      "database_id": "7f8a5dce-b13a-4db7-99c4-189c0a6ac0fe",
       "database_name": "american-dream",
       "remote": true,
     },
     {
       "binding": "NEXT_TAG_CACHE_D1",
-      "database_id": "d84f50f1-2b6d-4cbf-a731-8fbf7a456947",
+      "database_id": "7f8a5dce-b13a-4db7-99c4-189c0a6ac0fe",
       "database_name": "american-dream",
       "remote": true,
     },
