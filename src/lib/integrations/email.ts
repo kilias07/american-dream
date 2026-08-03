@@ -1,18 +1,18 @@
 import type { EmailAdapter } from 'payload'
 import { getBinding } from './env'
 
-// Cloudflare Email Service adapter (spec §6). A thin Payload email adapter that
-// sends through the `SEND_EMAIL` worker binding (public-beta Email Sending,
-// delivers to arbitrary recipients). SMTP/nodemailer do not run on Workers, so
-// everything goes through the binding.
+// Adapter e-mail (spec §6) — łańcuch transportów, pierwszy dostępny wygrywa:
 //
-// Setup required outside the code (long lead-time — run in parallel):
-//   • wrangler.jsonc: add the `send_email` binding named SEND_EMAIL
-//   • DNS for americandreamclub.pl: SPF + DKIM
-//   • inbound rezerwacja@ via Email Routing
+//   1. RESEND (HTTPS API, https://resend.com) — gdy ustawiony sekret
+//      RESEND_API_KEY. Działa NIEZALEŻNIE od tego, gdzie stoi DNS domeny
+//      (wymaga tylko weryfikacji domeny nadawcy w panelu Resend — 3 rekordy
+//      DNS u registrara, bez dotykania MX/poczty klubu). Darmowe 3k mail/mies.
+//   2. Cloudflare Email Service — binding `SEND_EMAIL` (wymaga strefy domeny
+//      na koncie CF + SPF/DKIM; do włączenia przy przeniesieniu domeny).
+//   3. Bez obu powyższych: log + no-op (żaden flow, np. reset hasła, nie
+//      blokuje się na braku e-maila — ale mail NIE wychodzi).
 //
-// Until the binding is provisioned the adapter logs and no-ops gracefully, so
-// the reservation flow is never blocked by missing email.
+// SMTP/nodemailer nie działają na Workers — stąd wyłącznie HTTP/binding.
 
 type CloudflareEmailBinding = {
   send: (message: unknown) => Promise<void>
@@ -71,12 +71,45 @@ export function cloudflareEmailAdapter(opts: {
         (typeof message.text === 'string' && message.text) ||
         ''
 
+      // ── 1. Resend (HTTPS) — preferowany, bo niezależny od DNS/strefy CF ────
+      const resendKey = process.env.RESEND_API_KEY
+      if (resendKey) {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: fromValue,
+            to: recipients.map(bareAddress),
+            subject,
+            html,
+          }),
+        })
+        if (res.ok) return { sent: true, via: 'resend' }
+        const detail = await res.text().catch(() => '')
+        console.error(
+          JSON.stringify({
+            level: 'error',
+            msg: `Resend API error ${res.status} — trying next transport`,
+            detail: detail.slice(0, 300),
+            to: recipients,
+            subject,
+          }),
+        )
+        // spadamy dalej do bindingu / no-opa
+      }
+
+      // ── 2. Cloudflare Email Service (binding SEND_EMAIL) ───────────────────
       const binding = getBinding<CloudflareEmailBinding>('SEND_EMAIL')
       if (!binding) {
         console.warn(
           JSON.stringify({
             level: 'warn',
-            msg: 'SEND_EMAIL binding not configured — email logged, not sent',
+            msg: resendKey
+              ? 'Resend failed and SEND_EMAIL binding not configured — email logged, not sent'
+              : 'No email transport (RESEND_API_KEY / SEND_EMAIL) — email logged, not sent',
             to: recipients,
             subject,
           }),
