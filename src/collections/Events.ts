@@ -448,7 +448,19 @@ export const Events: CollectionConfig = {
     // dalszej kolizji licznik. Dotyczy też akcji „Duplicate" w panelu.
     beforeChange: [
       async ({ data, req, operation, originalDoc }) => {
-        const slug = typeof data?.slug === 'string' ? data.slug : null
+        let slug = typeof data?.slug === 'string' && data.slug ? data.slug : null
+
+        // Gdy slug pusty, slugField wygenerowałby go DOPIERO PO tym hooku
+        // (field-level beforeChange) — bez szansy na dedupe. Generujemy więc
+        // sami (1:1 algorytm payloadowego slugify) i wyłączamy późniejszą
+        // generację, żeby field hook nie nadpisał zdedupowanej wartości.
+        if (!slug && data?.generateSlug !== false && typeof data?.title === 'string' && data.title) {
+          slug = data.title.replace(/ /g, '-').replace(/[^\w-]/g, '').toLowerCase()
+          if (slug) {
+            data.slug = slug
+            data.generateSlug = false
+          }
+        }
         if (!slug) return data
         if (operation === 'update' && originalDoc?.slug === slug) return data
 
