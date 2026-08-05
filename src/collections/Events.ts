@@ -1,5 +1,5 @@
 import type { CollectionConfig, Validate } from 'payload'
-import { slugField } from 'payload'
+import { slugField, ValidationError } from 'payload'
 import { revalidateTag } from 'next/cache'
 import { warsawDayKey, warsawParts } from '@/lib/recurring-events'
 
@@ -149,7 +149,8 @@ export const Events: CollectionConfig = {
                 {
                   name: 'date',
                   type: 'date',
-                  validate: validateEventDate,
+                  // Walidacja (poniedziałki + jedno wydarzenie/dzień) w hooku
+                  // beforeValidate kolekcji — patrz komentarz tamże.
                   admin: {
                     width: '50%',
                     description:
@@ -446,6 +447,28 @@ export const Events: CollectionConfig = {
     // „Something went wrong" (constraint D1 nie mapuje się na walidację).
     // Przy zajętym slugu dopisujemy datę wydarzenia (-YYYY-MM-DD), a w razie
     // dalszej kolizji licznik. Dotyczy też akcji „Duplicate" w panelu.
+    // Walidacja daty na poziomie kolekcji (fix 2026-08-05): async validate na
+    // polu `date` (w tabie „When") admin pokazywał jako gołe „Something went
+    // wrong" bez wskazania pola. Rzucony stąd ValidationError z path:'date'
+    // renderuje się poprawnie przy polu, z pełnym polskim komunikatem.
+    beforeValidate: [
+      async ({ data, req, originalDoc }) => {
+        const value = typeof data?.date === 'string' ? data.date : null
+        if (!value) return data
+        const fail = (message: string): never => {
+          throw new ValidationError({
+            collection: 'events',
+            errors: [{ path: 'date', message, label: 'Data wydarzenia' }],
+          })
+        }
+        const mondayMsg = await validateEventDate(value, {
+          req,
+          id: originalDoc?.id,
+        } as never)
+        if (typeof mondayMsg === 'string') fail(mondayMsg)
+        return data
+      },
+    ],
     beforeChange: [
       async ({ data, req, operation, originalDoc }) => {
         let slug = typeof data?.slug === 'string' && data.slug ? data.slug : null
