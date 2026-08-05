@@ -440,6 +440,46 @@ export const Events: CollectionConfig = {
     },
   ],
   hooks: {
+    // Slug odporny na kolizje (fix 2026-08-05). Wydarzenia cykliczne mają ten
+    // sam tytuł (np. „Lunch Time & Café" co niedzielę), a slug generuje się
+    // z tytułu i ma unikalny indeks — drugi zapis padał w adminie ogólnym
+    // „Something went wrong" (constraint D1 nie mapuje się na walidację).
+    // Przy zajętym slugu dopisujemy datę wydarzenia (-YYYY-MM-DD), a w razie
+    // dalszej kolizji licznik. Dotyczy też akcji „Duplicate" w panelu.
+    beforeChange: [
+      async ({ data, req, operation, originalDoc }) => {
+        const slug = typeof data?.slug === 'string' ? data.slug : null
+        if (!slug) return data
+        if (operation === 'update' && originalDoc?.slug === slug) return data
+
+        const taken = async (candidate: string): Promise<boolean> => {
+          const found = await req.payload.find({
+            collection: 'events',
+            where: {
+              slug: { equals: candidate },
+              ...(originalDoc?.id ? { id: { not_equals: originalDoc.id } } : {}),
+            },
+            limit: 1,
+            depth: 0,
+            req,
+          })
+          return Boolean(found.docs[0])
+        }
+
+        if (!(await taken(slug))) return data
+
+        const dateSuffix =
+          typeof data?.date === 'string' && data.date.length >= 10
+            ? `-${data.date.slice(0, 10)}`
+            : ''
+        let candidate = dateSuffix ? `${slug}${dateSuffix}` : `${slug}-2`
+        for (let i = 2; (await taken(candidate)) && i <= 20; i++) {
+          candidate = `${slug}${dateSuffix}-${i}`
+        }
+        data.slug = candidate
+        return data
+      },
+    ],
     afterChange: [
       () => {
         try {
