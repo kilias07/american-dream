@@ -34,9 +34,12 @@
       "remote": true,
     },
     {
+      // OSOBNA baza na tag-cache OpenNext (fix 2026-08-05): współdzielenie
+      // jednej D1 z treścią powodowało kontencję zapisu — przy kilku zapisach
+      // w adminie pod rząd co któryś padał 500 „Something went wrong".
       "binding": "NEXT_TAG_CACHE_D1",
-      "database_id": "7f8a5dce-b13a-4db7-99c4-189c0a6ac0fe",
-      "database_name": "american-dream",
+      "database_id": "d07b4d5a-bab9-409e-a9f7-abd67db56d93",
+      "database_name": "american-dream-tag-cache",
       "remote": true,
     },
   ],
