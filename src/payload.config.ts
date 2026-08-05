@@ -117,6 +117,26 @@ export default buildConfig({
     defaultLocale,
     fallback: true,
   },
+  // Pełny stack każdego błędu 5xx do logów workera (wrangler tail) — bez tego
+  // admin pokazuje tylko „Something went wrong" i nie da się diagnozować prod.
+  hooks: {
+    afterError: [
+      ({ error }) => {
+        console.error(
+          JSON.stringify({
+            level: 'error',
+            msg: 'payload afterError',
+            error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+            stack: error instanceof Error ? error.stack?.slice(0, 1200) : undefined,
+            cause:
+              error instanceof Error && error.cause
+                ? String((error.cause as Error).message ?? error.cause).slice(0, 400)
+                : undefined,
+          }),
+        )
+      },
+    ],
+  },
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,
