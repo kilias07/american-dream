@@ -42,6 +42,7 @@ async function getUpcomingForMusician(musicianId: number, locale: Locale): Promi
         and: [
           { date: { greater_than_equal: new Date().toISOString() } },
           { 'performers.musician': { equals: musicianId } },
+          { published: { not_equals: false } },
         ],
       },
       sort: 'date',

@@ -8,6 +8,7 @@ import type { Media, Post, RecurringSery } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/config/locales'
 import { localizedAlternates } from '@/utilities/seo'
 import { localeHref } from '@/utilities/href'
+import { fixOrphans } from '@/utilities/typography'
 import {
   expandEvents,
   formatTime,
@@ -33,7 +34,7 @@ async function getSeries(slug: string, locale: Locale): Promise<RecurringSery | 
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'recurring-series',
-      where: { slug: { equals: slug } },
+      where: { slug: { equals: slug }, published: { not_equals: false } },
       locale,
       fallbackLocale: defaultLocale,
       depth: 2,
@@ -50,7 +51,7 @@ async function getOtherSeries(currentId: number, locale: Locale): Promise<Recurr
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'recurring-series',
-      where: { id: { not_equals: currentId } },
+      where: { id: { not_equals: currentId }, published: { not_equals: false } },
       locale,
       fallbackLocale: defaultLocale,
       depth: 1,
@@ -71,7 +72,7 @@ async function getSeriesOccurrences(
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'events',
-      where: { recurringSeries: { equals: seriesId } },
+      where: { recurringSeries: { equals: seriesId }, published: { not_equals: false } },
       locale,
       fallbackLocale: defaultLocale,
       depth: 1,
@@ -189,7 +190,7 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
 
           {series.description && (
             <p className="text-white/85 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-              {series.description}
+              {fixOrphans(series.description)}
             </p>
           )}
         </div>
@@ -400,6 +401,7 @@ export async function recurringSeriesStaticParams() {
     const payload = await getPayload({ config: configPromise })
     const series = await payload.find({
       collection: 'recurring-series',
+      where: { published: { not_equals: false } },
       pagination: false,
       select: { slug: true },
     })

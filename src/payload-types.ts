@@ -869,6 +869,10 @@ export interface PromoBandBlock {
  */
 export interface Event {
   id: number;
+  /**
+   * Odznacz, aby ukryć wydarzenie na stronie (strona wydarzenia, kalendarz, listy). Wpis pozostaje w CMS i można go opublikować ponownie.
+   */
+  published?: boolean | null;
   title?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -1066,6 +1070,10 @@ export interface Room {
  */
 export interface RecurringSery {
   id: number;
+  /**
+   * Odznacz, aby ukryć cykl na stronie (strona cyklu, teasery). Wpis pozostaje w CMS i można go opublikować ponownie.
+   */
+  published?: boolean | null;
   name: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -2728,6 +2736,7 @@ export interface CategoriesSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
+  published?: T;
   title?: T;
   generateSlug?: T;
   slug?: T;
@@ -2839,6 +2848,7 @@ export interface MusiciansSelect<T extends boolean = true> {
  * via the `definition` "recurring-series_select".
  */
 export interface RecurringSeriesSelect<T extends boolean = true> {
+  published?: T;
   name?: T;
   generateSlug?: T;
   slug?: T;

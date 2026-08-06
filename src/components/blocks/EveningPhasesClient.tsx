@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
+import { fixOrphans } from '@/utilities/typography'
 
 export type DayPill = {
   key: string
@@ -127,7 +128,9 @@ function CardBody({
         {timeLabel && <span className={timePill}>{timeLabel}</span>}
         {controls}
       </div>
-      {body && <p className="text-white/70 text-sm md:text-base leading-relaxed">{body}</p>}
+      {body && (
+        <p className="text-white/70 text-sm md:text-base leading-relaxed">{fixOrphans(body)}</p>
+      )}
     </div>
   )
 }

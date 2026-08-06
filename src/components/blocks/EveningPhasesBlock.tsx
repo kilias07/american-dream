@@ -94,7 +94,7 @@ async function getEventsByWeekday(locale: Locale, nowIso: string): Promise<Recor
     const payload = await getPayload({ config: configPromise })
     const res = await payload.find({
       collection: 'events',
-      where: { date: { greater_than_equal: nowIso } },
+      where: { date: { greater_than_equal: nowIso }, published: { not_equals: false } },
       sort: 'date',
       limit: 300,
       depth: 1,

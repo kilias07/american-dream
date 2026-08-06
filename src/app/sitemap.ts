@@ -94,8 +94,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [posts, events, series] = await Promise.all([
     safeFind('posts', { _status: { equals: 'published' } }),
-    safeFind('events'),
-    safeFind('recurring-series'),
+    safeFind('events', { published: { not_equals: false } }),
+    safeFind('recurring-series', { published: { not_equals: false } }),
   ])
 
   const toEntries = (docs: Doc[], prefix: string): MetadataRoute.Sitemap =>

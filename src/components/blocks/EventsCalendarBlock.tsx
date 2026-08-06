@@ -22,6 +22,7 @@ async function fetchEvents(locale: string) {
   const { docs } = await payload.find({
     collection: 'events' as any,
     locale: locale as any,
+    where: { published: { not_equals: false } },
     limit: 1000,
     sort: 'date',
     depth: 1, // populate image (calendar cards) + genres/performers (event pages)

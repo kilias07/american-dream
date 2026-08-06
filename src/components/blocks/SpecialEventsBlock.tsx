@@ -30,7 +30,7 @@ export async function SpecialEventsBlock({
 
   const { docs } = await payload.find({
     collection: 'events',
-    where: { eventType: { equals: 'special' } },
+    where: { eventType: { equals: 'special' }, published: { not_equals: false } },
     sort: 'date',
     limit: block.limit || 6,
     locale: locale as 'pl' | 'en' | 'all',

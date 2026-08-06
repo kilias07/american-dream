@@ -32,6 +32,7 @@ export async function EventsTeaserSectionBlock({
     where: {
       // Only upcoming events — past ones drop off this section automatically.
       date: { greater_than_equal: new Date().toISOString() },
+      published: { not_equals: false },
       ...(block.onlyFeatured ? { featured: { equals: true } } : {}),
       ...(excludeId != null ? { id: { not_equals: excludeId } } : {}),
       // Editors can untick "Show on homepage" to hide a single event here.

@@ -41,7 +41,7 @@ async function getEvent(slug: string, locale: Locale): Promise<Event | null> {
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'events',
-      where: { slug: { equals: slug } },
+      where: { slug: { equals: slug }, published: { not_equals: false } },
       locale,
       fallbackLocale: defaultLocale,
       depth: 2,
@@ -326,6 +326,7 @@ export async function eventStaticParams() {
     const payload = await getPayload({ config: configPromise })
     const events = await payload.find({
       collection: 'events',
+      where: { published: { not_equals: false } },
       pagination: false,
       depth: 0,
       select: { slug: true },

@@ -6,7 +6,7 @@ export const RecurringSeries: CollectionConfig = {
   slug: 'recurring-series',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'themeColor', 'updatedAt'],
+    defaultColumns: ['name', 'themeColor', 'published', 'updatedAt'],
     description: 'Recurring event series with their own branding and gallery.',
   },
   access: {
@@ -16,6 +16,20 @@ export const RecurringSeries: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   fields: [
+    // Miękki „unpublish" (uwaga klienta 2026-08): odznaczenie ukrywa cykl na
+    // stronie (strona cyklu, teasery, sitemap); wydarzenia przypisane do cyklu
+    // pozostają widoczne — ukrywa się je osobno, na każdym wydarzeniu.
+    {
+      name: 'published',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Opublikowane',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Odznacz, aby ukryć cykl na stronie (strona cyklu, teasery). Wpis pozostaje w CMS i można go opublikować ponownie.',
+      },
+    },
     {
       name: 'name',
       type: 'text',

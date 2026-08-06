@@ -39,6 +39,7 @@ async function getSeries(
     const { docs } = await payload.find({
       collection: 'recurring-series',
       locale: locale as 'pl' | 'en',
+      where: { published: { not_equals: false } },
       depth: 1,
       limit: 100,
     })

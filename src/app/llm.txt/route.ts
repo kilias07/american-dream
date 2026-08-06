@@ -83,7 +83,7 @@ export async function GET(): Promise<Response> {
     const [events, posts] = await Promise.all([
       payload.find({
         collection: 'events',
-        where: { date: { greater_than_equal: nowIso } },
+        where: { date: { greater_than_equal: nowIso }, published: { not_equals: false } },
         sort: 'date',
         limit: 20,
         depth: 0,

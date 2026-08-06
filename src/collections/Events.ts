@@ -59,7 +59,7 @@ export const Events: CollectionConfig = {
   slug: 'events',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'date', 'eventType', 'featured'],
+    defaultColumns: ['title', 'date', 'eventType', 'featured', 'published'],
     description:
       'Every event is a single, individually-created entry with one concrete date & time. ' +
       'Only one event is allowed per calendar day (Europe/Warsaw), and events cannot be scheduled on Mondays (the club is closed). ' +
@@ -75,6 +75,20 @@ export const Events: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   fields: [
+    // Miękki „unpublish" (uwaga klienta 2026-08): odznaczenie ukrywa wydarzenie
+    // na całej stronie (strona wydarzenia, kalendarz, teasery, sitemap), ale wpis
+    // zostaje w CMS. Zajęty dzień nadal blokuje dodanie drugiego wydarzenia.
+    {
+      name: 'published',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Opublikowane',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Odznacz, aby ukryć wydarzenie na stronie (strona wydarzenia, kalendarz, listy). Wpis pozostaje w CMS i można go opublikować ponownie.',
+      },
+    },
     // ── Basic info (always visible) ──────────────────────────────────────────
     {
       name: 'title',
