@@ -3,7 +3,6 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
-import { ReserveTrigger } from '@/components/reservations/MyRest'
 
 export type TeaserEventCard = {
   id: number
@@ -116,15 +115,15 @@ function EventCard({
                 )}
               </div>
 
-              {/* CTA — otwiera widget MyRest pre-ustawiony na noc TEGO wydarzenia
-                  (mrOpen({date}), 2026-08-06); pointer-events-auto + z-30 by klik
-                  trafiał w przycisk, nie w link karty */}
-              <ReserveTrigger
-                date={card.dateISO}
+              {/* CTA — prowadzi NA STRONĘ WYDARZENIA (decyzja 2026-08-06: kafelki
+                  zawsze kierują do wydarzenia; MyRest z datą otwiera się dopiero
+                  tam). pointer-events-auto + z-30 by klik trafiał w przycisk. */}
+              <Link
+                href={card.href}
                 className="pointer-events-auto relative z-30 flex-shrink-0 inline-flex items-center bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
               >
                 {reserveLabel}
-              </ReserveTrigger>
+              </Link>
             </div>
           </div>
         </div>
