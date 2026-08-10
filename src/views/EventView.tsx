@@ -11,6 +11,7 @@ import { brandTitle, brandDescription, buildMetadata } from '@/lib/audit-seo'
 import { localeHref } from '@/utilities/href'
 import { EventJsonLd } from '@/components/seo/EventJsonLd'
 import { ShareBar } from '@/components/ui/ShareBar'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { AddToCalendar } from '@/components/ui/AddToCalendar'
 import { EventsTeaserSectionBlock } from '@/components/blocks/EventsTeaserSectionBlock'
 import { NewsletterCTASection } from '@/components/blocks/NewsletterCTASection'
@@ -235,9 +236,11 @@ export async function renderEvent(slug: string, locale: Locale) {
                 </span>
               )}
               <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-                <Link href={localeHref(locale, '/rezerwacje')} className={ctaClass}>
+                {/* Rezerwacja Z DATĄ wydarzenia — otwiera widget MyRest
+                    pre-ustawiony na tę noc (mrOpen({date}), 2026-08-06). */}
+                <ReserveTrigger date={event.date} className={ctaClass}>
                   {ctaLabel}
-                </Link>
+                </ReserveTrigger>
                 {event.date && (
                   <AddToCalendar
                     theme="light"

@@ -3,8 +3,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
-import { localeHref } from '@/utilities/href'
-import type { Locale } from '@/config/locales'
+import { ReserveTrigger } from '@/components/reservations/MyRest'
 
 export type TeaserEventCard = {
   id: number
@@ -117,13 +116,15 @@ function EventCard({
                 )}
               </div>
 
-              {/* CTA — prowadzi do strony rezerwacji; pointer-events-auto + z-30 by klik trafiał w przycisk, nie w link karty */}
-              <Link
-                href={localeHref(locale as Locale, '/rezerwacje')}
+              {/* CTA — otwiera widget MyRest pre-ustawiony na noc TEGO wydarzenia
+                  (mrOpen({date}), 2026-08-06); pointer-events-auto + z-30 by klik
+                  trafiał w przycisk, nie w link karty */}
+              <ReserveTrigger
+                date={card.dateISO}
                 className="pointer-events-auto relative z-30 flex-shrink-0 inline-flex items-center bg-brand-gold text-brand-navy text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-full hover:bg-brand-gold-dark transition-colors"
               >
                 {reserveLabel}
-              </Link>
+              </ReserveTrigger>
             </div>
           </div>
         </div>
