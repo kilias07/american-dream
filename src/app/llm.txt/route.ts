@@ -92,7 +92,7 @@ export async function GET(): Promise<Response> {
       }),
       payload.find({
         collection: 'posts',
-        where: { _status: { equals: 'published' } },
+        where: { _status: { equals: 'published' }, published: { not_equals: false } },
         sort: '-publishedAt',
         limit: 20,
         depth: 0,

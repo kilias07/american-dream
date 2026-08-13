@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { type Locale } from '@/config/locales'
+import { SITE_URL } from '@/utilities/siteUrl'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
 /** Prefiks ścieżki dla locale: PL bez prefiksu (default), EN pod `/en`. */
 export function localePrefix(locale: Locale): string {

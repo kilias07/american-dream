@@ -148,7 +148,19 @@ const PERFORMER_RE = new RegExp(
 
 function slugFromUrl(url: string): string | null {
   const m = url.match(/\/events\/([^/?#]+)/)
-  return m ? m[1] : null
+  if (!m) return null
+  // Stary serwis miewa w adresach zakodowane spacje (`…-10%20`), a `[^/?#]+`
+  // bierze je razem ze slugiem. Taki slug wyciekał potem do linków na /events
+  // i przez %20 wracał na listing (weryfikacja audytu 2026-08-06, punkt 7).
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(m[1])
+    } catch {
+      return m[1]
+    }
+  })()
+  const slug = decoded.trim().replace(/\s+/g, '-')
+  return slug || null
 }
 
 async function run() {

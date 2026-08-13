@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Media, Page } from '@/payload-types'
@@ -7,7 +7,7 @@ import { defaultLocale, type Locale } from '@/config/locales'
 import { BlockRenderer } from '@/components/BlockRenderer'
 import { AgeGate } from '@/components/AgeGate'
 import { getUILabels } from '@/lib/ui-labels'
-import { buildMetadata, brandTitle, getAuditEntry } from '@/lib/audit-seo'
+import { buildMetadata, brandTitle, extraDescription, getAuditEntry } from '@/lib/audit-seo'
 import { localeHref } from '@/utilities/href'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
@@ -43,7 +43,7 @@ export async function renderPage(slug: string, locale: Locale) {
 
   if (!page) {
     // Audit: no 404 — redirect up to the home page.
-    redirect(localeHref(locale, '/'))
+    permanentRedirect(localeHref(locale, '/'))
   }
 
   // Audit pages (restaurant / bar-and-cocktails / cigar-lounge) carry a defined
@@ -104,7 +104,7 @@ export async function pageMetadata(slug: string, locale: Locale) {
     locale,
     path: slug,
     title: meta?.title ?? audit?.title ?? brandTitle(page.title),
-    description: meta?.description ?? audit?.description,
+    description: meta?.description ?? audit?.description ?? extraDescription(slug, locale),
     keywords: audit?.keywords,
     ogImageUrl: ogImage?.url ?? null,
   })

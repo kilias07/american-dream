@@ -1,13 +1,19 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { SiteSetting } from '@/payload-types'
 import { InitTheme } from '@/providers/Theme/InitTheme'
+import { SITE_URL } from '@/utilities/siteUrl'
 import './globals.css'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
+// Google Analytics 4 — client's property. Loaded on the public site only; the
+// Payload admin lives under `(payload)` with its own root layout, so it is not
+// tracked. Overridable per-environment so preview deploys can drop the tag.
+const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-SK9SNGTY32'
 const SITE_NAME = 'American Dream Club'
 const SITE_DESCRIPTION =
   'American Dream Club — restauracja i klub jazzowy w sercu Poznania. Koncerty na żywo, autorska kuchnia, bar i cigar room.'
@@ -113,7 +119,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {GA_MEASUREMENT_ID ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`}
+            </Script>
+          </>
+        ) : null}
+      </body>
     </html>
   )
 }

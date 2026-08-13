@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import configPromise from '@payload-config'
@@ -65,7 +65,7 @@ export async function renderMusician(slug: string, locale: Locale) {
   )
   const musician = await cachedGetMusician()
   // Audit: no 404 — redirect up to the home page.
-  if (!musician) redirect(localeHref(locale, '/'))
+  if (!musician) permanentRedirect(localeHref(locale, '/'))
 
   const cachedUpcoming = unstable_cache(
     () => getUpcomingForMusician(musician.id, locale),
@@ -130,7 +130,7 @@ export async function renderMusician(slug: string, locale: Locale) {
             )}
             {musician.body && (
               <div className="prose prose-invert max-w-none text-white/85">
-                <RichTextRenderer content={musician.body} />
+                <RichTextRenderer content={musician.body} locale={locale} />
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import configPromise from '@payload-config'
@@ -92,7 +92,7 @@ async function getLatestPosts(locale: Locale): Promise<Post[]> {
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'posts',
-      where: { _status: { equals: 'published' } },
+      where: { _status: { equals: 'published' }, published: { not_equals: false } },
       sort: '-publishedAt',
       locale,
       fallbackLocale: defaultLocale,
@@ -116,7 +116,7 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
 
   if (!series) {
     // Audit: no 404 — redirect up to the events listing.
-    redirect(localeHref(locale, '/events'))
+    permanentRedirect(localeHref(locale, '/events'))
   }
 
   const cachedOthers = unstable_cache(

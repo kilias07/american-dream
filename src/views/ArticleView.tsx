@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import configPromise from '@payload-config'
@@ -20,7 +20,7 @@ async function getPost(slug: string, locale: Locale): Promise<Post | null> {
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'posts',
-      where: { slug: { equals: slug } },
+      where: { slug: { equals: slug }, published: { not_equals: false } },
       locale,
       fallbackLocale: defaultLocale,
       depth: 2,
@@ -38,7 +38,7 @@ async function getRelatedPosts(currentId: number, locale: Locale): Promise<Post[
     const result = await payload.find({
       collection: 'posts',
       where: {
-        and: [{ _status: { equals: 'published' } }, { id: { not_equals: currentId } }],
+        and: [{ _status: { equals: 'published' }, published: { not_equals: false } }, { id: { not_equals: currentId } }],
       },
       sort: '-publishedAt',
       locale,
@@ -66,7 +66,7 @@ async function getAdjacentPosts(
         collection: 'posts',
         where: {
           and: [
-            { _status: { equals: 'published' } },
+            { _status: { equals: 'published' }, published: { not_equals: false } },
             { id: { not_equals: currentId } },
             { publishedAt: { greater_than: publishedAt } },
           ],
@@ -81,7 +81,7 @@ async function getAdjacentPosts(
         collection: 'posts',
         where: {
           and: [
-            { _status: { equals: 'published' } },
+            { _status: { equals: 'published' }, published: { not_equals: false } },
             { id: { not_equals: currentId } },
             { publishedAt: { less_than: publishedAt } },
           ],
@@ -111,7 +111,7 @@ export async function renderArticle(slug: string, locale: Locale) {
 
   if (!post) {
     // Audit: no 404 — redirect up to the news listing.
-    redirect(localeHref(locale, '/news'))
+    permanentRedirect(localeHref(locale, '/news'))
   }
 
   const cachedRelated = unstable_cache(
@@ -206,7 +206,7 @@ export async function renderArticle(slug: string, locale: Locale) {
       <section className="py-12 md:py-16">
         <article className="max-w-[720px] mx-auto px-6 md:px-10">
           <div className="prose prose-invert max-w-none text-white/85">
-            <RichTextRenderer content={post.content} />
+            <RichTextRenderer content={post.content} locale={locale} />
           </div>
         </article>
       </section>
@@ -264,7 +264,7 @@ export async function articleStaticParams() {
     const payload = await getPayload({ config: configPromise })
     const posts = await payload.find({
       collection: 'posts',
-      where: { _status: { equals: 'published' } },
+      where: { _status: { equals: 'published' }, published: { not_equals: false } },
       pagination: false,
       select: { slug: true },
     })

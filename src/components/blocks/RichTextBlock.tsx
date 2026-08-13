@@ -4,10 +4,10 @@ import { RichTextRenderer } from '../RichTextRenderer'
 
 type RichTextData = Extract<NonNullable<Page['layout']>[number], { blockType: 'richText' }>
 
-export function RichTextBlock({ block }: { block: RichTextData }) {
+export function RichTextBlock({ block, locale }: { block: RichTextData; locale?: string }) {
   return (
     <section style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 2rem' }}>
-      <RichTextRenderer content={block.content} />
+      <RichTextRenderer content={block.content} locale={locale} />
     </section>
   )
 }

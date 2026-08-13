@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import configPromise from '@payload-config'
@@ -76,7 +76,7 @@ export async function renderEvent(slug: string, locale: Locale) {
 
   if (!event) {
     // Audit: no 404 — redirect up to the events listing.
-    redirect(localeHref(locale, '/events'))
+    permanentRedirect(localeHref(locale, '/events'))
   }
 
   // Venue address for the .ics / Google Calendar export (from site-settings).
@@ -181,7 +181,7 @@ export async function renderEvent(slug: string, locale: Locale) {
               {/* Opis na hero — przycięty (CSS clamp), pełna treść w SEO/JSON-LD */}
               {event.body && (
                 <div className="mt-5 max-w-2xl text-white/85 text-sm md:text-base leading-relaxed line-clamp-4 lg:line-clamp-5 [&_p]:mb-2">
-                  <RichTextRenderer content={event.body} />
+                  <RichTextRenderer content={event.body} locale={locale} />
                 </div>
               )}
 

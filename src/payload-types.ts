@@ -551,6 +551,10 @@ export interface PageHeroBlock {
  */
 export interface Post {
   id: number;
+  /**
+   * Odznacz, aby ukryć aktualność na stronie. Wpis pozostaje w CMS i można go opublikować ponownie.
+   */
+  published?: boolean | null;
   title: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -655,6 +659,15 @@ export interface BentoSectionBlock {
         title: string;
         ctaLabel?: string | null;
         ctaUrl?: string | null;
+        /**
+         * Drugi przycisk (opcjonalny)
+         */
+        secondaryCtaLabel?: string | null;
+        secondaryCtaUrl?: string | null;
+        /**
+         * Plik do pobrania dla drugiego przycisku (np. PDF). Ma pierwszeństwo przed adresem.
+         */
+        secondaryCtaFile?: (number | null) | Media;
         id?: string | null;
       }[]
     | null;
@@ -1329,8 +1342,26 @@ export interface OfferCardsBlock {
         tag?: string | null;
         title?: string | null;
         body?: string | null;
+        /**
+         * Główny przycisk, np. „ZADZWOŃ I POZNAJ OFERTĘ".
+         */
         ctaLabel?: string | null;
+        /**
+         * np. tel:+48508090575, /events albo https://…
+         */
         ctaUrl?: string | null;
+        /**
+         * Drugi przycisk (opcjonalny), np. „POBIERZ OFERTĘ PDF".
+         */
+        secondaryCtaLabel?: string | null;
+        /**
+         * Plik do pobrania (np. PDF). Ma pierwszeństwo przed adresem poniżej.
+         */
+        secondaryCtaFile?: (number | null) | Media;
+        /**
+         * Adres drugiego przycisku, jeśli nie wskazujesz pliku.
+         */
+        secondaryCtaUrl?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -2304,6 +2335,9 @@ export interface BentoSectionBlockSelect<T extends boolean = true> {
         title?: T;
         ctaLabel?: T;
         ctaUrl?: T;
+        secondaryCtaLabel?: T;
+        secondaryCtaUrl?: T;
+        secondaryCtaFile?: T;
         id?: T;
       };
   id?: T;
@@ -2554,6 +2588,9 @@ export interface OfferCardsBlockSelect<T extends boolean = true> {
         body?: T;
         ctaLabel?: T;
         ctaUrl?: T;
+        secondaryCtaLabel?: T;
+        secondaryCtaFile?: T;
+        secondaryCtaUrl?: T;
         id?: T;
       };
   id?: T;
@@ -2691,6 +2728,7 @@ export interface TestimonialsBlockSelect<T extends boolean = true> {
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
+  published?: T;
   title?: T;
   generateSlug?: T;
   slug?: T;

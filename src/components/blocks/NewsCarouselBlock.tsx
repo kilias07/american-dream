@@ -24,7 +24,7 @@ export async function NewsCarouselBlock({
   const { docs } = await payload.find({
     collection: 'posts',
     where: {
-      _status: { equals: 'published' },
+      _status: { equals: 'published' }, published: { not_equals: false },
     },
     sort: '-publishedAt',
     limit: block.limit || 3,

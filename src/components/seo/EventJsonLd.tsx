@@ -2,8 +2,8 @@ import type { Event, Media } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeUrl } from '@/utilities/seo'
 import { getSiteContact } from '@/lib/site-contact'
+import { SITE_URL } from '@/utilities/siteUrl'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
 function mediaUrl(value: number | null | Media | undefined): string | null {
   if (typeof value === 'object' && value !== null && value.url) {

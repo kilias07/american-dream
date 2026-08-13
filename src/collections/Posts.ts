@@ -25,6 +25,21 @@ export const Posts: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'publishedAt', 'updatedAt'],
   },
   fields: [
+    // Miękki „unpublish" — ten sam wzorzec co w Events/RecurringSeries (uwaga
+    // klienta 2026-08). Odznaczenie ukrywa wpis na całej stronie (lista
+    // aktualności, strona wpisu, karuzela na stronach, sitemap), ale artykuł
+    // zostaje w CMS i można go opublikować ponownie jednym kliknięciem.
+    {
+      name: 'published',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Opublikowane',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Odznacz, aby ukryć aktualność na stronie. Wpis pozostaje w CMS i można go opublikować ponownie.',
+      },
+    },
     {
       name: 'title',
       type: 'text',

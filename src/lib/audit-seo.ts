@@ -235,6 +235,33 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
   },
 }
 
+/**
+ * Opisy dla stron spoza audytu (audyt podaje tylko 8 kluczowych podstron).
+ * Weryfikacja audytu 2026-08-06, punkt 6: `/contact`, `/rezerwacje` i
+ * `/kontakt-dla-artystow` nie miały description w ogóle. Redakcja z CMS
+ * (`page.meta.description`) nadal ma pierwszeństwo — to tylko fallback,
+ * żeby żadna podstrona nie wyszła na produkcję bez opisu.
+ */
+export const EXTRA_DESCRIPTIONS: Record<string, Record<Locale, string>> = {
+  contact: {
+    pl: 'Kontakt do American Dream Club w Poznaniu — adres przy Dominikańskiej 9, telefon, e-mail i godziny otwarcia restauracji, cocktail baru oraz klubu jazzowego.',
+    en: 'Contact American Dream Club in Poznań — the address at Dominikańska 9, phone, e-mail and opening hours of the restaurant, cocktail bar and jazz club.',
+  },
+  rezerwacje: {
+    pl: 'Rezerwacja stolika w American Dream Club w Poznaniu. Zaplanuj wieczór — kolacja od 17:00, koncert od 19:00, wieczór klubowy do 23:00. Rezerwacja stolika jest bezpłatna.',
+    en: 'Book a table at American Dream Club in Poznań. Plan your evening — dinner from 5 pm, the concert from 7 pm, the club night until 11 pm. Booking a table is free of charge.',
+  },
+  'kontakt-dla-artystow': {
+    pl: 'Zgłoszenia muzyków i zespołów do American Dream Club w Poznaniu. Wyślij nagranie i opis projektu — szukamy artystów na koncerty jazzowe, swingowe i bluesowe.',
+    en: 'Applications from musicians and bands for American Dream Club in Poznań. Send a recording and a short description — we book jazz, swing and blues acts.',
+  },
+}
+
+/** Opis fallback dla podstrony spoza audytu (albo `undefined`). */
+export function extraDescription(slug: string, locale: Locale): string | undefined {
+  return EXTRA_DESCRIPTIONS[slug]?.[locale]
+}
+
 /** Zwraca wpis audytu dla klucza + locale. */
 export function auditEntry(key: Key, locale: Locale): AuditEntry {
   return AUDIT_SEO[key][locale]

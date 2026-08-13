@@ -113,6 +113,41 @@ export const BentoSection: Block = {
             },
           ],
         },
+        // Drugi, opcjonalny przycisk (uwaga klienta 2026-08) — np. „ZADZWOŃ"
+        // obok linku do PDF-a. Renderuje się tylko z etykietą i celem.
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'secondaryCtaLabel',
+              type: 'text',
+              localized: true,
+              admin: {
+                width: '50%',
+                placeholder: 'POBIERZ OFERTĘ PDF',
+                description: 'Drugi przycisk (opcjonalny)',
+              },
+            },
+            {
+              name: 'secondaryCtaUrl',
+              type: 'text',
+              admin: {
+                width: '50%',
+                placeholder: 'tel:+48508090575',
+                condition: (_data, siblingData) => !siblingData?.secondaryCtaFile,
+              },
+            },
+          ],
+        },
+        {
+          name: 'secondaryCtaFile',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description:
+              'Plik do pobrania dla drugiego przycisku (np. PDF). Ma pierwszeństwo przed adresem.',
+          },
+        },
       ],
     },
   ],

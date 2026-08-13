@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Page } from '@/payload-types'
@@ -51,7 +51,7 @@ export async function renderEventsList(pageParam: string | undefined, locale: Lo
 
   // No CMS page (e.g. fresh DB before seed) — redirect up rather than 404.
   if (!program?.layout || program.layout.length === 0) {
-    redirect(localeHref(locale, '/'))
+    permanentRedirect(localeHref(locale, '/'))
   }
 
   // Expose exactly one H1 = the audit phrase (sr-only), and demote the visible

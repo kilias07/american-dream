@@ -10,6 +10,11 @@ type BentoItem = {
   title: string
   ctaLabel?: string | null
   ctaUrl?: string | null
+  // Optional second button (uwaga klienta 2026-08), e.g. "ZADZWOŃ" next to a
+  // PDF download. A picked file wins over the typed address.
+  secondaryCtaLabel?: string | null
+  secondaryCtaUrl?: string | null
+  secondaryCtaFile?: Media | number | null
 }
 
 type Props = {
@@ -63,15 +68,21 @@ function CtaIcon({ url }: { url: string }) {
 
 function BentoCard({ item }: { item: BentoItem }) {
   const media = isMedia(item.image) ? item.image : null
+  const secondaryFile = isMedia(item.secondaryCtaFile) ? item.secondaryCtaFile : null
+  const secondaryHref = secondaryFile?.url || item.secondaryCtaUrl || null
 
   return (
-    /* Wysokość banerów zmniejszona o połowę (uwaga klienta 2026-07 — świadomy
-       powrót do niższej wersji); treść wyśrodkowana w pionie i poziomie. */
+    /* Wysokość: na desktopie trzymamy proporcje z projektu (uwaga klienta
+       2026-07 — świadomie niższe banery), na mobile kafel rośnie pod treść.
+       Sztywna proporcja na wąskim ekranie ucinała opis i przycisk (uwaga
+       klienta 2026-08), bo treść była pozycjonowana absolutnie. Teraz kafel
+       jest flexem, treść leży w normalnym przepływie, a proporcja/min-height
+       wyznacza tylko wysokość MINIMALNĄ. */
     <div
-      className={`relative rounded-2xl overflow-hidden group cursor-pointer ring-1 ring-brand-gold/70 ${
+      className={`relative rounded-2xl overflow-hidden group cursor-pointer ring-1 ring-brand-gold/70 flex items-center justify-center ${
         item.colSpan === 'full'
-          ? 'col-span-2 aspect-[8/3] md:aspect-[3/1]'
-          : 'col-span-2 md:col-span-1 min-h-[240px]'
+          ? 'col-span-2 min-h-[220px] md:min-h-0 md:aspect-[3/1]'
+          : 'col-span-2 md:col-span-1 min-h-[260px]'
       }`}
     >
       {/* Background image */}
@@ -91,26 +102,40 @@ function BentoCard({ item }: { item: BentoItem }) {
       {/* Dark gradient overlay — mocniejszy środek, bo treść jest teraz wyśrodkowana */}
       <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/55 to-brand-navy/25" />
 
-      {/* Content — wyśrodkowana w pionie i poziomie, fonty +1 pkt (uwaga klienta 2026-07) */}
-      <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center">
+      {/* Content — w normalnym przepływie (nie `absolute`), żeby kafel rósł pod
+          treść zamiast ją przycinać; fonty +1 pkt (uwaga klienta 2026-07) */}
+      <div className="relative z-10 w-full px-6 py-7 flex flex-col items-center justify-center text-center">
         {item.label && (
-          <p className="text-white/80 text-[15px] mb-2 max-w-md leading-snug">{item.label}</p>
+          <p className="text-white/80 text-[15px] mb-2 max-w-md leading-snug text-balance">
+            {item.label}
+          </p>
         )}
 
-        <h3 className="text-white text-[26px] md:text-[32px] font-bold uppercase tracking-wide mb-4 flex items-center gap-2">
+        <h3 className="text-white text-[26px] md:text-[32px] font-bold uppercase tracking-wide mb-4 flex flex-wrap items-center justify-center gap-x-2 text-balance">
           {item.title}
           <span className="text-white">›</span>
         </h3>
 
-        {item.ctaLabel && item.ctaUrl && (
-          <Link
-            href={item.ctaUrl}
-            className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
-          >
-            <CtaIcon url={item.ctaUrl} />
-            {item.ctaLabel}
-          </Link>
-        )}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {item.ctaLabel && item.ctaUrl && (
+            <Link
+              href={item.ctaUrl}
+              className="inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-2.5 rounded-full hover:bg-brand-gold-dark transition-colors"
+            >
+              <CtaIcon url={item.ctaUrl} />
+              {item.ctaLabel}
+            </Link>
+          )}
+          {item.secondaryCtaLabel && secondaryHref && (
+            <Link
+              href={secondaryHref}
+              {...(secondaryFile ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              className="inline-flex items-center gap-2 border border-brand-gold text-brand-gold text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-2.5 rounded-full hover:bg-brand-gold hover:text-brand-navy transition-colors"
+            >
+              {item.secondaryCtaLabel}
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -51,7 +51,7 @@ function renderBlock(
     case 'heroBanner':
       return <HeroBannerBlock key={i} block={block} locale={locale} headingLevel={headingLevel} />
     case 'richText':
-      return <RichTextBlock key={i} block={block} />
+      return <RichTextBlock key={i} block={block} locale={locale} />
     case 'imageGallery':
       return <ImageGalleryBlock key={i} block={block} />
     case 'liveStream':
@@ -63,7 +63,7 @@ function renderBlock(
     case 'mediaBlock':
       return <MediaBlock key={i} {...block} />
     case 'archive':
-      return <ArchiveBlock key={i} block={block} />
+      return <ArchiveBlock key={i} block={block} locale={locale} />
     case 'banner':
       return <BannerBlock key={i} {...block} />
     case 'eventsCalendar':

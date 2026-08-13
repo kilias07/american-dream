@@ -323,3 +323,76 @@
 #mr-widget-trigger {
   display: none !important;
 }
+
+/* ── Rich text from the CMS ──────────────────────────────────────────────────
+   The Lexical editor now exposes Payload's full toolbar (headings, lists,
+   quotes, alignment, indent, rules, inline images, links), so the rendered
+   output needs matching styles. `@layer base` above resets heading sizes to
+   `unset`, which is why headings are re-declared here. Colours stay inherited
+   so the same markup works on the navy sections and on light cards. */
+.adc-richtext > :first-child {
+  margin-top: 0;
+}
+.adc-richtext > :last-child {
+  margin-bottom: 0;
+}
+.adc-richtext p {
+  margin-block: 0.75em;
+}
+.adc-richtext a {
+  color: var(--color-brand-gold, #F8AB00);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  transition: opacity 150ms ease;
+}
+.adc-richtext a:hover {
+  opacity: 0.75;
+}
+.adc-richtext h1,
+.adc-richtext h2,
+.adc-richtext h3,
+.adc-richtext h4 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-block: 1.4em 0.5em;
+}
+.adc-richtext h1 { font-size: 2rem; }
+.adc-richtext h2 { font-size: 1.6rem; }
+.adc-richtext h3 { font-size: 1.3rem; }
+.adc-richtext h4 { font-size: 1.1rem; }
+.adc-richtext ul,
+.adc-richtext ol {
+  margin-block: 0.75em;
+  padding-inline-start: 1.5em;
+}
+.adc-richtext ul { list-style: disc; }
+.adc-richtext ol { list-style: decimal; }
+.adc-richtext li { margin-block: 0.25em; }
+/* Checklists render as <li role="checkbox"> with their own bullet suppressed. */
+.adc-richtext .list-item-checkbox { list-style: none; }
+.adc-richtext blockquote {
+  margin-block: 1em;
+  padding-inline-start: 1em;
+  border-inline-start: 3px solid var(--color-brand-gold, #F8AB00);
+  font-style: italic;
+  opacity: 0.9;
+}
+.adc-richtext hr {
+  margin-block: 1.5em;
+  border: 0;
+  border-top: 1px solid currentColor;
+  opacity: 0.25;
+}
+.adc-richtext code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  background: rgb(0 0 0 / 0.25);
+}
+.adc-richtext img,
+.adc-richtext picture {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}

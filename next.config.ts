@@ -27,6 +27,21 @@ const nextConfig = {
     unoptimized: true,
   },
 
+  // The Worker keeps answering on its `*.workers.dev` deployment hostname even
+  // after the custom domain is attached. Canonicals now always point at
+  // americandreamclub.pl (src/utilities/siteUrl.ts), but the dev host is still
+  // reachable and crawlable — so mark anything served from it as noindex.
+  // Weryfikacja audytu 2026-08-06, punkt 1.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host' as const, value: '.*\\.workers\\.dev' }],
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ]
+  },
+
   // SEO audit: 301 redirects from the old (Polish) WordPress URLs + the old
   // Payload slugs to the new English canonical URLs (per the migration sheet;
   // a few erroneous sheet targets were corrected, e.g. /kuchnia → /restaurant).
@@ -102,6 +117,12 @@ const nextConfig = {
       ...EN.map(([s, d]) => p(s, d)),
       // wildcard families
       p('/mec-category/:slug*', '/events'),
+      // Leftover WordPress plumbing — uploads, themes/plugins assets and the
+      // REST API all still get crawled/linked. Send the lot to the home page
+      // instead of serving 404s (weryfikacja audytu 2026-08-06, punkt 4).
+      p('/wp-content/:path*', '/'),
+      p('/wp-includes/:path*', '/'),
+      p('/wp-json/:path*', '/'),
       // old article/event deep URLs keep their slug where possible
       p('/aktualnosci/:slug', '/news/:slug'),
       p('/en/aktualnosci/:slug', '/en/news/:slug'),

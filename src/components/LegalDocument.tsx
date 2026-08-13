@@ -18,7 +18,9 @@ async function getLegal(locale: Locale): Promise<Legal | null> {
       slug: 'legal',
       locale,
       fallbackLocale: defaultLocale,
-      depth: 0,
+      // depth 1 so internal rich-text links (page/post/PDF) come back populated
+      // — at depth 0 they stay bare ids and render as `href="#"`.
+      depth: 1,
     })
   } catch {
     return null
@@ -53,7 +55,7 @@ export async function LegalDocument({
       <section className="py-12 md:py-16">
         <article className="max-w-[860px] mx-auto px-6 md:px-10">
           <div className="prose prose-invert max-w-none text-white/85">
-            <RichTextRenderer content={content} />
+            <RichTextRenderer content={content} locale={locale} />
           </div>
         </article>
       </section>

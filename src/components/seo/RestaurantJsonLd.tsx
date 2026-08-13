@@ -3,8 +3,8 @@ import { unstable_cache } from 'next/cache'
 import configPromise from '@payload-config'
 import type { OpeningHour, SiteSetting } from '@/payload-types'
 import { getSiteContact } from '@/lib/site-contact'
+import { SITE_URL } from '@/utilities/siteUrl'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
 // Map Payload day slugs -> schema.org DayOfWeek prefixes (Mo, Tu, ...).
 const DAY_ABBR: Record<string, string> = {

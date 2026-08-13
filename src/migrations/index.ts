@@ -29,6 +29,7 @@ import * as migration_20260710_160000_contact_rezerwacje_cigar from './20260710_
 import * as migration_20260710_170000_testimonials_leave_review from './20260710_170000_testimonials_leave_review';
 import * as migration_20260728_090000_batch2_hero_size_banner_fonts_contact_form from './20260728_090000_batch2_hero_size_banner_fonts_contact_form';
 import * as migration_20260806_090000_add_published_flag from './20260806_090000_add_published_flag';
+import * as migration_20260813_120000_posts_published_and_secondary_cta from './20260813_120000_posts_published_and_secondary_cta';
 
 export const migrations = [
   {
@@ -185,5 +186,10 @@ export const migrations = [
     up: migration_20260806_090000_add_published_flag.up,
     down: migration_20260806_090000_add_published_flag.down,
     name: '20260806_090000_add_published_flag',
+  },
+  {
+    up: migration_20260813_120000_posts_published_and_secondary_cta.up,
+    down: migration_20260813_120000_posts_published_and_secondary_cta.down,
+    name: '20260813_120000_posts_published_and_secondary_cta',
   },
 ];

@@ -2,8 +2,8 @@ import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 import configPromise from '@payload-config'
 import type { SiteSetting } from '@/payload-types'
+import { SITE_URL } from '@/utilities/siteUrl'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 const SITE_NAME = 'American Dream Club'
 
 // Tagline shown on the live WordPress site's WebSite schema — kept verbatim so the

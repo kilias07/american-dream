@@ -485,6 +485,15 @@ export const Events: CollectionConfig = {
     ],
     beforeChange: [
       async ({ data, req, operation, originalDoc }) => {
+        // Weryfikacja audytu 2026-08-06, punkt 7: część slugów miała spację na
+        // końcu, więc karty na /events linkowały do `…-10 ` → przez %20 wracało
+        // na listing zamiast na stronę wydarzenia. Normalizujemy przy zapisie,
+        // żeby biały znak nie mógł już wejść do bazy.
+        if (typeof data?.slug === 'string') {
+          const cleaned = data.slug.trim().replace(/\s+/g, '-')
+          if (cleaned !== data.slug) data.slug = cleaned
+        }
+
         let slug = typeof data?.slug === 'string' && data.slug ? data.slug : null
 
         // Gdy slug pusty, slugField wygenerowałby go DOPIERO PO tym hooku

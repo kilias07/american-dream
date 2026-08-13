@@ -20,7 +20,7 @@ async function getPosts(locale: Locale, page: number): Promise<{ docs: Post[]; t
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'posts',
-      where: { _status: { equals: 'published' } },
+      where: { _status: { equals: 'published' }, published: { not_equals: false } },
       sort: '-publishedAt',
       locale,
       fallbackLocale: defaultLocale,

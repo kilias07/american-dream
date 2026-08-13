@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
+import { SITE_URL } from '@/utilities/siteUrl'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://americandreamclub.pl'
 
 export default function robots(): MetadataRoute.Robots {
   return {
