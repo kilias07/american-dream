@@ -4,6 +4,7 @@ import Image from 'next/image'
 import type { Media, Page } from '@/payload-types'
 import { CMSLink } from '@/components/Link'
 import { localeHref } from '@/utilities/href'
+import { mediaUrl } from '@/utilities/mediaUrl'
 import type { Locale } from '@/config/locales'
 import { Logo } from '@/Header/Logo'
 
@@ -72,7 +73,10 @@ export function HeroBannerBlock({
   const backgroundVideo = (block as any).backgroundVideo as number | null | Media | undefined
   const uploadedVideo = isMedia(backgroundVideo) ? backgroundVideo : null
   const externalVideoUrl = (block as any).backgroundVideoUrl as string | undefined
-  const videoUrl = uploadedVideo?.url || externalVideoUrl || undefined
+  // Served from the R2 hostname, not through the Worker: a background video is
+  // the single heaviest asset on the page and this route had no CDN caching at
+  // all, so every visit streamed the whole file out of a Worker invocation.
+  const videoUrl = mediaUrl(uploadedVideo?.url) || externalVideoUrl || undefined
   const videoMime = uploadedVideo?.mimeType || 'video/mp4'
 
   return (

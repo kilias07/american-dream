@@ -17,14 +17,22 @@ const nextConfig = {
     },
   },
 
-  // sharp is unavailable in the Workers runtime, and Cloudflare Image Resizing
-  // (cdn-cgi/image) requires a custom domain on a Pro+ plan we don't have yet.
-  // Until then images are served as-is — `unoptimized` reflects that and avoids
-  // the "loader does not implement width" warning a pass-through loader triggers.
-  // When CF Image Resizing is set up, switch this back to:
-  //   images: { loader: 'custom', loaderFile: './src/cloudflare-image-loader.ts' }
+  // `sharp` cannot run in the Workers runtime, so Next can never resize images
+  // itself. Cloudflare Image Transformations do it at the edge instead — see
+  // src/cloudflare-image-loader.ts. This REQUIRES Transformations to be enabled
+  // for the zone (dashboard → Images → Transformations); without it the
+  // /cdn-cgi/image/ URLs 404 and every image on the site disappears.
   images: {
-    unoptimized: true,
+    loader: 'custom' as const,
+    loaderFile: './src/cloudflare-image-loader.ts',
+    // Each distinct width is a separate billable transformation, and the Free
+    // plan allows 5000 unique ones per month. Next's defaults (8 device + 8
+    // image widths) would multiply ~200 uploads well past that, so keep a
+    // deliberately small ladder that still covers phone → 4K.
+    deviceSizes: [640, 828, 1080, 1920, 2560],
+    imageSizes: [128, 256, 384],
+    // Uploads are transformed on the R2 hostname, so allow it as a source.
+    remotePatterns: [{ protocol: 'https' as const, hostname: 'media.americandreamclub.pl' }],
   },
 
   // The Worker keeps answering on its `*.workers.dev` deployment hostname even
@@ -38,6 +46,21 @@ const nextConfig = {
         source: '/:path*',
         has: [{ type: 'host' as const, value: '.*\\.workers\\.dev' }],
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
+        // Uploads served through the Worker (video sources, og:image, direct
+        // links) had NO Cache-Control at all, so Cloudflare cached nothing and
+        // every view cost a Worker invocation plus an R2 read. Most images now
+        // bypass this route via the R2 hostname; this covers the rest.
+        // Deliberately not `immutable`: replacing a file in the CMS can reuse
+        // the same filename, and a year-long cache would pin the stale bytes.
+        source: '/api/media/file/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
       },
     ]
   },
