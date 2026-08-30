@@ -40,8 +40,9 @@ export const MenuSection: Block = {
       required: true,
       defaultValue: 'pricedList',
       options: [
-        { label: 'Priced List', value: 'pricedList' },
-        { label: 'Card Grid', value: 'cardGrid' },
+        { label: 'Karta z cenami (jak karta cygar)', value: 'pricedList' },
+        { label: 'Plakaty ze zdjęciem (jak karta koktajli)', value: 'poster' },
+        { label: 'Siatka kafelków', value: 'cardGrid' },
       ],
     },
     {

@@ -695,7 +695,7 @@ export interface MenuSectionBlock {
    * Which menu-items to show
    */
   menuType: 'cigars' | 'cocktails' | 'wine' | 'food';
-  layout: 'pricedList' | 'cardGrid';
+  layout: 'pricedList' | 'poster' | 'cardGrid';
   groupByCategory?: boolean | null;
   /**
    * ZOBACZ CAŁE MENU (PDF)
