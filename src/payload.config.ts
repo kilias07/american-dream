@@ -36,6 +36,7 @@ import { OpeningHours } from './globals/OpeningHours'
 import { ReservationSettings } from './globals/ReservationSettings'
 import { Legal } from './globals/Legal'
 import { UILabels } from './globals/UILabels'
+import { PromoPopup } from './globals/PromoPopup'
 import { ContactForm } from './globals/ContactForm'
 
 const filename = fileURLToPath(import.meta.url)
@@ -100,7 +101,7 @@ export default buildConfig({
     Testimonials,
     ArtistApplications,
   ],
-  globals: [Header, Footer, SiteSettings, OpeningHours, ReservationSettings, Legal, UILabels, ContactForm],
+  globals: [Header, Footer, SiteSettings, OpeningHours, ReservationSettings, Legal, UILabels, ContactForm, PromoPopup],
   editor: defaultLexical,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

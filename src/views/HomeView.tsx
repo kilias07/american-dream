@@ -7,6 +7,7 @@ import { BlockRenderer } from '@/components/BlockRenderer'
 import { auditEntry, buildMetadata } from '@/lib/audit-seo'
 import { RestaurantJsonLd } from '@/components/seo/RestaurantJsonLd'
 import { SiteJsonLd } from '@/components/seo/SiteJsonLd'
+import { PromoPopupSection } from '@/components/PromoPopupSection'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -55,6 +56,8 @@ export async function renderHome(locale: Locale) {
       <RestaurantJsonLd />
       <h1 className="sr-only">{audit.h1}</h1>
       {page && <BlockRenderer blocks={page.layout} locale={locale} demoteHeroHeading />}
+      {/* Pop-up promocyjny — sam sprawdza, czy jest włączony i w oknie dat. */}
+      <PromoPopupSection locale={locale} />
     </>
   )
 }

@@ -128,6 +128,7 @@ export interface Config {
     legal: Legal;
     'ui-labels': UiLabel;
     'contact-form': ContactForm;
+    'promo-popup': PromoPopup;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -138,6 +139,7 @@ export interface Config {
     legal: LegalSelect<false> | LegalSelect<true>;
     'ui-labels': UiLabelsSelect<false> | UiLabelsSelect<true>;
     'contact-form': ContactFormSelect<false> | ContactFormSelect<true>;
+    'promo-popup': PromoPopupSelect<false> | PromoPopupSelect<true>;
   };
   locale: 'en' | 'pl';
   widgets: {
@@ -3603,6 +3605,46 @@ export interface ContactForm {
   createdAt?: string | null;
 }
 /**
+ * Okno wyskakujące na stronie głównej. Aby je pokazać, zaznacz „Włączony" i zapisz. Treść ustawia się osobno dla każdego języka — sprawdź przełącznik języka w prawym górnym rogu.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promo-popup".
+ */
+export interface PromoPopup {
+  id: number;
+  /**
+   * Odznacz, aby ukryć pop-up bez kasowania jego treści.
+   */
+  enabled?: boolean | null;
+  /**
+   * Zostaw puste, aby pokazywać od razu.
+   */
+  startDate?: string | null;
+  /**
+   * Zostaw puste, aby pokazywać bez końca. Po tej dacie pop-up zniknie sam.
+   */
+  endDate?: string | null;
+  /**
+   * Opcjonalne. Wyświetla się nad tekstem.
+   */
+  image?: (number | null) | Media;
+  eyebrow?: string | null;
+  heading?: string | null;
+  body?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  /**
+   * Po zamknięciu pop-up nie wraca przez wybrany czas. Zmiana treści pop-upu pokazuje go ponownie wszystkim.
+   */
+  frequency?: ('session' | 'daily' | 'always') | null;
+  /**
+   * Ile sekund po wejściu ma się pojawić. Natychmiastowy pop-up bywa odbierany jako natrętny.
+   */
+  delaySeconds?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3851,6 +3893,26 @@ export interface ContactFormSelect<T extends boolean = true> {
   sending?: T;
   success?: T;
   error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promo-popup_select".
+ */
+export interface PromoPopupSelect<T extends boolean = true> {
+  enabled?: T;
+  startDate?: T;
+  endDate?: T;
+  image?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  frequency?: T;
+  delaySeconds?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
