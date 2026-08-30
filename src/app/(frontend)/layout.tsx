@@ -14,6 +14,34 @@ import './globals.css'
 // tracked. Overridable per-environment so preview deploys can drop the tag.
 const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-SK9SNGTY32'
+// Usercentrics CMP (v3) — zgoda na cookies. Publiczny identyfikator konfiguracji,
+// widoczny w kodzie strony; nie jest tajemnicą.
+const UC_SETTINGS_ID = process.env.NEXT_PUBLIC_UC_SETTINGS_ID ?? 'N_bm8Ovsq8KE90'
+
+// Google Consent Mode v2 — stan domyślny. MUSI wykonać się synchronicznie, przed
+// jakimkolwiek tagiem Google i przed loaderem CMP, inaczej Analytics zdąży wysłać
+// dane zanim gość cokolwiek kliknie. Skan Usercentrics z 18.08.2026 pokazywał
+// dokładnie ten błąd: „consent defaults are not set", „Google trackers run
+// without consent". Wartości odpowiadają domyślnym z panelu Usercentrics:
+// wszystko `denied` poza `security_storage`.
+const CONSENT_BOOTSTRAP = (settingsId: string) => `window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{
+ ad_storage:'denied',
+ ad_user_data:'denied',
+ ad_personalization:'denied',
+ analytics_storage:'denied',
+ functionality_storage:'denied',
+ personalization_storage:'denied',
+ security_storage:'granted',
+ wait_for_update:500
+});
+gtag('set','ads_data_redaction',true);
+${settingsId ? `(function(){var s=document.createElement('script');
+s.id='usercentrics-cmp';s.async=true;
+s.src='https://web.cmp.usercentrics.eu/ui/loader.js';
+s.setAttribute('data-settings-id','${settingsId}');
+document.head.appendChild(s);})();` : ''}`
 const SITE_NAME = 'American Dream Club'
 const SITE_DESCRIPTION =
   'American Dream Club — restauracja i klub jazzowy w sercu Poznania. Koncerty na żywo, autorska kuchnia, bar i cigar room.'
@@ -101,6 +129,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" suppressHydrationWarning>
       <head>
+        {/* Zgody muszą wykonać się PRZED czymkolwiek od Google. React 19 wynosi
+            znaczniki <script src> ponad skrypty inline, więc samo ustawienie
+            kolejności w JSX nic nie daje — loader CMP dokładamy z wnętrza tego
+            skryptu, dzięki czemu kolejność wynika z konstrukcji, nie z frameworka.
+            Skan Usercentrics z 18.08.2026 wykazał dokładnie ten brak: „consent
+            defaults are not set", „Google trackers run without consent". */}
+        <link rel="preconnect" href="https://web.cmp.usercentrics.eu" />
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_BOOTSTRAP(UC_SETTINGS_ID) }} />
         <InitTheme />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
