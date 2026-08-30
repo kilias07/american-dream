@@ -18,10 +18,23 @@ export const appearanceOptions: Record<LinkAppearances, { label: string; value: 
 type LinkType = (options?: {
   appearances?: LinkAppearances[] | false
   disableLabel?: boolean
+  /**
+   * Tłumaczy etykietę linku per język. Domyślnie WYŁĄCZONE, bo pole `link`
+   * siedzi też w blokach stron — włączenie tam wymagałoby migracji ich tabel
+   * wraz z tabelami wersji. Nagłówek włącza to jawnie: bez tego menu i przycisk
+   * „Zarezerwuj" mają jedną wspólną wartość dla obu języków, więc wersja
+   * angielska pokazuje polskie napisy, a wpisanie angielskiej nazwy KASUJE polską.
+   */
+  localizedLabel?: boolean
   overrides?: Partial<GroupField>
 }) => Field
 
-export const link: LinkType = ({ appearances, disableLabel = false, overrides = {} } = {}) => {
+export const link: LinkType = ({
+  appearances,
+  disableLabel = false,
+  localizedLabel = false,
+  overrides = {},
+} = {}) => {
   const linkResult: GroupField = {
     name: 'link',
     type: 'group',
@@ -95,6 +108,7 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
         {
           name: 'label',
           type: 'text',
+          localized: localizedLabel,
           admin: {
             width: '50%',
           },

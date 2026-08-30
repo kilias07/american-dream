@@ -55,6 +55,7 @@ export const SiteSettings: GlobalConfig = {
             { label: 'Instagram', value: 'instagram' },
             { label: 'YouTube', value: 'youtube' },
             { label: 'TikTok', value: 'tiktok' },
+            { label: 'TripAdvisor', value: 'tripadvisor' },
           ],
         },
         { name: 'url', type: 'text', required: true },

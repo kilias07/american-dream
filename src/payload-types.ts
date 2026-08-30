@@ -3378,7 +3378,7 @@ export interface SiteSetting {
    */
   social?:
     | {
-        platform: 'google' | 'googleMaps' | 'facebook' | 'instagram' | 'youtube' | 'tiktok';
+        platform: 'google' | 'googleMaps' | 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'tripadvisor';
         url: string;
         id?: string | null;
       }[]

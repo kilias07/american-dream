@@ -52,7 +52,7 @@ export const Header: GlobalConfig = {
           RowLabel: '@/globals/Header/RowLabel#RowLabel',
         },
       },
-      fields: [link({ appearances: false })],
+      fields: [link({ appearances: false, localizedLabel: true })],
     },
     // CTA button (optional) — enable toggle
     {
@@ -63,6 +63,7 @@ export const Header: GlobalConfig = {
     },
     link({
       appearances: false,
+      localizedLabel: true,
       overrides: {
         name: 'ctaButton',
         admin: {
