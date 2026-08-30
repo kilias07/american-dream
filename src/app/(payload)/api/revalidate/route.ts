@@ -11,12 +11,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { slug?: string; tag?: string }
 
+    // `'max'` marks the entry stale and serves it once more while it
+    // regenerates — right for the CMS hooks, wrong here. This endpoint is
+    // called from outside a Server Action (deploy scripts, webhooks) precisely
+    // when the caller needs the next request to already show the new content,
+    // so expire immediately instead.
     if (body.tag) {
-      revalidateTag(body.tag, 'max')
+      revalidateTag(body.tag, { expire: 0 })
     }
 
     if (body.slug) {
-      revalidateTag(`page-${body.slug}`, 'max')
+      revalidateTag(`page-${body.slug}`, { expire: 0 })
     }
 
     return Response.json({ revalidated: true, timestamp: Date.now() })

@@ -1,4 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import { locales } from './src/config/locales'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -135,9 +136,32 @@ const nextConfig = {
       ['/en/program', '/en/events'],
     ]
 
+    // Slugs that were renamed during the SEO migration. Polish and English got
+    // their redirects hand-written above (they also carry legacy WordPress
+    // URLs); every language added since shares the same renames, so generate
+    // them rather than re-typing the list per locale — otherwise a page like
+    // `program` stays reachable under two URLs in the newer languages.
+    const RENAMED: [string, string][] = [
+      ['/bar', '/bar-and-cocktails'],
+      ['/restauracja', '/restaurant'],
+      ['/cigar-room', '/cigar-lounge'],
+      ['/twoje-wydarzenie', '/business'],
+      ['/oferta', '/business'],
+      ['/kontakt', '/contact'],
+      ['/polityka-prywatnosci', '/privacy'],
+      ['/program', '/events'],
+      ['/aktualnosci', '/news'],
+    ]
+    const OTHER_LOCALES = locales.filter((l) => l !== 'pl' && l !== 'en')
+
     return [
       ...PL.map(([s, d]) => p(s, d)),
       ...EN.map(([s, d]) => p(s, d)),
+      ...OTHER_LOCALES.flatMap((loc) => [
+        ...RENAMED.map(([s, d]) => p(`/${loc}${s}`, `/${loc}${d}`)),
+        p(`/${loc}/program/:path*`, `/${loc}/events`),
+        p(`/${loc}/aktualnosci/:slug`, `/${loc}/news/:slug`),
+      ]),
       // wildcard families
       p('/mec-category/:slug*', '/events'),
       // Leftover WordPress plumbing — uploads, themes/plugins assets and the
