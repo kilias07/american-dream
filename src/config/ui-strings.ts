@@ -43,6 +43,18 @@ export type UIStrings = {
   tickets: string
   details: string
   chooseDay: string
+  previousWeek: string
+  nextWeek: string
+  thisWeek: string
+  notifyMe: string
+  notifySubmit: string
+  notifyThanks: string
+  notifyConsent: string
+  emailPlaceholder: string
+  sending: string
+  formError: string
+  noDatesYet: string
+  noDatesYetBody: string
   showMoreDays: string
   previousWeeks: string
   nextWeeks: string
@@ -84,6 +96,11 @@ export const UI_STRINGS: Record<Locale, UIStrings> = {
     specialEventsUpper: 'WYDARZENIA SPECJALNE', specialEvent: 'Wydarzenie specjalne',
     shareEvent: 'Udostępnij to wydarzenie', addToCalendar: 'Dodaj do kalendarza',
     tickets: 'Bilety', details: 'Szczegóły', chooseDay: 'Wybierz dzień',
+    previousWeek: 'Poprzedni tydzień', nextWeek: 'Następny tydzień', thisWeek: 'Ten tydzień',
+    notifyMe: 'Powiadom mnie', notifySubmit: 'Zapisz mnie', notifyThanks: 'Dzięki! Napiszemy, gdy ogłosimy kolejny termin.',
+    notifyConsent: 'Zgadzam się na otrzymanie e-maila o kolejnych terminach tego cyklu.',
+    emailPlaceholder: 'Twój adres e-mail', sending: 'Wysyłanie…', formError: 'Nie udało się zapisać. Spróbuj ponownie.',
+    noDatesYet: 'Nie ma jeszcze kolejnych terminów', noDatesYetBody: 'Ten cykl wróci — zostaw adres, a napiszemy do Ciebie, gdy ogłosimy następną datę.',
     showMoreDays: 'Pokaż dalsze dni', previousWeeks: 'Poprzednie tygodnie', nextWeeks: 'Następne tygodnie',
     previous: 'Poprzednie', next: 'Następne', slide: 'Pozycja',
     ourMusicians: 'Nasi muzycy', upcomingPerformances: 'Najbliższe występy',
@@ -107,6 +124,11 @@ export const UI_STRINGS: Record<Locale, UIStrings> = {
     specialEventsUpper: 'SPECIAL EVENTS', specialEvent: 'Special event',
     shareEvent: 'Share this event', addToCalendar: 'Add to calendar',
     tickets: 'Tickets', details: 'Details', chooseDay: 'Choose a day',
+    previousWeek: 'Previous week', nextWeek: 'Next week', thisWeek: 'This week',
+    notifyMe: 'Notify me', notifySubmit: 'Sign me up', notifyThanks: 'Thanks! We\'ll email you when the next date is announced.',
+    notifyConsent: 'I agree to receive an email about upcoming dates in this series.',
+    emailPlaceholder: 'Your email address', sending: 'Sending…', formError: 'Could not sign you up. Please try again.',
+    noDatesYet: 'No dates announced yet', noDatesYetBody: 'This series will be back — leave your address and we\'ll write as soon as the next date is set.',
     showMoreDays: 'Show more days', previousWeeks: 'Previous weeks', nextWeeks: 'Next weeks',
     previous: 'Previous', next: 'Next', slide: 'Slide',
     ourMusicians: 'Our musicians', upcomingPerformances: 'Upcoming performances',
@@ -130,6 +152,11 @@ export const UI_STRINGS: Record<Locale, UIStrings> = {
     specialEventsUpper: 'BESONDERE VERANSTALTUNGEN', specialEvent: 'Besondere Veranstaltung',
     shareEvent: 'Veranstaltung teilen', addToCalendar: 'Zum Kalender hinzufügen',
     tickets: 'Tickets', details: 'Details', chooseDay: 'Tag wählen',
+    previousWeek: 'Vorherige Woche', nextWeek: 'Nächste Woche', thisWeek: 'Diese Woche',
+    notifyMe: 'Benachrichtigen', notifySubmit: 'Eintragen', notifyThanks: 'Danke! Wir schreiben Ihnen, sobald der nächste Termin feststeht.',
+    notifyConsent: 'Ich möchte eine E-Mail zu den nächsten Terminen dieser Reihe erhalten.',
+    emailPlaceholder: 'Ihre E-Mail-Adresse', sending: 'Wird gesendet …', formError: 'Eintragen nicht möglich. Bitte erneut versuchen.',
+    noDatesYet: 'Noch keine weiteren Termine', noDatesYetBody: 'Diese Reihe kommt wieder — hinterlassen Sie Ihre Adresse, wir schreiben Ihnen, sobald der nächste Termin steht.',
     showMoreDays: 'Weitere Tage anzeigen', previousWeeks: 'Vorherige Wochen', nextWeeks: 'Nächste Wochen',
     previous: 'Zurück', next: 'Weiter', slide: 'Element',
     ourMusicians: 'Unsere Musiker', upcomingPerformances: 'Nächste Auftritte',
@@ -153,6 +180,11 @@ export const UI_STRINGS: Record<Locale, UIStrings> = {
     specialEventsUpper: 'ÉVÉNEMENTS SPÉCIAUX', specialEvent: 'Événement spécial',
     shareEvent: 'Partager cet événement', addToCalendar: 'Ajouter au calendrier',
     tickets: 'Billets', details: 'Détails', chooseDay: 'Choisir un jour',
+    previousWeek: 'Semaine précédente', nextWeek: 'Semaine suivante', thisWeek: 'Cette semaine',
+    notifyMe: 'Me prévenir', notifySubmit: 'Je m\'inscris', notifyThanks: 'Merci ! Nous vous écrirons dès que la prochaine date sera annoncée.',
+    notifyConsent: 'J\'accepte de recevoir un e-mail sur les prochaines dates de ce cycle.',
+    emailPlaceholder: 'Votre adresse e-mail', sending: 'Envoi en cours…', formError: 'Inscription impossible. Veuillez réessayer.',
+    noDatesYet: 'Aucune date annoncée pour l\'instant', noDatesYetBody: 'Ce cycle reviendra — laissez votre adresse et nous vous écrirons dès que la prochaine date sera fixée.',
     showMoreDays: 'Afficher plus de jours', previousWeeks: 'Semaines précédentes', nextWeeks: 'Semaines suivantes',
     previous: 'Précédent', next: 'Suivant', slide: 'Élément',
     ourMusicians: 'Nos musiciens', upcomingPerformances: 'Prochains concerts',
@@ -176,6 +208,11 @@ export const UI_STRINGS: Record<Locale, UIStrings> = {
     specialEventsUpper: 'EVENTOS ESPECIALES', specialEvent: 'Evento especial',
     shareEvent: 'Compartir este evento', addToCalendar: 'Añadir al calendario',
     tickets: 'Entradas', details: 'Detalles', chooseDay: 'Elegir día',
+    previousWeek: 'Semana anterior', nextWeek: 'Semana siguiente', thisWeek: 'Esta semana',
+    notifyMe: 'Avísame', notifySubmit: 'Apúntame', notifyThanks: '¡Gracias! Te escribiremos cuando anunciemos la próxima fecha.',
+    notifyConsent: 'Acepto recibir un correo sobre las próximas fechas de este ciclo.',
+    emailPlaceholder: 'Tu correo electrónico', sending: 'Enviando…', formError: 'No se ha podido completar el registro. Inténtalo de nuevo.',
+    noDatesYet: 'Todavía no hay próximas fechas', noDatesYetBody: 'Este ciclo volverá: déjanos tu dirección y te escribiremos en cuanto fijemos la siguiente fecha.',
     showMoreDays: 'Mostrar más días', previousWeeks: 'Semanas anteriores', nextWeeks: 'Semanas siguientes',
     previous: 'Anterior', next: 'Siguiente', slide: 'Elemento',
     ourMusicians: 'Nuestros músicos', upcomingPerformances: 'Próximas actuaciones',

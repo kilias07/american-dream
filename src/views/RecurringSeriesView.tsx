@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import { ui } from '@/config/ui-strings'
+import { NotifyMe } from '@/components/NotifyMe'
 import { permanentRedirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -206,12 +207,15 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
                 {series.upcomingHeading ||
                   (ui(locale).upcomingInSeries)}
               </h2>
-              <Link
-                href={localeHref(locale, '/events')}
-                className="inline-flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-navy-royal transition-colors"
-              >
-                {series.seeProgrammeLabel || (ui(locale).seeProgram)}
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <NotifyMe seriesId={series.id} seriesName={series.name} locale={locale} />
+                <Link
+                  href={localeHref(locale, '/events')}
+                  className="inline-flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-navy-royal transition-colors"
+                >
+                  {series.seeProgrammeLabel || (ui(locale).seeProgram)}
+                </Link>
+              </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {occurrences.map((occ) => {
@@ -246,6 +250,20 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
                 )
               })}
             </div>
+          </div>
+        </section>
+      )}
+
+      {occurrences.length === 0 && (
+        <section className="py-12 md:py-16 bg-brand-gold">
+          <div className="max-w-[1280px] mx-auto px-6 md:px-10 flex flex-col items-center gap-4 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-brand-navy">
+              {ui(locale).noDatesYet}
+            </h2>
+            <p className="text-brand-navy/80 text-sm md:text-base max-w-xl">
+              {ui(locale).noDatesYetBody}
+            </p>
+            <NotifyMe seriesId={series.id} seriesName={series.name} locale={locale} />
           </div>
         </section>
       )}

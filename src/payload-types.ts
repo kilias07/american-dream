@@ -82,6 +82,7 @@ export interface Config {
     'team-members': TeamMember;
     testimonials: Testimonial;
     'artist-applications': ArtistApplication;
+    signups: Signup;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -107,6 +108,7 @@ export interface Config {
     'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     'artist-applications': ArtistApplicationsSelect<false> | ArtistApplicationsSelect<true>;
+    signups: SignupsSelect<false> | SignupsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1717,6 +1719,38 @@ export interface ArtistApplication {
   createdAt: string;
 }
 /**
+ * Zapisy na newsletter, powiadomienia o wydarzeniach cyklicznych i wiadomości z formularza kontaktowego.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "signups".
+ */
+export interface Signup {
+  id: number;
+  kind: 'newsletter' | 'event' | 'contact';
+  email: string;
+  name?: string | null;
+  phone?: string | null;
+  message?: string | null;
+  /**
+   * Cykl, o którego kolejnych terminach gość chce wiedzieć.
+   */
+  series?: (number | null) | RecurringSery;
+  /**
+   * Język strony, z której przyszedł zapis.
+   */
+  locale?: string | null;
+  /**
+   * Odhacz, gdy wiadomość została załatwiona.
+   */
+  handled?: boolean | null;
+  /**
+   * Wypełni się, gdy wysyłka e-maili zostanie skonfigurowana.
+   */
+  notifiedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -2013,6 +2047,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'artist-applications';
         value: number | ArtistApplication;
+      } | null)
+    | ({
+        relationTo: 'signups';
+        value: number | Signup;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -3047,6 +3085,23 @@ export interface ArtistApplicationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "signups_select".
+ */
+export interface SignupsSelect<T extends boolean = true> {
+  kind?: T;
+  email?: T;
+  name?: T;
+  phone?: T;
+  message?: T;
+  series?: T;
+  locale?: T;
+  handled?: T;
+  notifiedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3292,6 +3347,29 @@ export interface Header {
           url?: string | null;
           label?: string | null;
         };
+        /**
+         * Zostaw puste, żeby pozycja była zwykłym linkiem. Po dodaniu wpisów pozycja rozwija listę — np. „Wydarzenia" z podziałem na cykle i oferty.
+         */
+        subItems?:
+          | {
+              link?: {
+                type?: ('reference' | 'custom') | null;
+                newTab?: boolean | null;
+                reference?:
+                  | ({
+                      relationTo: 'pages';
+                      value: number | Page;
+                    } | null)
+                  | ({
+                      relationTo: 'posts';
+                      value: number | Post;
+                    } | null);
+                url?: string | null;
+                label?: string | null;
+              };
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -3670,6 +3748,20 @@ export interface HeaderSelect<T extends boolean = true> {
               url?: T;
               label?: T;
             };
+        subItems?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
+            };
         id?: T;
       };
   ctaEnabled?: T;
@@ -3931,6 +4023,23 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoEmbedBlock".
+ */
+export interface VideoEmbedBlock {
+  /**
+   * Wklej zwykły link, np. https://www.youtube.com/watch?v=… , https://youtu.be/… lub https://vimeo.com/… . Nie wklejaj kodu <iframe>.
+   */
+  url: string;
+  /**
+   * Krótki opis wyświetlany pod filmem.
+   */
+  caption?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'videoEmbed';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

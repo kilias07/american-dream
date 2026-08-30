@@ -29,6 +29,7 @@ import { Rooms } from './collections/Rooms'
 import { TeamMembers } from './collections/TeamMembers'
 import { Testimonials } from './collections/Testimonials'
 import { ArtistApplications } from './collections/ArtistApplications'
+import { Signups } from '@/collections/Signups'
 import { Header } from './globals/Header'
 import { Footer } from './globals/Footer'
 import { SiteSettings } from './globals/SiteSettings'
@@ -100,6 +101,7 @@ export default buildConfig({
     TeamMembers,
     Testimonials,
     ArtistApplications,
+    Signups,
   ],
   globals: [Header, Footer, SiteSettings, OpeningHours, ReservationSettings, Legal, UILabels, ContactForm, PromoPopup],
   editor: defaultLexical,

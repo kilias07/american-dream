@@ -5,13 +5,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { fixOrphans } from '@/utilities/typography'
-import { ui } from '@/config/ui-strings'
+import { ui, intlLocale } from '@/config/ui-strings'
+import { addDaysKey } from '@/lib/recurring-events'
 
-export type DayPill = {
+/** An open weekday of the club week, with its offset from that week's Tuesday. */
+export type Weekday = {
   key: string
   label: string
   hours: string
-  hasEvent: boolean
+  offset: number
 }
 
 export type DayEvent = {
@@ -203,26 +205,89 @@ function PhaseCard({ phase }: { phase: PhaseData }) {
   )
 }
 
+/** "2 wrz" — enough to tell weeks apart without crowding the pill. */
+function shortDate(key: string, locale: Locale): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(y, m - 1, d)))
+}
+
+function WeekArrow({
+  dir,
+  disabled,
+  onClick,
+  label,
+}: {
+  dir: 'prev' | 'next'
+  disabled: boolean
+  onClick: () => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition-colors enabled:hover:border-white enabled:hover:bg-white/10 enabled:cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>
+        <path d={dir === 'prev' ? 'm15 18-6-6 6-6' : 'm9 18 6-6-6-6'} />
+      </svg>
+    </button>
+  )
+}
+
 export function EveningPhasesClient({
   heading,
-  days,
-  defaultDay,
+  weekdays,
+  firstWeekStart,
+  weeksAhead,
+  todayKey,
   phases,
-  eventsByDay,
+  eventsByDate,
   reserveLabel,
   locale,
 }: {
   heading: string
-  days: DayPill[]
-  defaultDay: string
+  weekdays: Weekday[]
+  /** Tuesday of the first selectable club week (YYYY-MM-DD). */
+  firstWeekStart: string
+  weeksAhead: number
+  todayKey: string
   phases: PhaseData[]
-  eventsByDay: Record<string, DayEvent>
+  eventsByDate: Record<string, DayEvent>
   reserveLabel: string
   locale: string
 }) {
-  const [selected, setSelected] = useState(defaultDay)
-  const detailsLabel = ui(locale as Locale).details
-  const selectedEvent = eventsByDay[selected] ?? null
+  const loc = locale as Locale
+  const t = ui(loc)
+  const [weekOffset, setWeekOffset] = useState(0)
+
+  const weekStart = addDaysKey(firstWeekStart, weekOffset * 7)
+  const days = weekdays.map((d) => ({ ...d, date: addDaysKey(weekStart, d.offset) }))
+
+  const [picked, setPicked] = useState<string | null>(null)
+  // The selection follows the week rather than being reset alongside it: when
+  // the shown week no longer contains the picked day, fall back to today (if it
+  // is in view) or the first open day. Deriving it this way means paging cannot
+  // leave nothing selected, and the arrows only ever move one piece of state —
+  // so two quick clicks advance two weeks instead of one.
+  const selected =
+    picked && days.some((d) => d.date === picked)
+      ? picked
+      : (days.find((d) => d.date === todayKey)?.date ?? days[0]?.date ?? '')
+
+  const step = (delta: number) =>
+    setWeekOffset((prev) => Math.min(Math.max(prev + delta, 0), weeksAhead - 1))
+
+  const detailsLabel = t.details
+  const selectedEvent = eventsByDate[selected] ?? null
+  const rangeLabel =
+    days.length > 0 ? `${shortDate(days[0].date, loc)} – ${shortDate(days[days.length - 1].date, loc)}` : ''
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -236,40 +301,80 @@ export function EveningPhasesClient({
           </div>
         )}
 
-        {/* Clickable weekday tabs (hours from the OpeningHours global). */}
         {days.length > 0 && (
-          <div
-            role="tablist"
-            aria-label={ui(locale as Locale).chooseDay}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10"
-          >
-            {days.map((d) => {
-              const active = d.key === selected
-              return (
-                <button
-                  key={d.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setSelected(d.key)}
-                  className={`rounded-full px-4 py-3 text-center transition-colors cursor-pointer ${
-                    active
-                      ? 'bg-white text-brand-navy'
-                      : 'border border-white/30 text-white hover:border-white/70'
-                  }`}
-                >
-                  <div className="text-[12px] font-bold uppercase tracking-[0.1em]">{d.label}</div>
-                  <div
-                    className={`text-[12px] font-semibold mt-1 ${
-                      active ? 'text-brand-navy/70' : 'text-brand-gold'
+          <>
+            {/* Week navigation. Back is disabled on the first week — there is
+                nothing to reserve in the past. */}
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <WeekArrow
+                dir="prev"
+                disabled={weekOffset === 0}
+                onClick={() => step(-1)}
+                label={t.previousWeek}
+              />
+              <div className="text-center">
+                <div className="text-white text-sm md:text-base font-semibold">{rangeLabel}</div>
+                {weekOffset === 0 && (
+                  <div className="text-brand-gold text-[11px] font-bold uppercase tracking-[0.12em] mt-0.5">
+                    {t.thisWeek}
+                  </div>
+                )}
+              </div>
+              <WeekArrow
+                dir="next"
+                disabled={weekOffset >= weeksAhead - 1}
+                onClick={() => step(1)}
+                label={t.nextWeek}
+              />
+            </div>
+
+            <div
+              role="tablist"
+              aria-label={t.chooseDay}
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10"
+            >
+              {days.map((d) => {
+                const active = d.date === selected
+                const hasEvent = Boolean(eventsByDate[d.date])
+                return (
+                  <button
+                    key={d.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setPicked(d.date)}
+                    className={`rounded-full px-4 py-3 text-center transition-colors cursor-pointer ${
+                      active
+                        ? 'bg-white text-brand-navy'
+                        : 'border border-white/30 text-white hover:border-white/70'
                     }`}
                   >
-                    {d.hours}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+                    <div className="text-[12px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-1.5">
+                      {d.label}
+                      {/* A dot marks a day with a concert, so guests can see at
+                          a glance which evenings are programmed. */}
+                      {hasEvent && (
+                        <span
+                          aria-hidden
+                          className={`inline-block h-1.5 w-1.5 rounded-full ${active ? 'bg-brand-navy' : 'bg-brand-gold'}`}
+                        />
+                      )}
+                    </div>
+                    <div className={`text-[11px] mt-0.5 ${active ? 'text-brand-navy/60' : 'text-white/60'}`}>
+                      {shortDate(d.date, loc)}
+                    </div>
+                    <div
+                      className={`text-[12px] font-semibold mt-1 ${
+                        active ? 'text-brand-navy/70' : 'text-brand-gold'
+                      }`}
+                    >
+                      {d.hours}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </>
         )}
 
         <div className="flex flex-col gap-6">

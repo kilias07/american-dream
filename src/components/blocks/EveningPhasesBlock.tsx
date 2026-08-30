@@ -12,12 +12,16 @@ import {
   toOccurrences,
   warsawParts,
   formatTime,
+  todayWarsaw,
+  dayKey,
+  warsawDayKey,
+  weekTueKey,
+  addDaysKey,
   type EventDoc,
 } from '@/lib/recurring-events'
 import {
   EveningPhasesClient,
   type PhaseData,
-  type DayPill,
   type DayEvent,
 } from './EveningPhasesClient'
 
@@ -85,30 +89,43 @@ async function getOpenDays(): Promise<OpeningDay[]> {
     .filter((od) => !od.closed)
 }
 
+/** How far ahead the reservation calendar lets a guest look. */
+const WEEKS_AHEAD = 8
+
 /**
- * For each weekday, the NEXT upcoming calendar event that falls on it — so the
- * reservation-page day selector stays consistent with the kalendarium. Keyed by
- * day name (tuesday … sunday). `nowIso` is passed in so the cache key varies by
- * the request day (events drop off as they pass).
+ * Every upcoming event keyed by its Warsaw date (YYYY-MM-DD), for the next
+ * `WEEKS_AHEAD` weeks.
+ *
+ * This used to collapse to one event per weekday — the next Tuesday, the next
+ * Wednesday and so on — which is all a single-week view needs. Once guests can
+ * page forward through the calendar that is no longer enough: the Tuesday two
+ * weeks out has its own programme.
  */
-async function getEventsByWeekday(locale: Locale, nowIso: string): Promise<Record<string, DayEvent>> {
+async function getEventsByDate(
+  locale: Locale,
+  fromIso: string,
+  toIso: string,
+): Promise<Record<string, DayEvent>> {
   try {
     const payload = await getPayload({ config: configPromise })
     const res = await payload.find({
       collection: 'events',
-      where: { date: { greater_than_equal: nowIso }, published: { not_equals: false } },
+      where: {
+        date: { greater_than_equal: fromIso, less_than_equal: toIso },
+        published: { not_equals: false },
+      },
       sort: 'date',
-      limit: 300,
+      limit: 500,
       depth: 1,
       locale,
     })
     const occ = toOccurrences(res.docs as unknown as EventDoc[])
-    const byDay: Record<string, DayEvent> = {}
+    const byDate: Record<string, DayEvent> = {}
     for (const o of occ) {
-      const day = WEEKDAY_TO_DAY[warsawParts(new Date(o.dateISO)).weekday]
-      if (!day || byDay[day]) continue // keep the earliest (events are sorted asc)
+      const key = warsawDayKey(o.dateISO)
+      if (byDate[key]) continue // keep the earliest of the day (sorted asc)
       const start = formatTime(o.dateISO)
-      byDay[day] = {
+      byDate[key] = {
         slug: o.eventSlug ?? '',
         title: o.title,
         description: o.description ?? null,
@@ -121,7 +138,7 @@ async function getEventsByWeekday(locale: Locale, nowIso: string): Promise<Recor
         dateISO: o.dateISO,
       }
     }
-    return byDay
+    return byDate
   } catch {
     return {}
   }
@@ -161,22 +178,29 @@ export async function EveningPhasesBlock({
   // Only fetch the calendar when at least one phase is wired to it.
   const usesCalendar = phases.some((p) => p.linkToCalendar)
   const now = new Date()
-  const eventsByDay = usesCalendar
-    ? await getEventsByWeekday(loc, new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString())
+  const t = todayWarsaw(now)
+  const todayKey = dayKey(t.year, t.month, t.day)
+  // The club week runs Tuesday→Sunday; on a Monday `weekTueKey` already points
+  // at tomorrow, so the calendar never opens on a week that is over.
+  const firstWeekStart = weekTueKey(todayKey)
+  const lastDay = addDaysKey(firstWeekStart, WEEKS_AHEAD * 7 - 1)
+
+  const eventsByDate = usesCalendar
+    ? await getEventsByDate(loc, `${todayKey}T00:00:00.000Z`, `${lastDay}T23:59:59.999Z`)
     : {}
 
-  const days: DayPill[] = openDays
+  // Weekdays the club is open, in club-week order (Tue…Sun) with their offset
+  // from the week's Tuesday — that offset turns a week start into real dates.
+  const openWeekdays = openDays
     .filter((od): od is OpeningDay & { day: string } => Boolean(od.day))
     .map((od) => ({
       key: od.day,
       label: dayLabel(od.day),
       hours: `${od.openTime ?? ''}${od.closeTime ? ` - ${od.closeTime}` : ''}`,
-      hasEvent: Boolean(eventsByDay[od.day]),
+      offset: (DAY_ORDER.indexOf(od.day) + 6) % 7, // monday=0 → Tue=0, …, Sun=5
     }))
-
-  // Default selection: today if it is an open day, otherwise the first open day.
-  const todayKey = WEEKDAY_TO_DAY[warsawParts(now).weekday]
-  const defaultDay = days.some((d) => d.key === todayKey) ? todayKey : (days[0]?.key ?? '')
+    .filter((d) => d.offset >= 0)
+    .sort((a, b) => a.offset - b.offset)
 
   const prefix = (url?: string | null) =>
     url ? (url.startsWith('/') ? localeHref(loc, url) : url) : null
@@ -204,10 +228,12 @@ export async function EveningPhasesBlock({
   return (
     <EveningPhasesClient
       heading={heading ?? ''}
-      days={days}
-      defaultDay={defaultDay}
+      weekdays={openWeekdays}
+      firstWeekStart={firstWeekStart}
+      weeksAhead={WEEKS_AHEAD}
+      todayKey={todayKey}
       phases={phasesData}
-      eventsByDay={eventsByDay}
+      eventsByDate={eventsByDate}
       reserveLabel={reserveLabel}
       locale={locale}
     />

@@ -1,8 +1,9 @@
 import React from 'react'
 import { RichText, LinkJSXConverter, type JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 import { fixOrphansInRichText } from '@/utilities/typography'
-import { defaultLocale, type Locale } from '@/config/locales'
+import { defaultLocale, locales, type Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+import { VideoEmbed } from '@/components/VideoEmbed'
 
 // Shape matches Payload's serialized Lexical editor state
 type SerializedEditorState = {
@@ -74,7 +75,11 @@ export function RichTextRenderer({
 }) {
   if (!content) return null
 
-  const loc = (locale === 'en' ? 'en' : 'pl') as Locale
+  // Keep the real locale: collapsing everything to pl/en would send a German
+  // reader following an in-text link to the Polish version of the page.
+  const loc = (locales as readonly string[]).includes(locale as string)
+    ? (locale as Locale)
+    : defaultLocale
 
   const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
     ...defaultConverters,
@@ -91,6 +96,11 @@ export function RichTextRenderer({
       const children = nodesToJSX({ nodes: node.children })
       const Tag = node.tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
       return <Tag style={blockStyle(node)}>{children}</Tag>
+    },
+    blocks: {
+      videoEmbed: ({ node }: { node: { fields?: { url?: string | null; caption?: string | null } } }) => (
+        <VideoEmbed url={node.fields?.url} caption={node.fields?.caption} />
+      ),
     },
   })
 

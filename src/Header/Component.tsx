@@ -7,9 +7,10 @@ import { unstable_cache } from 'next/cache'
 import type { Header } from '@/payload-types'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
-import { CMSLink } from '@/components/Link'
+import { CMSLink, cmsLinkHref } from '@/components/Link'
 import { LocaleSwitcher } from '@/components/LocaleSwitcher'
 import { MobileMenu } from './MobileMenu'
+import { NavDropdown, type NavChild } from './NavDropdown'
 import { Logo } from './Logo'
 import { HeaderShell } from './HeaderShell'
 
@@ -207,14 +208,33 @@ export async function Header({ locale }: { locale: Locale }) {
 
           {/* ŚRODEK: Nav links — wyśrodkowane */}
           <nav className="flex items-center justify-center gap-3 xl:gap-6">
-            {allNavItems.map(({ link }, i) => (
-              <CMSLink
-                key={i}
-                {...link}
-                locale={locale}
-                className="text-white uppercase tracking-normal xl:tracking-[0.03em] text-[12px] xl:text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap"
-              />
-            ))}
+            {allNavItems.map((item, i) => {
+              const navClass =
+                'text-white uppercase tracking-normal xl:tracking-[0.03em] text-[12px] xl:text-[13px] font-medium hover:text-brand-gold transition-colors whitespace-nowrap'
+              const children: NavChild[] = (item.subItems ?? []).flatMap((sub) => {
+                const href = cmsLinkHref({ ...sub.link, locale })
+                const label = sub.link?.label
+                return href && label ? [{ href, label, newTab: sub.link?.newTab ?? false }] : []
+              })
+
+              // Without children it stays a plain link — no empty panel, and no
+              // client-side JavaScript loaded for a nav entry that has none.
+              if (!children.length) {
+                return <CMSLink key={i} {...item.link} locale={locale} className={navClass} />
+              }
+
+              const href = cmsLinkHref({ ...item.link, locale })
+              if (!href || !item.link?.label) return null
+              return (
+                <NavDropdown
+                  key={i}
+                  href={href}
+                  label={item.link.label}
+                  items={children}
+                  className={navClass}
+                />
+              )
+            })}
           </nav>
 
           {/* PRAWA: Language switcher + CTA */}

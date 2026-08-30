@@ -1,11 +1,13 @@
 import type { TextFieldSingleValidation } from 'payload'
 import {
+  BlocksFeature,
   FixedToolbarFeature,
   HeadingFeature,
   LinkFeature,
   lexicalEditor,
   type LinkFields,
 } from '@payloadcms/richtext-lexical'
+import { VideoEmbed } from '@/blocks/VideoEmbed'
 
 /**
  * Root rich-text editor. Every `richText` field that doesn't declare its own
@@ -34,6 +36,10 @@ export const defaultLexical = lexicalEditor({
     // Always-visible toolbar. Without it the options only appear on selection
     // (inline toolbar), which is why the client couldn't find them.
     FixedToolbarFeature(),
+    // Lets an editor drop a YouTube/Vimeo player between paragraphs. Pasting
+    // `<iframe>` markup cannot work here — the field stores text, so the markup
+    // would be shown to visitors as code (it was, on the live artist page).
+    BlocksFeature({ blocks: [VideoEmbed] }),
     LinkFeature({
       // „Wewnętrzny" cel linku to strona, aktualność albo plik z Mediów — dzięki
       // `media` klient podpina PDF-a wybierając go z listy, zamiast szukać jego

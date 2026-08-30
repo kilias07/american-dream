@@ -38,7 +38,9 @@ export function NewsletterCTABlock({
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, consent: true, message: 'Newsletter signup' }),
+        // `kind` is explicit: without it the endpoint would file this as a
+        // contact message, because it sees a `message` field.
+        body: JSON.stringify({ kind: 'newsletter', email, consent: true, locale }),
       })
       const data = (await res.json().catch((): null => null)) as { ok?: boolean } | null
       if (res.ok && data?.ok) {

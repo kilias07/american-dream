@@ -52,7 +52,21 @@ export const Header: GlobalConfig = {
           RowLabel: '@/globals/Header/RowLabel#RowLabel',
         },
       },
-      fields: [link({ appearances: false, localizedLabel: true })],
+      fields: [
+        link({ appearances: false, localizedLabel: true }),
+        {
+          name: 'subItems',
+          type: 'array',
+          maxRows: 8,
+          label: 'Pozycje rozwijane',
+          admin: {
+            description:
+              'Zostaw puste, żeby pozycja była zwykłym linkiem. Po dodaniu wpisów pozycja rozwija listę — np. „Wydarzenia" z podziałem na cykle i oferty.',
+            initCollapsed: true,
+          },
+          fields: [link({ appearances: false, localizedLabel: true })],
+        },
+      ],
     },
     // CTA button (optional) — enable toggle
     {

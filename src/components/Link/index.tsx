@@ -23,6 +23,41 @@ export type CMSLinkType = {
   url?: string | null
 }
 
+/**
+ * The destination of a CMS link — a reference to a document or a typed URL.
+ * Split out of the component so anything that needs the address without
+ * rendering an anchor (the header dropdown, for one) resolves it the same way
+ * instead of reimplementing the slug and locale rules.
+ */
+export function cmsLinkHref({
+  type,
+  locale,
+  reference,
+  url,
+}: Pick<CMSLinkType, 'type' | 'locale' | 'reference' | 'url'>): string | undefined {
+  // `locale` flows in as a plain string from CMS configs; narrow to Locale for
+  // the href helper. Falls back to building an unprefixed path when absent.
+  const loc = (locale as Locale) ?? undefined
+
+  if (type === 'reference' && typeof reference?.value === 'object' && reference.value.slug) {
+    const slug = reference.value.slug as string
+    if (reference.relationTo === 'posts') {
+      return loc ? localeHref(loc, `/news/${slug}`) : `/news/${slug}`
+    }
+    // Home slug maps to '/', everything else to '/<slug>'.
+    const path = slug === 'home' ? '/' : `/${slug}`
+    return loc ? localeHref(loc, path) : path
+  }
+
+  if (url) {
+    // Prefix internal (relative) URLs with the locale so navigation never
+    // goes through a 307 redirect. External URLs (http/https) are left as-is.
+    return loc && url.startsWith('/') ? localeHref(loc, url) : url
+  }
+
+  return undefined
+}
+
 export const CMSLink: React.FC<CMSLinkType> = (props) => {
   const {
     type,
@@ -37,30 +72,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     url,
   } = props
 
-  let href: string | undefined
-
-  // `locale` flows in as a plain string from CMS configs; narrow to Locale for
-  // the href helper. Falls back to building an unprefixed path when absent.
-  const loc = (locale as Locale) ?? undefined
-
-  if (type === 'reference' && typeof reference?.value === 'object' && reference.value.slug) {
-    const slug = reference.value.slug as string
-    if (reference.relationTo === 'posts') {
-      href = loc ? localeHref(loc, `/news/${slug}`) : `/news/${slug}`
-    } else {
-      // Home slug maps to '/', everything else to '/<slug>'.
-      const path = slug === 'home' ? '/' : `/${slug}`
-      href = loc ? localeHref(loc, path) : path === '/' ? '/' : path
-    }
-  } else if (url) {
-    // Prefix internal (relative) URLs with the locale so navigation never
-    // goes through a 307 redirect. External URLs (http/https) are left as-is.
-    if (loc && url.startsWith('/')) {
-      href = localeHref(loc, url)
-    } else {
-      href = url
-    }
-  }
+  const href = cmsLinkHref({ type, locale, reference, url })
 
   if (!href) return null
 

@@ -18,6 +18,8 @@ type NavItem = {
     url?: string | null
     label?: string | null
   }
+  /** Sub-pages shown indented under the entry (see the header dropdown). */
+  subItems?: { link: NavItem['link'] }[] | null
 }
 
 type SocialLink = {
@@ -169,13 +171,29 @@ export const MobileMenu: React.FC<Props> = ({
 
         {/* Nav items */}
         <nav className="flex flex-col gap-1 flex-1 px-6 pt-4 overflow-y-auto">
-          {allNavItems.map(({ link }, i) => (
+          {allNavItems.map(({ link, subItems }, i) => (
             <div key={i} onClick={() => setIsOpen(false)} className="border-b border-white/10 last:border-0">
               <CMSLink
                 {...(link as Parameters<typeof CMSLink>[0])}
                 locale={locale}
                 className="block py-3.5 text-white uppercase tracking-[0.04em] text-[14px] font-semibold hover:text-brand-gold transition-colors"
               />
+              {/* On a touch screen a hover panel is no use, so sub-pages are
+                  simply listed under their section — everything stays reachable
+                  with one tap. */}
+              {(subItems?.length ?? 0) > 0 && (
+                <ul className="pb-3 pl-4 flex flex-col gap-0.5 border-l border-white/15">
+                  {subItems!.map((sub, j) => (
+                    <li key={j}>
+                      <CMSLink
+                        {...(sub.link as Parameters<typeof CMSLink>[0])}
+                        locale={locale}
+                        className="block py-2 text-white/75 uppercase tracking-[0.04em] text-[12px] font-medium hover:text-brand-gold transition-colors"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </nav>

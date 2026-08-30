@@ -78,6 +78,8 @@ export function ContactFormClient({ formHeading, locale, labels: overrides }: Pr
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          kind: 'contact',
+          locale,
           name: value('name'),
           phone: value('phone'),
           email: value('email'),
