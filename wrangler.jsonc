@@ -69,37 +69,48 @@
   //   { "name": "SEND_EMAIL" },
   // ],
 
-  // Here's how to configure an additional environment
-  // It can be deployed with `CLOUDFLARE_ENV=staging pnpm run deploy`
-  // "env": {
-  //   "staging": {
-  //     "name": "my-app-staging",
-  //     "d1_databases": [
-  //       {
-  //         "binding": "D1",
-  //         "database_id": "DATABASE_ID",
-  //         "database_name": "my-app-staging",
-  //         "remote": true
-  //       }
-  //     ],
-  //     "services": [
-  //       // The service should match the "name" of your worker
-  //       // {
-  //       //   "binding": "WORKER_SELF_REFERENCE",
-  //       //   "service": "my-app-staging"
-  //       // },
-  //     ],
-  //     "r2_buckets": [
-  //       {
-  //         "binding": "R2",
-  //         "bucket_name": "my-app-staging"
-  //       }
-  //       // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
-  //       // {
-  //       //   "binding": "NEXT_INC_CACHE_R2_BUCKET",
-  //       //   "bucket_name": "<BUCKET_NAME>",
-  //       // },
-  //     ]
-  //   }
-  // }
+  // ── Środowisko robocze (staging) ─────────────────────────────────────────
+  // Osobny worker do akceptacji zmian przez klienta, zanim trafią na żywą
+  // stronę. Wdrożenie: `CLOUDFLARE_ENV=staging pnpm run deploy:app`
+  //
+  // ŚWIADOMIE osobna baza D1 — współdzielenie produkcyjnej oznaczałoby, że
+  // każda pomyłka w trakcie prac (albo migracja nowej funkcji) dotyka żywej
+  // strony. Tag-cache też osobny, żeby unieważnianie cache nie przenosiło się
+  // między środowiskami.
+  //
+  // R2 współdzielone z produkcją CELOWO: zdjęcia mają być te same, a cache stron
+  // jest kluczowany identyfikatorem builda, więc oba środowiska się nie mieszają.
+  //
+  // Adres `*.workers.dev` jest automatycznie oznaczany jako noindex
+  // (patrz next.config.ts) — wersja robocza nie zaszkodzi pozycjonowaniu.
+  "env": {
+    "staging": {
+      "name": "american-dream-staging",
+      "account_id": "728f583cb91698be32ab0744f50b80f9",
+      "compatibility_date": "2025-08-15",
+      "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS",
+      },
+      "d1_databases": [
+        {
+          "binding": "D1",
+          "database_id": "0c1d40f6-bcc1-4fe7-af6d-cbeb75d2a26f",
+          "database_name": "american-dream-staging",
+          "remote": true,
+        },
+        {
+          "binding": "NEXT_TAG_CACHE_D1",
+          "database_id": "40b013b9-d80e-410b-9cc2-7c0e26dcaeec",
+          "database_name": "american-dream-staging-tag-cache",
+          "remote": true,
+        },
+      ],
+      "r2_buckets": [
+        { "binding": "R2", "bucket_name": "american-dream" },
+        { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "american-dream" },
+      ],
+    },
+  },
 }
