@@ -10,6 +10,8 @@ import type {
 } from '@/payload-types'
 import { SpecialEventsClient } from './SpecialEventsClient'
 import type { SpecialEventCard, SpecialContact } from './SpecialEventsClient'
+import type { Locale } from '@/config/locales'
+import { ui } from '@/config/ui-strings'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -33,7 +35,7 @@ export async function SpecialEventsBlock({
     where: { eventType: { equals: 'special' }, published: { not_equals: false } },
     sort: 'date',
     limit: block.limit || 6,
-    locale: locale as 'pl' | 'en' | 'all',
+    locale: locale as Locale,
     depth: 1,
   })
 
@@ -41,7 +43,7 @@ export async function SpecialEventsBlock({
   try {
     settings = (await payload.findGlobal({
       slug: 'site-settings',
-      locale: locale as 'pl' | 'en',
+      locale: locale as Locale,
       depth: 0,
     })) as SiteSetting
   } catch {
@@ -86,7 +88,7 @@ export async function SpecialEventsBlock({
     address: (settings?.address as string) ?? 'American Dream Club · ul. Dominikańska 9 · Poznań',
   }
 
-  const heading = block.heading || (locale === 'pl' ? 'WYDARZENIA SPECJALNE' : 'SPECIAL EVENTS')
+  const heading = block.heading || (ui(locale as Locale).specialEventsUpper)
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">

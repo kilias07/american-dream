@@ -24,7 +24,7 @@ async function getMusicians(block: MusiciansGridBlockType, locale: string): Prom
     const payload = await getPayload({ config: configPromise })
     const { docs } = await payload.find({
       collection: 'musicians',
-      locale: locale as 'pl' | 'en',
+      locale: locale as Locale,
       sort: 'order',
       depth: 1,
       limit: 100,

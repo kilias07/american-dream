@@ -8,6 +8,7 @@ import { defaultLocale, type Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { auditEntry, buildMetadata } from '@/lib/audit-seo'
 import { getUILabels, pick } from '@/lib/ui-labels'
+import { ui as uiText } from '@/config/ui-strings'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -46,8 +47,8 @@ export async function renderNewsList(pageParam: string | undefined, locale: Loca
   const { docs, totalPages } = await cachedGetPosts()
 
   const ui = await getUILabels(locale)
-  const noNewsLabel = pick(ui?.common?.noNews, locale === 'pl' ? 'Brak aktualności.' : 'No news yet.')
-  const readMoreLabel = pick(ui?.common?.readMore, locale === 'pl' ? 'Czytaj więcej…' : 'Read more…')
+  const noNewsLabel = pick(ui?.common?.noNews, uiText(locale).noNews)
+  const readMoreLabel = pick(ui?.common?.readMore, uiText(locale).readMoreEllipsis)
 
   return (
     <div className="bg-brand-navy text-white">

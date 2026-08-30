@@ -1,4 +1,6 @@
 import React from 'react'
+import { intlLocale } from '@/config/ui-strings'
+import { ui as uiText } from '@/config/ui-strings'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
@@ -138,7 +140,20 @@ export async function EveningPhasesBlock({
 
   const loc = locale as Locale
   const openDays = await getOpenDays()
-  const fallbackLabels = locale === 'pl' ? DAY_LABELS_PL : DAY_LABELS_EN
+  // Pełne nazwy dni: PL/EN z list poniżej (zaprojektowany zapis), reszta z `Intl`.
+  const fallbackLabels: Record<string, string> =
+    locale === 'pl'
+      ? DAY_LABELS_PL
+      : locale === 'en'
+        ? DAY_LABELS_EN
+        : Object.fromEntries(
+            ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'].map((d, i) => [
+              d,
+              new Intl.DateTimeFormat(intlLocale(locale as Locale), { weekday: 'long' })
+                .format(new Date(Date.UTC(2024, 0, 7 + i, 12)))
+                .replace(/^./, (c) => c.toUpperCase()),
+            ]),
+          )
   const ui = await getUILabels(loc)
   const uiDays = ui?.days as Record<string, string | null | undefined> | undefined
   const dayLabel = (day: string) => pick(uiDays?.[day], fallbackLabels[day] ?? '')
@@ -184,7 +199,7 @@ export async function EveningPhasesBlock({
     }
   })
 
-  const reserveLabel = pick(ui?.event?.reserveTable, locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table')
+  const reserveLabel = pick(ui?.event?.reserveTable, uiText(locale as Locale).reserveTable)
 
   return (
     <EveningPhasesClient

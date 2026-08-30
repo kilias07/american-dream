@@ -1,9 +1,11 @@
 'use client'
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import type { Locale } from '@/config/locales'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { EventOccurrence } from '@/lib/recurring-events'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
+import { ui } from '@/config/ui-strings'
 
 type Props = {
   occurrences: EventOccurrence[]
@@ -83,7 +85,7 @@ function EventCard({ occ, locale, featured }: { occ: EventOccurrence; locale: st
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
               <path d="M22 10V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2z" />
             </svg>
-            {locale === 'pl' ? 'Bilety' : 'Tickets'}
+            {ui(locale as Locale).tickets}
           </Link>
         )}
       </div>
@@ -174,7 +176,7 @@ export function EventsTeaserBlock({ occurrences, heading, ctaLabel, ctaUrl, loca
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <h2 className="text-brand-navy text-2xl md:text-3xl font-bold uppercase tracking-tight">
-              {heading || (locale === 'pl' ? 'Nadchodzące wydarzenia' : 'Upcoming events')}
+              {heading || (ui(locale as Locale).upcomingEvents)}
             </h2>
             <span className="text-brand-navy text-2xl font-bold">›</span>
           </div>

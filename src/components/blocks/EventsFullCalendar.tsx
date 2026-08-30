@@ -16,6 +16,7 @@ import {
 } from '@/lib/recurring-events'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+import { intlLocale, ui } from '@/config/ui-strings'
 
 /**
  * Kalendarz PROGRAM — widok TYGODNIOWY (uwagi klienta 2026-07):
@@ -83,7 +84,7 @@ function buildWeeks(minWeekKey: string, maxWeekKey: string, todayKey: string): W
 /** Czytelna data dla ARIA (z klucza dnia — UTC, bez przesunięć stref). */
 function ariaDate(key: string, locale: string): string {
   const [y, m, d] = key.split('-').map(Number)
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(intlLocale(locale as Locale), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -234,7 +235,18 @@ export function EventsFullCalendar({
   const byDay = useMemo(() => groupByDay(occurrences), [occurrences])
   const weekDays = getWeekDays(locale)
   const weeks = useMemo(() => buildWeeks(minWeekKey, maxWeekKey, todayKey), [minWeekKey, maxWeekKey, todayKey])
-  const months3 = locale === 'pl' ? MONTHS_3_PL : MONTHS_3_EN
+  const months3 =
+    locale === 'pl'
+      ? MONTHS_3_PL
+      : locale === 'en'
+        ? MONTHS_3_EN
+        : // Pozostałe języki: skróty z `Intl`, żeby nie utrzymywać listy na każdy język.
+          Array.from({ length: 12 }, (_, m) =>
+            new Intl.DateTimeFormat(intlLocale(locale as Locale), { month: 'short' })
+              .format(new Date(Date.UTC(2024, m, 15, 12)))
+              .replace(/\.$/, '')
+              .toUpperCase(),
+          )
 
   const maxAnchor = Math.max(0, weeks.length - VISIBLE_WEEKS)
   const todayAnchor = useMemo(() => {
@@ -362,7 +374,7 @@ export function EventsFullCalendar({
         {/* Header — bez strzałek miesięcy (nawigacja przyciskami POD kalendarzem) */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-brand-navy text-2xl md:text-3xl font-black uppercase tracking-tight">
-            {heading || (locale === 'pl' ? 'KALENDARZ' : 'CALENDAR')}
+            {heading || (ui(locale as Locale).calendarUpper)}
           </h2>
           <span className="sr-only" aria-live="polite">
             {rangeLabel}
@@ -494,7 +506,7 @@ export function EventsFullCalendar({
               onClick={prevWeeks}
               disabled={prevDisabled}
               className="w-11 h-11 rounded-full border border-brand-navy/20 flex items-center justify-center text-brand-navy hover:bg-brand-navy/5 transition-colors disabled:opacity-30"
-              aria-label={locale === 'pl' ? 'Poprzednie tygodnie' : 'Previous weeks'}
+              aria-label={ui(locale as Locale).previousWeeks}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -504,7 +516,7 @@ export function EventsFullCalendar({
               onClick={nextWeeks}
               disabled={nextDisabled}
               className="w-11 h-11 rounded-full border border-brand-navy/20 flex items-center justify-center text-brand-navy hover:bg-brand-navy/5 transition-colors disabled:opacity-30"
-              aria-label={locale === 'pl' ? 'Następne tygodnie' : 'Next weeks'}
+              aria-label={ui(locale as Locale).nextWeeks}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -530,7 +542,7 @@ export function EventsFullCalendar({
                   onClick={() => setAgendaWeeks((w) => w + AGENDA_WEEK_STEP)}
                   className="mt-4 w-full flex items-center justify-center gap-2 border border-brand-navy/20 text-brand-navy text-[12px] font-bold uppercase tracking-[0.1em] py-3 rounded-full hover:bg-brand-navy/5 transition-colors"
                 >
-                  {locale === 'pl' ? 'Pokaż dalsze dni' : 'Show more days'}
+                  {ui(locale as Locale).showMoreDays}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -539,7 +551,7 @@ export function EventsFullCalendar({
             </>
           ) : (
             <p className="text-brand-navy/50 text-sm py-8 text-center">
-              {locale === 'pl' ? 'Brak nadchodzących wydarzeń.' : 'No upcoming events.'}
+              {ui(locale as Locale).noUpcomingEvents}
             </p>
           )}
         </div>

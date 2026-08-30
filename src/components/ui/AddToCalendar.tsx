@@ -1,7 +1,9 @@
 'use client'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
+import type { Locale } from '@/config/locales'
 import { createPortal } from 'react-dom'
 import { downloadICS, googleCalendarUrl, type CalendarEventInput } from '@/lib/calendar-links'
+import { ui } from '@/config/ui-strings'
 
 type Props = {
   event: CalendarEventInput
@@ -71,7 +73,7 @@ export function AddToCalendar({
     }
   }, [open, reposition])
 
-  const label = locale === 'pl' ? 'Dodaj do kalendarza' : 'Add to calendar'
+  const label = ui(locale as Locale).addToCalendar
   const icalLabel = 'Apple / iCal (.ics)'
 
   const triggerTheme =

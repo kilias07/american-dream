@@ -10,6 +10,7 @@ import { RichTextRenderer } from '@/components/RichTextRenderer'
 import { localizedAlternates } from '@/utilities/seo'
 import { localeHref } from '@/utilities/href'
 import { formatTime, getDayAbbr, warsawDayKey } from '@/lib/recurring-events'
+import { ui } from '@/config/ui-strings'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -104,7 +105,7 @@ export async function renderMusician(slug: string, locale: Locale) {
             className="inline-flex items-center gap-2 text-white/80 hover:text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] mb-5 transition-colors"
           >
             <span aria-hidden>‹</span>
-            {locale === 'pl' ? 'Nasi muzycy' : 'Our musicians'}
+            {ui(locale).ourMusicians}
           </Link>
 
           {(musician.role || musician.instrument) && (
@@ -142,7 +143,7 @@ export async function renderMusician(slug: string, locale: Locale) {
         <section className="py-14 md:py-16">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
-              {locale === 'pl' ? 'Najbliższe występy' : 'Upcoming performances'}
+              {ui(locale).upcomingPerformances}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {upcoming.map((ev) => {

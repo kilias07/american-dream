@@ -1,8 +1,10 @@
 'use client'
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import type { Locale } from '@/config/locales'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
+import { ui } from '@/config/ui-strings'
 
 export type TeaserEventCard = {
   id: number
@@ -29,7 +31,7 @@ function EventCard({
   locale: string
   todayKey: string
 }) {
-  const reserveLabel = locale === 'pl' ? 'Zarezerwuj' : 'Book now'
+  const reserveLabel = ui(locale as Locale).bookNow
   let dayNum = ''
   let dayAbbr = ''
   let startTime = ''

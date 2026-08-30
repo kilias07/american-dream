@@ -7,6 +7,7 @@ import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { EventsTeaserSectionClient } from './EventsTeaserSectionClient'
 import type { TeaserEventCard } from './EventsTeaserSectionClient'
+import { ui } from '@/config/ui-strings'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -46,7 +47,7 @@ export async function EventsTeaserSectionBlock({
     // przewija strzałkami nawet 2–3 tygodnie do przodu. Stare dane mogą mieć
     // limit=6, więc podnosimy do min. 30.
     limit: Math.max(block.limit || 0, 30),
-    locale: locale as 'pl' | 'en' | 'all',
+    locale: locale as Locale,
     depth: 1,
   })
 
@@ -69,7 +70,7 @@ export async function EventsTeaserSectionBlock({
     }
   })
 
-  const heading = block.heading || (locale === 'pl' ? 'PROGRAM' : 'PROGRAM')
+  const heading = block.heading || (ui(locale as Locale).program)
   const viewAllHref = block.viewAllUrl
     ? block.viewAllUrl.startsWith('/')
       ? localeHref(locale as Locale, block.viewAllUrl)

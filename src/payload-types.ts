@@ -118,7 +118,12 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'pl' | 'de') | ('en' | 'pl' | 'de')[];
+  fallbackLocale:
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | ('en' | 'pl' | 'de' | 'fr' | 'es')
+    | ('en' | 'pl' | 'de' | 'fr' | 'es')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -141,7 +146,7 @@ export interface Config {
     'contact-form': ContactFormSelect<false> | ContactFormSelect<true>;
     'promo-popup': PromoPopupSelect<false> | PromoPopupSelect<true>;
   };
-  locale: 'en' | 'pl' | 'de';
+  locale: 'en' | 'pl' | 'de' | 'fr' | 'es';
   widgets: {
     collections: CollectionsWidget;
   };

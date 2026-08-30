@@ -66,13 +66,13 @@ async function getSiteContact(locale: Locale): Promise<SiteContact> {
 }
 
 const DAY_LABELS: Record<string, Record<Locale, string>> = {
-  monday: { pl: 'Poniedziałek', en: 'Monday', de: 'Montag' },
-  tuesday: { pl: 'Wtorek', en: 'Tuesday', de: 'Dienstag' },
-  wednesday: { pl: 'Środa', en: 'Wednesday', de: 'Mittwoch' },
-  thursday: { pl: 'Czwartek', en: 'Thursday', de: 'Donnerstag' },
-  friday: { pl: 'Piątek', en: 'Friday', de: 'Freitag' },
-  saturday: { pl: 'Sobota', en: 'Saturday', de: 'Samstag' },
-  sunday: { pl: 'Niedziela', en: 'Sunday', de: 'Sonntag' },
+  monday: { pl: 'Poniedziałek', en: 'Monday', de: 'Montag', fr: 'Lundi', es: 'Lunes' },
+  tuesday: { pl: 'Wtorek', en: 'Tuesday', de: 'Dienstag', fr: 'Mardi', es: 'Martes' },
+  wednesday: { pl: 'Środa', en: 'Wednesday', de: 'Mittwoch', fr: 'Mercredi', es: 'Miércoles' },
+  thursday: { pl: 'Czwartek', en: 'Thursday', de: 'Donnerstag', fr: 'Jeudi', es: 'Jueves' },
+  friday: { pl: 'Piątek', en: 'Friday', de: 'Freitag', fr: 'Vendredi', es: 'Viernes' },
+  saturday: { pl: 'Sobota', en: 'Saturday', de: 'Samstag', fr: 'Samedi', es: 'Sábado' },
+  sunday: { pl: 'Niedziela', en: 'Sunday', de: 'Sonntag', fr: 'Dimanche', es: 'Domingo' },
 }
 const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 

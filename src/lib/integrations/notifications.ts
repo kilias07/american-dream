@@ -17,9 +17,9 @@ const t = (locale: ResLocale | null | undefined, pl: string, en: string) =>
   locale === 'en' ? en : pl
 
 const OPTION_LABEL: Record<string, Record<Locale, string>> = {
-  opening: { pl: 'Otwarcie wieczoru (stolik)', en: 'Evening opening (table)', de: 'Abendbeginn (Tisch)' },
-  concert: { pl: 'Koncert (bilet)', en: 'Concert (ticket)', de: 'Konzert (Ticket)' },
-  club: { pl: 'Wieczór klubowy (stolik)', en: 'Club night (table)', de: 'Clubabend (Tisch)' },
+  opening: { pl: 'Otwarcie wieczoru (stolik)', en: 'Evening opening (table)', de: 'Abendbeginn (Tisch)', fr: 'Début de soirée (table)', es: 'Inicio de la velada (mesa)' },
+  concert: { pl: 'Koncert (bilet)', en: 'Concert (ticket)', de: 'Konzert (Ticket)', fr: 'Concert (billet)', es: 'Concierto (entrada)' },
+  club: { pl: 'Wieczór klubowy (stolik)', en: 'Club night (table)', de: 'Clubabend (Tisch)', fr: 'Soirée club (table)', es: 'Noche de club (mesa)' },
 }
 
 function formatDate(date: string | null | undefined, locale: ResLocale): string {

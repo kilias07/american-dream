@@ -10,6 +10,7 @@ import { RichTextRenderer } from '@/components/RichTextRenderer'
 import { brandTitle, brandDescription, buildMetadata } from '@/lib/audit-seo'
 import { toTitleCase } from '@/utilities/titleCase'
 import { localeHref } from '@/utilities/href'
+import { intlLocale, ui } from '@/config/ui-strings'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -130,7 +131,7 @@ export async function renderArticle(slug: string, locale: Locale) {
 
   const hero = isMedia(post.heroImage) ? post.heroImage : null
   const publishedDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-GB', {
+    ? new Date(post.publishedAt).toLocaleDateString(intlLocale(locale), {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -161,7 +162,7 @@ export async function renderArticle(slug: string, locale: Locale) {
             className="inline-flex items-center gap-2 text-white/80 hover:text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] mb-5 transition-colors"
           >
             <span aria-hidden>‹</span>
-            {locale === 'pl' ? 'Wróć' : 'Back'}
+            {ui(locale).back}
           </Link>
           {publishedDate && (
             <p className="text-brand-gold text-[12px] font-bold uppercase tracking-[0.16em] mb-3">
@@ -182,7 +183,7 @@ export async function renderArticle(slug: string, locale: Locale) {
                 className="group inline-flex items-center gap-2 text-white/80 hover:text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] transition-colors max-w-[45%]"
               >
                 <span aria-hidden>‹</span>
-                <span className="truncate">{locale === 'pl' ? 'Poprzednie' : 'Previous'}</span>
+                <span className="truncate">{ui(locale).previous}</span>
               </Link>
             ) : (
               <span />
@@ -192,7 +193,7 @@ export async function renderArticle(slug: string, locale: Locale) {
                 href={localeHref(locale, `/news/${next.slug}`)}
                 className="group inline-flex items-center gap-2 text-white/80 hover:text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] transition-colors max-w-[45%] text-right"
               >
-                <span className="truncate">{locale === 'pl' ? 'Następne' : 'Next'}</span>
+                <span className="truncate">{ui(locale).next}</span>
                 <span aria-hidden>›</span>
               </Link>
             ) : (
@@ -216,7 +217,7 @@ export async function renderArticle(slug: string, locale: Locale) {
         <section className="py-12 md:py-16 bg-brand-navy-royal">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
-              {locale === 'pl' ? 'Zobacz również' : 'Related news'}
+              {ui(locale).relatedNews}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {related.map((rp) => {

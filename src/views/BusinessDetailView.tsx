@@ -14,11 +14,11 @@ import { toTitleCase } from '@/utilities/titleCase'
 export const BUSINESS_SLUGS = ['christmas', 'meetings', 'birthday', 'stag', 'venue-hire'] as const
 
 const TITLE_FALLBACKS: Record<string, Record<Locale, string>> = {
-  christmas: { pl: 'Wigilie Firmowe', en: 'Company Christmas Parties', de: 'Weihnachtsfeiern Für Firmen' },
-  meetings: { pl: 'Spotkania Firmowe', en: 'Corporate Meetings', de: 'Firmenveranstaltungen' },
-  birthday: { pl: 'Urodziny', en: 'Birthdays', de: 'Geburtstage' },
-  stag: { pl: 'Wieczory Kawalerskie', en: 'Stag Nights', de: 'Junggesellenabschiede' },
-  'venue-hire': { pl: 'Wynajem Sali', en: 'Venue Hire', de: 'Saalvermietung' },
+  christmas: { pl: 'Wigilie Firmowe', en: 'Company Christmas Parties', de: 'Weihnachtsfeiern Für Firmen', fr: 'Fêtes De Noël D’entreprise', es: 'Cenas De Navidad De Empresa' },
+  meetings: { pl: 'Spotkania Firmowe', en: 'Corporate Meetings', de: 'Firmenveranstaltungen', fr: 'Réunions D’entreprise', es: 'Reuniones De Empresa' },
+  birthday: { pl: 'Urodziny', en: 'Birthdays', de: 'Geburtstage', fr: 'Anniversaires', es: 'Cumpleaños' },
+  stag: { pl: 'Wieczory Kawalerskie', en: 'Stag Nights', de: 'Junggesellenabschiede', fr: 'Enterrements De Vie De Garçon', es: 'Despedidas De Soltero' },
+  'venue-hire': { pl: 'Wynajem Sali', en: 'Venue Hire', de: 'Saalvermietung', fr: 'Location De Salle', es: 'Alquiler De Sala' },
 }
 
 // Weryfikacja audytu 2026-08-06, punkt 5: podstrony /business/[slug] miały
@@ -30,26 +30,36 @@ const DESCRIPTION_FALLBACKS: Record<string, Record<Locale, string>> = {
     pl: 'Wigilie i imprezy świąteczne dla firm w centrum Poznania. Sala na wyłączność, menu ustalane indywidualnie, muzyka na żywo i pełna obsługa dla grup do 120 osób.',
     en: 'Company Christmas parties and festive events in the centre of Poznań. Exclusive use of the room, a menu agreed individually, live music and full service for up to 120 guests.',
     de: 'Weihnachtsfeiern und festliche Firmenveranstaltungen im Zentrum von Posen. Saal zur exklusiven Nutzung, individuell abgestimmtes Menü, Livemusik und Rundumbetreuung für bis zu 120 Gäste.',
+    fr: 'Fêtes de Noël et événements festifs d’entreprise au centre de Poznań. Salle en exclusivité, menu défini sur mesure, musique live et service complet pour jusqu’à 120 convives.',
+    es: 'Cenas de Navidad y fiestas de empresa en el centro de Poznań. Sala en exclusiva, menú acordado a medida, música en directo y servicio completo para hasta 120 invitados.',
   },
   meetings: {
     pl: 'Spotkania firmowe, konferencje i kolacje biznesowe w klubowej atmosferze w centrum Poznania. Eleganckie sale, menu grupowe w stałej cenie i pełna obsługa.',
     en: 'Corporate meetings, conferences and business dinners in a club atmosphere in the centre of Poznań. Elegant rooms, a group menu at a fixed price and full service.',
     de: 'Firmenveranstaltungen, Konferenzen und Geschäftsessen in Clubatmosphäre im Zentrum von Posen. Elegante Räume, Gruppenmenü zum Festpreis und volle Betreuung.',
+    fr: 'Réunions d’entreprise, conférences et dîners d’affaires dans une atmosphère de club au centre de Poznań. Salles élégantes, menu de groupe à prix fixe et service complet.',
+    es: 'Reuniones de empresa, conferencias y cenas de negocios en un ambiente de club en el centro de Poznań. Salas elegantes, menú de grupo a precio fijo y servicio completo.',
   },
   birthday: {
     pl: 'Urodziny i rocznice w centrum Poznania. Kameralna sala, kolacja przy muzyce na żywo i oprawa wieczoru ustalona indywidualnie — Ty przychodzisz z Gośćmi.',
     en: 'Birthdays and anniversaries in the centre of Poznań. An intimate room, dinner with live music and an evening arranged individually — you just arrive with your guests.',
     de: 'Geburtstage und Jubiläen im Zentrum von Posen. Ein intimer Saal, Abendessen bei Livemusik und ein individuell gestalteter Abend — Sie kommen einfach mit Ihren Gästen.',
+    fr: 'Anniversaires et jubilés au centre de Poznań. Une salle intime, un dîner en musique live et une soirée organisée sur mesure — vous venez simplement avec vos invités.',
+    es: 'Cumpleaños y aniversarios en el centro de Poznań. Una sala íntima, cena con música en directo y una velada organizada a medida: usted solo llega con sus invitados.',
   },
   stag: {
     pl: 'Wieczory kawalerskie i panieńskie w American Dream Club w Poznaniu. Cocktail bar, muzyka na żywo, cigar lounge i scenariusz wieczoru dopasowany do grupy.',
     en: 'Stag and hen nights at American Dream Club in Poznań. A cocktail bar, live music, a cigar lounge and an evening planned around your group.',
     de: 'Junggesellen- und Junggesellinnenabschiede im American Dream Club in Posen. Cocktailbar, Livemusik, Cigar Lounge und ein auf die Gruppe zugeschnittener Abend.',
+    fr: 'Enterrements de vie de garçon et de jeune fille à l’American Dream Club de Poznań. Bar à cocktails, musique live, cigar lounge et soirée pensée pour votre groupe.',
+    es: 'Despedidas de soltero y soltera en el American Dream Club de Poznań. Coctelería, música en directo, cigar lounge y una velada pensada para tu grupo.',
   },
   'venue-hire': {
     pl: 'Wynajem sali na imprezy w centrum Poznania. Cały lokal lub wybrana strefa na wyłączność, catering serwowany albo bufetowy, open bar i oprawa muzyczna.',
     en: 'Venue hire for events in the centre of Poznań. The whole club or a chosen zone exclusively, plated or buffet catering, an open bar and live music.',
     de: 'Saalvermietung für Veranstaltungen im Zentrum von Posen. Das gesamte Lokal oder eine ausgewählte Zone exklusiv, Catering am Platz oder als Büfett, Open Bar und musikalische Begleitung.',
+    fr: 'Location de salle pour vos événements au centre de Poznań. Tout l’établissement ou une zone en exclusivité, service à l’assiette ou buffet, open bar et animation musicale.',
+    es: 'Alquiler de sala para eventos en el centro de Poznań. Todo el local o una zona en exclusiva, servicio en mesa o bufé, barra libre y música en directo.',
   },
 }
 

@@ -24,6 +24,7 @@ import type {
 import { warsawParts } from '@/lib/recurring-events'
 import { getSiteContact } from '@/lib/site-contact'
 import { getUILabels, pick } from '@/lib/ui-labels'
+import { intlLocale, ui as uiText } from '@/config/ui-strings'
 
 function isMedia(value: number | null | Media | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -57,7 +58,7 @@ async function getEvent(slug: string, locale: Locale): Promise<Event | null> {
 function formatDateParts(value: string | null | undefined, locale: Locale) {
   if (!value) return { weekday: '', dayMonth: '', time: '' }
   const date = new Date(value)
-  const intl = locale === 'pl' ? 'pl-PL' : 'en-GB'
+  const intl = intlLocale(locale)
   // All parts formatted in the club's timezone (Europe/Warsaw).
   const weekday = date.toLocaleDateString(intl, { weekday: 'long', timeZone: 'Europe/Warsaw' })
   const p = warsawParts(date)
@@ -92,7 +93,7 @@ export async function renderEvent(slug: string, locale: Locale) {
   // Every reservation CTA opens the MyRest widget (the old site's only booking
   // system) — pre-selected to this event's night. We don't push any separate
   // ticket vendor, so the label is always the table-reservation wording.
-  const ctaLabel = pick(ui?.event?.reserveTable, locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table')
+  const ctaLabel = pick(ui?.event?.reserveTable, uiText(locale).reserveTable)
   const ctaClass =
     'inline-flex items-center gap-2 bg-brand-gold text-brand-navy text-sm font-bold uppercase tracking-[0.12em] px-7 py-3 rounded-full hover:bg-brand-gold-dark transition-colors'
 
@@ -124,7 +125,7 @@ export async function renderEvent(slug: string, locale: Locale) {
         {/* Special event ribbon — anchored to the left edge */}
         {isSpecial && (
           <span className="absolute top-8 md:top-10 left-0 z-20 bg-brand-gold text-brand-navy text-[11px] md:text-xs font-bold uppercase tracking-[0.16em] pl-6 md:pl-10 pr-5 py-2.5 rounded-r-md shadow-lg">
-            {pick(ui?.event?.specialEvent, locale === 'pl' ? 'Wydarzenie specjalne' : 'Special event')}
+            {pick(ui?.event?.specialEvent, uiText(locale).specialEvent)}
           </span>
         )}
 
@@ -260,7 +261,7 @@ export async function renderEvent(slug: string, locale: Locale) {
               {/* Udostępnij — na hero, pod przyciskami */}
               {event.shareEnabled && (
                 <ShareBar
-                  label={event.shareLabel || (locale === 'pl' ? 'Udostępnij to wydarzenie' : 'Share this event')}
+                  label={event.shareLabel || (uiText(locale).shareEvent)}
                 />
               )}
             </div>
@@ -280,8 +281,8 @@ export async function renderEvent(slug: string, locale: Locale) {
               blockType: 'eventsTeaser',
               heading:
                 event.upcomingHeading ||
-                (locale === 'pl' ? 'NADCHODZĄCE WYDARZENIA' : 'UPCOMING EVENTS'),
-              viewAllLabel: locale === 'pl' ? 'SPRAWDŹ PEŁEN PROGRAM' : 'SEE THE FULL PROGRAM',
+                (uiText(locale).upcomingEventsUpper),
+              viewAllLabel: uiText(locale).seeFullProgram,
               viewAllUrl: '/events',
               limit: 30,
             } as EventsTeaserBlockType
@@ -300,10 +301,10 @@ export async function renderEvent(slug: string, locale: Locale) {
               locale === 'pl'
                 ? 'Zapisz się i bądź na bieżąco z programem koncertów.'
                 : 'Sign up and stay up to date with the concert programme.',
-            placeholder: locale === 'pl' ? 'Adres email' : 'Email address',
-            buttonLabel: locale === 'pl' ? 'ZAPISZ SIĘ' : 'SIGN UP',
+            placeholder: uiText(locale).emailAddress,
+            buttonLabel: uiText(locale).signUpUpper,
             consentText:
-              locale === 'pl' ? 'Akceptuję politykę prywatności' : 'I accept the privacy policy',
+              uiText(locale).acceptPrivacyPolicy,
           } as NewsletterCTABlockType
         }
       />
@@ -314,8 +315,8 @@ export async function renderEvent(slug: string, locale: Locale) {
         block={
           {
             blockType: 'recurringSeriesTeaser',
-            eyebrow: locale === 'pl' ? 'Powtarzające się' : 'Recurring',
-            heading: locale === 'pl' ? 'WYDARZENIA CYKLICZNE' : 'RECURRING EVENTS',
+            eyebrow: uiText(locale).recurring,
+            heading: uiText(locale).recurringEventsUpper,
             series: [],
           } as unknown as RecurringSeriesTeaserBlockType
         }

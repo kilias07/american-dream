@@ -7,6 +7,7 @@ import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { NewsCarouselClient } from './NewsCarouselClient'
 import type { NewsCard } from './NewsCarouselClient'
+import { ui } from '@/config/ui-strings'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -28,7 +29,7 @@ export async function NewsCarouselBlock({
     },
     sort: '-publishedAt',
     limit: block.limit || 3,
-    locale: locale as 'pl' | 'en' | 'all',
+    locale: locale as Locale,
     depth: 1,
   })
 
@@ -46,7 +47,7 @@ export async function NewsCarouselBlock({
     }
   })
 
-  const heading = block.heading || (locale === 'pl' ? 'AKTUALNOŚCI' : 'NEWS')
+  const heading = block.heading || (ui(locale as Locale).newsUpper)
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">

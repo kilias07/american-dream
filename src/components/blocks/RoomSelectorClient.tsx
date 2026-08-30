@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
+import type { Locale } from '@/config/locales'
 import Image from 'next/image'
+import { ui } from '@/config/ui-strings'
 
 type GalleryImage = { url: string; alt: string }
 
@@ -107,7 +109,7 @@ export function RoomSelectorClient({
 
   const capacityLabel = (room: RoomData) =>
     room.capacity != null
-      ? `${locale === 'pl' ? 'do' : 'up to'} ${room.capacity} ${locale === 'pl' ? 'osób' : 'people'}`
+      ? `${ui(locale as Locale).upTo} ${room.capacity} ${ui(locale as Locale).people}`
       : null
 
   return (

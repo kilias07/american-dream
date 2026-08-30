@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
+import { ui } from '@/config/ui-strings'
 
 export type NewsCard = {
   id: number
@@ -20,7 +21,7 @@ type Props = {
 
 function ArticleCard({ card, locale }: { card: NewsCard; locale: string }) {
   const href = localeHref(locale as Locale, `/news/${card.slug}`)
-  const readMore = locale === 'pl' ? 'Czytaj więcej…' : 'Read more…'
+  const readMore = ui(locale as Locale).readMoreEllipsis
 
   return (
     <div

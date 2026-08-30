@@ -10,15 +10,16 @@ import type {
 import { ContactFormClient } from './ContactFormClient'
 import { getUILabels, pick } from '@/lib/ui-labels'
 import type { Locale } from '@/config/locales'
+import { ui as uiText } from '@/config/ui-strings'
 
 const DAY_LABELS: Record<string, Record<Locale, string>> = {
-  monday: { pl: 'Poniedziałek', en: 'Monday', de: 'Montag' },
-  tuesday: { pl: 'Wtorek', en: 'Tuesday', de: 'Dienstag' },
-  wednesday: { pl: 'Środa', en: 'Wednesday', de: 'Mittwoch' },
-  thursday: { pl: 'Czwartek', en: 'Thursday', de: 'Donnerstag' },
-  friday: { pl: 'Piątek', en: 'Friday', de: 'Freitag' },
-  saturday: { pl: 'Sobota', en: 'Saturday', de: 'Samstag' },
-  sunday: { pl: 'Niedziela', en: 'Sunday', de: 'Sonntag' },
+  monday: { pl: 'Poniedziałek', en: 'Monday', de: 'Montag', fr: 'Lundi', es: 'Lunes' },
+  tuesday: { pl: 'Wtorek', en: 'Tuesday', de: 'Dienstag', fr: 'Mardi', es: 'Martes' },
+  wednesday: { pl: 'Środa', en: 'Wednesday', de: 'Mittwoch', fr: 'Mercredi', es: 'Miércoles' },
+  thursday: { pl: 'Czwartek', en: 'Thursday', de: 'Donnerstag', fr: 'Jeudi', es: 'Jueves' },
+  friday: { pl: 'Piątek', en: 'Friday', de: 'Freitag', fr: 'Vendredi', es: 'Viernes' },
+  saturday: { pl: 'Sobota', en: 'Saturday', de: 'Samstag', fr: 'Samedi', es: 'Sábado' },
+  sunday: { pl: 'Niedziela', en: 'Sunday', de: 'Sonntag', fr: 'Dimanche', es: 'Domingo' },
 }
 
 export async function ContactInfoBlock({
@@ -31,8 +32,8 @@ export async function ContactInfoBlock({
   const payload = await getPayload({ config })
 
   const [siteSettings, openingHours] = await Promise.all([
-    payload.findGlobal({ slug: 'site-settings', locale: locale as 'pl' | 'en' | 'all', depth: 1 }) as Promise<SiteSetting>,
-    payload.findGlobal({ slug: 'opening-hours', locale: locale as 'pl' | 'en' | 'all' }) as Promise<OpeningHour>,
+    payload.findGlobal({ slug: 'site-settings', locale: locale as Locale, depth: 1 }) as Promise<SiteSetting>,
+    payload.findGlobal({ slug: 'opening-hours', locale: locale as Locale }) as Promise<OpeningHour>,
   ])
 
   const address = siteSettings?.address
@@ -43,7 +44,7 @@ export async function ContactInfoBlock({
 
   const ui = await getUILabels(locale as Locale)
   const uiDays = ui?.days as Record<string, string | null | undefined> | undefined
-  const closedLabel = pick(ui?.common?.closed, locale === 'pl' ? 'ZAMKNIĘTE' : 'CLOSED')
+  const closedLabel = pick(ui?.common?.closed, uiText(locale as Locale).closedUpper)
 
   // Teksty formularza: global „Formularz kontaktowy" (grupa admina „Formularze
   // (Forms)" — uwaga klienta 2026-07) → fallback ui-labels → fallback w kodzie.
@@ -51,7 +52,7 @@ export async function ContactInfoBlock({
   try {
     contactForm = await payload.findGlobal({
       slug: 'contact-form',
-      locale: locale as 'pl' | 'en' | 'all',
+      locale: locale as Locale,
     })
   } catch {
     contactForm = null
@@ -59,7 +60,7 @@ export async function ContactInfoBlock({
   const formHeading =
     block.formHeading ||
     pick(contactForm?.heading, '') ||
-    pick(ui?.forms?.contactHeading, locale === 'pl' ? 'SKONTAKTUJ SIĘ Z NAMI' : 'CONTACT US')
+    pick(ui?.forms?.contactHeading, uiText(locale as Locale).contactUsUpper)
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
@@ -86,7 +87,7 @@ export async function ContactInfoBlock({
               {phones.length > 0 && (
                 <div className="mb-6">
                   <p className="text-brand-gold text-xl md:text-2xl font-bold uppercase tracking-tight mb-2">
-                    {pick(ui?.common?.callUs, locale === 'pl' ? 'Zadzwoń do nas' : 'Call us')}
+                    {pick(ui?.common?.callUs, uiText(locale as Locale).callUs)}
                   </p>
                   <ul className="space-y-1">
                     {phones.map((p) => (
@@ -109,7 +110,7 @@ export async function ContactInfoBlock({
               {emails.length > 0 && (
                 <div>
                   <p className="text-brand-gold text-xl md:text-2xl font-bold uppercase tracking-tight mb-2">
-                    {pick(ui?.common?.writeToUs, locale === 'pl' ? 'Napisz do nas' : 'Write to us')}
+                    {pick(ui?.common?.writeToUs, uiText(locale as Locale).writeToUs)}
                   </p>
                   <ul className="space-y-1">
                     {emails.map((e) => (
@@ -160,12 +161,12 @@ export async function ContactInfoBlock({
               {days.length > 0 && (
                 <div>
                   <p className="text-brand-gold text-xs font-bold uppercase tracking-[0.18em] mb-3">
-                    {pick(ui?.common?.openingHours, locale === 'pl' ? 'Godziny otwarcia' : 'Opening hours')}
+                    {pick(ui?.common?.openingHours, uiText(locale as Locale).openingHours)}
                   </p>
                   <ul className="space-y-2">
                     {days.map((d) => {
                       const dayName = d.day
-                        ? pick(uiDays?.[d.day], DAY_LABELS[d.day]?.[locale === 'pl' ? 'pl' : 'en'] ?? d.day)
+                        ? pick(uiDays?.[d.day], DAY_LABELS[d.day]?.[locale as Locale] ?? d.day)
                         : ''
                       const hours = d.closed
                         ? closedLabel
@@ -195,7 +196,7 @@ export async function ContactInfoBlock({
                 <div className="overflow-hidden rounded-2xl h-full min-h-[320px]">
                   <iframe
                     src={mapUrl}
-                    title={locale === 'pl' ? 'Mapa' : 'Map'}
+                    title={uiText(locale as Locale).map}
                     className="w-full h-full min-h-[320px] border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"

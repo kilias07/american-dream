@@ -1,3 +1,5 @@
+import type { Locale } from '@/config/locales'
+import { intlLocale } from '@/config/ui-strings'
 // Calendar/event helpers.
 //
 // NOTE: events no longer recur — every event is a single, individually-created
@@ -215,38 +217,63 @@ export function weekTueKey(key: string): string {
 
 // ── Locale helpers ──────────────────────────────────────────────────────────
 
-const DAY_ABBR_PL = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So']
-const DAY_ABBR_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+/**
+ * Nazwy dni i miesięcy.
+ *
+ * PL i EN zostają wypisane ręcznie, bo kalendarz ma sześciokolumnową siatkę
+ * zaprojektowaną pod krótkie skróty („Wt", „Śr") — `Intl` zwraca dla polskiego
+ * dłuższe i niejednolite formy („wt", „czw", „niedz"), które rozjechałyby układ.
+ * Dla pozostałych języków korzystamy z `Intl`: daje poprawne nazwy od razu,
+ * bez ręcznego dopisywania kolejnych list przy każdym nowym języku.
+ */
+const TZ = 'Europe/Warsaw'
 
-// Monday-first order (index 0 = Monday)
-export const WEEK_DAYS_PL = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd']
-export const WEEK_DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_ABBR: Partial<Record<string, string[]>> = {
+  pl: ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+}
+const WEEK_DAYS: Partial<Record<string, string[]>> = {
+  pl: ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'],
+  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+}
+const MONTHS: Partial<Record<string, string[]>> = {
+  pl: ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+       'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June',
+       'July', 'August', 'September', 'October', 'November', 'December'],
+}
 
-const MONTHS_PL = [
-  'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-  'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień',
-]
-const MONTHS_EN = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
+const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1)
+const trimDot = (v: string) => v.replace(/\.$/, '')
 
-/** Weekday abbreviation for an ISO instant, in Europe/Warsaw. */
+/** Skrót dnia tygodnia dla instantu ISO, w strefie Europe/Warsaw. */
 export function getDayAbbr(date: Date, locale: string): string {
   const weekday = warsawParts(date).weekday
-  const abbrs = locale === 'pl' ? DAY_ABBR_PL : DAY_ABBR_EN
-  return abbrs[weekday].toUpperCase()
+  const manual = DAY_ABBR[locale]
+  if (manual) return manual[weekday].toUpperCase()
+  return trimDot(
+    new Intl.DateTimeFormat(intlLocale(locale as Locale), { weekday: 'short', timeZone: TZ }).format(date),
+  ).toUpperCase()
 }
 
 export function getMonthName(year: number, month: number, locale: string): string {
-  const names = locale === 'pl' ? MONTHS_PL : MONTHS_EN
-  return `${names[month].toUpperCase()} ${year}`
+  const manual = MONTHS[locale]
+  if (manual) return `${manual[month].toUpperCase()} ${year}`
+  const d = new Date(Date.UTC(year, month, 15, 12))
+  const name = new Intl.DateTimeFormat(intlLocale(locale as Locale), { month: 'long', timeZone: TZ }).format(d)
+  return `${name.toUpperCase()} ${year}`
 }
 
-// The club is closed on Mondays, so the calendar never shows them — the visible
-// week runs Tuesday→Sunday (drop the leading Monday from the Monday-first arrays).
+// Klub jest zamknięty w poniedziałki, więc kalendarz ich nie pokazuje —
+// widoczny tydzień biegnie wtorek→niedziela.
 export function getWeekDays(locale: string): string[] {
-  return (locale === 'pl' ? WEEK_DAYS_PL : WEEK_DAYS_EN).slice(1)
+  const manual = WEEK_DAYS[locale]
+  if (manual) return manual.slice(1)
+  const fmt = new Intl.DateTimeFormat(intlLocale(locale as Locale), { weekday: 'short', timeZone: TZ })
+  // 2024-01-02 to wtorek; bierzemy sześć kolejnych dni do niedzieli.
+  return Array.from({ length: 6 }, (_, i) =>
+    cap(trimDot(fmt.format(new Date(Date.UTC(2024, 0, 2 + i, 12))))),
+  )
 }
 
 /** Group occurrences by their Europe/Warsaw day key (YYYY-MM-DD). */

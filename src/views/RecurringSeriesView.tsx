@@ -1,4 +1,5 @@
 import { getPayload } from 'payload'
+import { ui } from '@/config/ui-strings'
 import { permanentRedirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -203,13 +204,13 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
               <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-brand-navy">
                 {series.upcomingHeading ||
-                  (locale === 'pl' ? 'Nadchodzące wydarzenia w cyklu' : 'Upcoming events in this series')}
+                  (ui(locale).upcomingInSeries)}
               </h2>
               <Link
                 href={localeHref(locale, '/events')}
                 className="inline-flex items-center gap-2 bg-brand-navy text-white text-[12px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-brand-navy-royal transition-colors"
               >
-                {series.seeProgrammeLabel || (locale === 'pl' ? 'Zobacz program' : 'See programme')}
+                {series.seeProgrammeLabel || (ui(locale).seeProgram)}
               </Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -287,7 +288,7 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
               {series.otherSeriesHeading ||
-                (locale === 'pl' ? 'Pozostałe wydarzenia cykliczne' : 'Other recurring series')}
+                (ui(locale).otherSeries)}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {others.map((s) => {
@@ -343,12 +344,12 @@ export async function renderRecurringSeries(slug: string, locale: Locale) {
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <div className="flex items-center gap-3 mb-8">
               <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">
-                {series.newsHeading || (locale === 'pl' ? 'Aktualności' : 'News')}
+                {series.newsHeading || (ui(locale).news)}
               </h2>
               <Link
                 href={localeHref(locale, '/news')}
                 className="text-brand-gold text-2xl font-bold leading-none"
-                aria-label={locale === 'pl' ? 'Wszystkie aktualności' : 'All news'}
+                aria-label={ui(locale).allNews}
               >
                 ›
               </Link>

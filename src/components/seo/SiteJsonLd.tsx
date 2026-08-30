@@ -12,6 +12,8 @@ const TAGLINE: Record<string, string> = {
   pl: 'Zapraszamy po relaks, dobry nastrój i pozytywne wibracje!',
   en: 'Come for relaxation, good mood and positive vibes!',
   de: 'Kommen Sie für Entspannung, gute Laune und positive Stimmung!',
+  fr: 'Venez pour la détente, la bonne humeur et les ondes positives !',
+  es: '¡Ven a relajarte, disfrutar del buen ambiente y las buenas vibraciones!',
 }
 
 async function getSocials(): Promise<string[]> {

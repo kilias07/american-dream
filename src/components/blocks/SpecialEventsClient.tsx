@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getDayAbbr, formatTime, warsawDayKey } from '@/lib/recurring-events'
 import { localeHref } from '@/utilities/href'
 import type { Locale } from '@/config/locales'
+import { intlLocale, ui } from '@/config/ui-strings'
 
 export type SpecialContact = {
   phone: string
@@ -31,7 +32,7 @@ type Props = {
 }
 
 function monthAbbr(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale === 'pl' ? 'pl-PL' : 'en-GB', {
+  return new Intl.DateTimeFormat(intlLocale(locale as Locale), {
     month: 'short',
     timeZone: 'Europe/Warsaw',
   })
@@ -49,7 +50,7 @@ function PosterCard({
   contact: SpecialContact
   locale: string
 }) {
-  const reserveLabel = locale === 'pl' ? 'Zarezerwuj stolik' : 'Reserve a table'
+  const reserveLabel = ui(locale as Locale).reserveTable
   const startTime = card.dateISO ? formatTime(card.dateISO) : ''
   const dayNum = card.dateISO ? warsawDayKey(card.dateISO).slice(-2) : ''
   const dayAbbr = card.dateISO ? getDayAbbr(new Date(card.dateISO), locale) : ''
@@ -234,7 +235,7 @@ export function SpecialEventsClient({ cards, contact, locale }: Props) {
               key={i}
               type="button"
               onClick={() => goToPage(i)}
-              aria-label={`${locale === 'pl' ? 'Pozycja' : 'Slide'} ${i + 1}`}
+              aria-label={`${ui(locale as Locale).slide} ${i + 1}`}
               aria-current={i === activeIndex}
               className={`h-2 rounded-full transition-all ${i === activeIndex ? 'w-6 bg-brand-gold' : 'w-2 bg-white/30 hover:bg-white/50'}`}
             />

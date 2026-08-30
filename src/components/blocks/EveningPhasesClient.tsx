@@ -1,9 +1,11 @@
 'use client'
 import React, { useState } from 'react'
+import type { Locale } from '@/config/locales'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ReserveTrigger } from '@/components/reservations/MyRest'
 import { fixOrphans } from '@/utilities/typography'
+import { ui } from '@/config/ui-strings'
 
 export type DayPill = {
   key: string
@@ -219,7 +221,7 @@ export function EveningPhasesClient({
   locale: string
 }) {
   const [selected, setSelected] = useState(defaultDay)
-  const detailsLabel = locale === 'pl' ? 'Szczegóły' : 'Details'
+  const detailsLabel = ui(locale as Locale).details
   const selectedEvent = eventsByDay[selected] ?? null
 
   return (
@@ -238,7 +240,7 @@ export function EveningPhasesClient({
         {days.length > 0 && (
           <div
             role="tablist"
-            aria-label={locale === 'pl' ? 'Wybierz dzień' : 'Choose a day'}
+            aria-label={ui(locale as Locale).chooseDay}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10"
           >
             {days.map((d) => {

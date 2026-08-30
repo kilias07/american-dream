@@ -1,23 +1,33 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import type { Locale } from '@/config/locales'
+import { locales, type Locale } from '@/config/locales'
+
+/** Język serwowany bez prefiksu (patrz `localeHref`). */
+const UNPREFIXED: Locale = 'pl'
+
+/** Prefiksy wszystkich języków poza domyślnym, np. /en, /de, /fr, /es. */
+const PREFIXED = locales.filter((l) => l !== UNPREFIXED)
+const STRIP_PREFIX = new RegExp(`^/(${PREFIXED.join('|')})(?=/|$)`)
 
 /**
- * Map the CURRENT path to its counterpart in the other locale.
- * PL is unprefixed (default); EN lives under `/en`.
+ * Zamienia BIEŻĄCĄ ścieżkę na jej odpowiednik w innym języku.
+ * Polski jest bez prefiksu, pozostałe języki mają własny (`/en`, `/de`…).
  *   toLocalePath('/news', 'en') -> '/en/news'
- *   toLocalePath('/en/events/jazz-night', 'pl') -> '/events/jazz-night'
+ *   toLocalePath('/de/events/jazz', 'pl') -> '/events/jazz'
+ *
+ * Prefiksy wyliczamy z konfiguracji języków — wcześniej były wpisane na sztywno
+ * jako `/en`, więc po dodaniu kolejnego języka przełącznik gubił ścieżkę.
  */
 export function toLocalePath(pathname: string, target: Locale): string {
-  const bare = pathname.replace(/^\/en(?=\/|$)/, '') || '/'
-  return target === 'en' ? (bare === '/' ? '/en' : `/en${bare}`) : bare
+  const bare = pathname.replace(STRIP_PREFIX, '') || '/'
+  if (target === UNPREFIXED) return bare
+  return bare === '/' ? `/${target}` : `/${target}${bare}`
 }
 
 /**
- * PL | EN switcher used in the header (desktop + mobile). Maps the current path
- * to the same page in the other locale, persists the choice in NEXT_LOCALE, and
- * client-navigates there.
+ * Przełącznik języka w nagłówku (desktop + mobile). Renderuje WSZYSTKIE języki
+ * z konfiguracji, więc dodanie kolejnego nie wymaga ruszania tego komponentu.
  */
 export function LocaleSwitcher({
   currentLocale,
@@ -49,23 +59,19 @@ export function LocaleSwitcher({
 
   return (
     <div className={className ?? 'flex items-center gap-1 text-[12px] font-bold tracking-wider'}>
-      <button
-        type="button"
-        onClick={() => go('pl')}
-        className={linkClass(currentLocale === 'pl')}
-        aria-current={currentLocale === 'pl' ? 'true' : undefined}
-      >
-        PL
-      </button>
-      <span className={separatorClassName ?? 'text-white/40 mx-0.5'}>|</span>
-      <button
-        type="button"
-        onClick={() => go('en')}
-        className={linkClass(currentLocale === 'en')}
-        aria-current={currentLocale === 'en' ? 'true' : undefined}
-      >
-        EN
-      </button>
+      {locales.map((code, i) => (
+        <span key={code} className="contents">
+          {i > 0 && <span className={separatorClassName ?? 'text-white/40 mx-0.5'}>|</span>}
+          <button
+            type="button"
+            onClick={() => go(code)}
+            className={linkClass(currentLocale === code)}
+            aria-current={currentLocale === code ? 'true' : undefined}
+          >
+            {code.toUpperCase()}
+          </button>
+        </span>
+      ))}
     </div>
   )
 }

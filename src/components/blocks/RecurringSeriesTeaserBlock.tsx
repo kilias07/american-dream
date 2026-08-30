@@ -11,6 +11,7 @@ import type {
 import type { Locale } from '@/config/locales'
 import { localeHref } from '@/utilities/href'
 import { getUILabels, pick } from '@/lib/ui-labels'
+import { ui as uiText } from '@/config/ui-strings'
 
 function isMedia(value: Media | number | null | undefined): value is Media {
   return typeof value === 'object' && value !== null
@@ -38,7 +39,7 @@ async function getSeries(
     const payload = await getPayload({ config: configPromise })
     const { docs } = await payload.find({
       collection: 'recurring-series',
-      locale: locale as 'pl' | 'en',
+      locale: locale as Locale,
       where: { published: { not_equals: false } },
       depth: 1,
       limit: 100,
@@ -126,7 +127,7 @@ export async function RecurringSeriesTeaserBlock({
   if (series.length === 0) return null
 
   const ui = await getUILabels(locale as Locale)
-  const readMore = pick(ui?.common?.readMore, locale === 'pl' ? 'Czytaj więcej' : 'Read more')
+  const readMore = pick(ui?.common?.readMore, uiText(locale as Locale).readMore)
 
   return (
     <section className="py-12 md:py-16 bg-brand-navy">
