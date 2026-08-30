@@ -13,38 +13,43 @@ import { toTitleCase } from '@/utilities/titleCase'
 // `business-${slug}` (e.g. /business/christmas -> page `business-christmas`).
 export const BUSINESS_SLUGS = ['christmas', 'meetings', 'birthday', 'stag', 'venue-hire'] as const
 
-const TITLE_FALLBACKS: Record<string, { pl: string; en: string }> = {
-  christmas: { pl: 'Wigilie Firmowe', en: 'Company Christmas Parties' },
-  meetings: { pl: 'Spotkania Firmowe', en: 'Corporate Meetings' },
-  birthday: { pl: 'Urodziny', en: 'Birthdays' },
-  stag: { pl: 'Wieczory Kawalerskie', en: 'Stag Nights' },
-  'venue-hire': { pl: 'Wynajem Sali', en: 'Venue Hire' },
+const TITLE_FALLBACKS: Record<string, Record<Locale, string>> = {
+  christmas: { pl: 'Wigilie Firmowe', en: 'Company Christmas Parties', de: 'Weihnachtsfeiern Für Firmen' },
+  meetings: { pl: 'Spotkania Firmowe', en: 'Corporate Meetings', de: 'Firmenveranstaltungen' },
+  birthday: { pl: 'Urodziny', en: 'Birthdays', de: 'Geburtstage' },
+  stag: { pl: 'Wieczory Kawalerskie', en: 'Stag Nights', de: 'Junggesellenabschiede' },
+  'venue-hire': { pl: 'Wynajem Sali', en: 'Venue Hire', de: 'Saalvermietung' },
 }
 
 // Weryfikacja audytu 2026-08-06, punkt 5: podstrony /business/[slug] miały
 // title i h1, ale ŻADNEJ meta description. Szablon audytu: ~180 znaków opisu
 // danego typu imprezy; Title Case dokłada `buildMetadata`. Wartość z CMS
 // (`page.meta.description`) ma pierwszeństwo — to tylko fallback.
-const DESCRIPTION_FALLBACKS: Record<string, { pl: string; en: string }> = {
+const DESCRIPTION_FALLBACKS: Record<string, Record<Locale, string>> = {
   christmas: {
     pl: 'Wigilie i imprezy świąteczne dla firm w centrum Poznania. Sala na wyłączność, menu ustalane indywidualnie, muzyka na żywo i pełna obsługa dla grup do 120 osób.',
     en: 'Company Christmas parties and festive events in the centre of Poznań. Exclusive use of the room, a menu agreed individually, live music and full service for up to 120 guests.',
+    de: 'Weihnachtsfeiern und festliche Firmenveranstaltungen im Zentrum von Posen. Saal zur exklusiven Nutzung, individuell abgestimmtes Menü, Livemusik und Rundumbetreuung für bis zu 120 Gäste.',
   },
   meetings: {
     pl: 'Spotkania firmowe, konferencje i kolacje biznesowe w klubowej atmosferze w centrum Poznania. Eleganckie sale, menu grupowe w stałej cenie i pełna obsługa.',
     en: 'Corporate meetings, conferences and business dinners in a club atmosphere in the centre of Poznań. Elegant rooms, a group menu at a fixed price and full service.',
+    de: 'Firmenveranstaltungen, Konferenzen und Geschäftsessen in Clubatmosphäre im Zentrum von Posen. Elegante Räume, Gruppenmenü zum Festpreis und volle Betreuung.',
   },
   birthday: {
     pl: 'Urodziny i rocznice w centrum Poznania. Kameralna sala, kolacja przy muzyce na żywo i oprawa wieczoru ustalona indywidualnie — Ty przychodzisz z Gośćmi.',
     en: 'Birthdays and anniversaries in the centre of Poznań. An intimate room, dinner with live music and an evening arranged individually — you just arrive with your guests.',
+    de: 'Geburtstage und Jubiläen im Zentrum von Posen. Ein intimer Saal, Abendessen bei Livemusik und ein individuell gestalteter Abend — Sie kommen einfach mit Ihren Gästen.',
   },
   stag: {
     pl: 'Wieczory kawalerskie i panieńskie w American Dream Club w Poznaniu. Cocktail bar, muzyka na żywo, cigar lounge i scenariusz wieczoru dopasowany do grupy.',
     en: 'Stag and hen nights at American Dream Club in Poznań. A cocktail bar, live music, a cigar lounge and an evening planned around your group.',
+    de: 'Junggesellen- und Junggesellinnenabschiede im American Dream Club in Posen. Cocktailbar, Livemusik, Cigar Lounge und ein auf die Gruppe zugeschnittener Abend.',
   },
   'venue-hire': {
     pl: 'Wynajem sali na imprezy w centrum Poznania. Cały lokal lub wybrana strefa na wyłączność, catering serwowany albo bufetowy, open bar i oprawa muzyczna.',
     en: 'Venue hire for events in the centre of Poznań. The whole club or a chosen zone exclusively, plated or buffet catering, an open bar and live music.',
+    de: 'Saalvermietung für Veranstaltungen im Zentrum von Posen. Das gesamte Lokal oder eine ausgewählte Zone exklusiv, Catering am Platz oder als Büfett, Open Bar und musikalische Begleitung.',
   },
 }
 

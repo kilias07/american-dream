@@ -65,14 +65,14 @@ async function getSiteContact(locale: Locale): Promise<SiteContact> {
   }
 }
 
-const DAY_LABELS: Record<string, { pl: string; en: string }> = {
-  monday: { pl: 'Poniedziałek', en: 'Monday' },
-  tuesday: { pl: 'Wtorek', en: 'Tuesday' },
-  wednesday: { pl: 'Środa', en: 'Wednesday' },
-  thursday: { pl: 'Czwartek', en: 'Thursday' },
-  friday: { pl: 'Piątek', en: 'Friday' },
-  saturday: { pl: 'Sobota', en: 'Saturday' },
-  sunday: { pl: 'Niedziela', en: 'Sunday' },
+const DAY_LABELS: Record<string, Record<Locale, string>> = {
+  monday: { pl: 'Poniedziałek', en: 'Monday', de: 'Montag' },
+  tuesday: { pl: 'Wtorek', en: 'Tuesday', de: 'Dienstag' },
+  wednesday: { pl: 'Środa', en: 'Wednesday', de: 'Mittwoch' },
+  thursday: { pl: 'Czwartek', en: 'Thursday', de: 'Donnerstag' },
+  friday: { pl: 'Piątek', en: 'Friday', de: 'Freitag' },
+  saturday: { pl: 'Sobota', en: 'Saturday', de: 'Samstag' },
+  sunday: { pl: 'Niedziela', en: 'Sunday', de: 'Sonntag' },
 }
 const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 

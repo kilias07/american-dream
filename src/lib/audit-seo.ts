@@ -62,6 +62,19 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'poznań live music',
       ],
     },
+    de: {
+      title: 'Jazzclub & Restaurant Mit Livemusik In Posen - American Dream Club',
+      description:
+        'American Dream Club: Jazzclub & Restaurant Mit Livemusik Im Herzen Von Posen, Direkt Am Alten Markt. Konzerte, Abendessen Und Themenabende In Der Dominikańska 9.',
+      h1: 'Jazzclub & Restaurant Mit Livemusik In Posen',
+      keywords: [
+        'livemusik posen',
+        'jazzclub posen',
+        'musikclub posen',
+        'restaurant mit livemusik posen',
+        'posen livemusik',
+      ],
+    },
   },
   restaurant: {
     pl: {
@@ -88,6 +101,19 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'restaurant with dancing poznań',
         'restaurant poznań',
         'poznań restaurants',
+      ],
+    },
+    de: {
+      title: 'Restaurant Mit Livemusik In Posen - American Dream Club',
+      description:
+        'Amerikanisches Restaurant Im Zentrum Von Posen. Abendessen, Livemusik Und Raum Für Gesellige Und Besondere Anlässe.',
+      h1: 'Restaurant Mit Livemusik In Posen',
+      keywords: [
+        'restaurant mit livemusik posen',
+        'amerikanisches restaurant posen',
+        'restaurant mit tanz posen',
+        'restaurant posen',
+        'posen restaurants',
       ],
     },
   },
@@ -118,6 +144,19 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'bar poznań',
       ],
     },
+    de: {
+      title: 'Cocktailbar & Jazzbar Posen - American Dream Club',
+      description:
+        'Eigenkreationen, Klassische Drinks Und Jazzbar-Atmosphäre Im Zentrum Von Posen. Der Perfekte Ort Für Einen Abend Aus.',
+      h1: 'Cocktailbar & Jazzbar In Posen',
+      keywords: [
+        'cocktailbar posen',
+        'jazzbar posen',
+        'drinks posen',
+        'cocktails posen',
+        'bar posen',
+      ],
+    },
   },
   'cigar-lounge': {
     pl: {
@@ -133,6 +172,13 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'An Intimate Cigar Lounge In The Centre Of Poznań. A Place For Guests Who Value Calm, A Premium Atmosphere And Evening Gatherings.',
       h1: 'Cigar Lounge In The Centre Of Poznań',
       keywords: ['cigar lounge poznań', 'cigar lounge', 'cigar bar', 'cigar lounge near me', 'cigar lounges'],
+    },
+    de: {
+      title: 'Cigar Lounge Posen - American Dream Club',
+      description:
+        'Eine Intime Cigar Lounge Im Zentrum Von Posen. Ein Ort Für Gäste, Die Ruhe, Premium-Atmosphäre Und Abendliche Begegnungen Schätzen.',
+      h1: 'Cigar Lounge Im Zentrum Von Posen',
+      keywords: ['cigar lounge posen', 'cigar lounge', 'zigarrenlounge posen', 'zigarrenbar posen', 'cigar lounges'],
     },
   },
   events: {
@@ -160,6 +206,19 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'music clubs poznań',
         'pub with live music',
         'poznań music clubs',
+      ],
+    },
+    de: {
+      title: 'Konzerte & Livemusik In Posen - American Dream Club',
+      description:
+        'Entdecken Sie Die Kommenden Konzerte Und Livemusik-Veranstaltungen In Posen. Reservieren Sie Einen Tisch Und Sehen Sie Den ADC-Veranstaltungskalender.',
+      h1: 'Veranstaltungen Und Livemusik In Posen',
+      keywords: [
+        'livemusik posen',
+        'musikclub posen',
+        'konzerte posen',
+        'lokal mit livemusik',
+        'posen musikclubs',
       ],
     },
   },
@@ -190,6 +249,19 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'where to organise a company event poznań',
       ],
     },
+    de: {
+      title: 'Eventorganisation In Posen - American Dream Club',
+      description:
+        'Organisation Von Firmenfeiern, Weihnachtsfeiern Und Besonderen Anlässen Im Zentrum Von Posen. Begleitung Vom Konzept Bis Zur Umsetzung.',
+      h1: 'Eventorganisation In Posen',
+      keywords: [
+        'firmenfeier posen',
+        'organisation von firmenfeiern posen',
+        'firmenevents restaurant posen',
+        'weihnachtsfeier firma posen',
+        'wo firmenfeier organisieren posen',
+      ],
+    },
   },
   news: {
     pl: {
@@ -203,6 +275,12 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
       description:
         'Current News, Event Announcements And Updates From The American Dream Club Restaurant And Music Club In Poznań.',
       h1: 'News',
+    },
+    de: {
+      title: 'Aktuelles - American Dream Club',
+      description:
+        'Aktuelle Informationen, Veranstaltungsankündigungen Und Mitteilungen Des Restaurants Und Musikclubs American Dream Club In Posen.',
+      h1: 'Aktuelles',
     },
   },
   'pod-papugami': {
@@ -232,6 +310,19 @@ export const AUDIT_SEO: Record<Key, Record<Locale, AuditEntry>> = {
         'pod papugami menu',
       ],
     },
+    de: {
+      title: 'Pod Papugami Ist Jetzt American Dream Club - American Dream Club',
+      description:
+        'Die Geschichte Der Marke Pod Papugami Und Das Heutige Angebot Des American Dream Club In Posen. Für Alle, Die Nach „Pod Papugami" Suchen.',
+      h1: 'Pod Papugami Ist Jetzt American Dream Club',
+      keywords: [
+        'pod papugami posen',
+        'pod papugami programm',
+        'club pod papugami',
+        'restaurant pod papugami posen',
+        'pod papugami menü',
+      ],
+    },
   },
 }
 
@@ -246,14 +337,17 @@ export const EXTRA_DESCRIPTIONS: Record<string, Record<Locale, string>> = {
   contact: {
     pl: 'Kontakt do American Dream Club w Poznaniu — adres przy Dominikańskiej 9, telefon, e-mail i godziny otwarcia restauracji, cocktail baru oraz klubu jazzowego.',
     en: 'Contact American Dream Club in Poznań — the address at Dominikańska 9, phone, e-mail and opening hours of the restaurant, cocktail bar and jazz club.',
+    de: 'Kontakt zum American Dream Club in Posen — Adresse in der Dominikańska 9, Telefon, E-Mail sowie Öffnungszeiten von Restaurant, Cocktailbar und Jazzclub.',
   },
   rezerwacje: {
     pl: 'Rezerwacja stolika w American Dream Club w Poznaniu. Zaplanuj wieczór — kolacja od 17:00, koncert od 19:00, wieczór klubowy do 23:00. Rezerwacja stolika jest bezpłatna.',
     en: 'Book a table at American Dream Club in Poznań. Plan your evening — dinner from 5 pm, the concert from 7 pm, the club night until 11 pm. Booking a table is free of charge.',
+    de: 'Tisch im American Dream Club in Posen reservieren. Planen Sie Ihren Abend — Abendessen ab 17 Uhr, Konzert ab 19 Uhr, Clubabend bis 23 Uhr. Die Tischreservierung ist kostenlos.',
   },
   'kontakt-dla-artystow': {
     pl: 'Zgłoszenia muzyków i zespołów do American Dream Club w Poznaniu. Wyślij nagranie i opis projektu — szukamy artystów na koncerty jazzowe, swingowe i bluesowe.',
     en: 'Applications from musicians and bands for American Dream Club in Poznań. Send a recording and a short description — we book jazz, swing and blues acts.',
+    de: 'Bewerbungen von Musikerinnen, Musikern und Bands für den American Dream Club in Posen. Senden Sie eine Aufnahme und eine kurze Beschreibung — wir buchen Jazz, Swing und Blues.',
   },
 }
 

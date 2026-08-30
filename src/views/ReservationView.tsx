@@ -15,6 +15,12 @@ const COPY: Record<Locale, { title: string; lead: string; cta: string; phone: st
     cta: 'Reserve a table',
     phone: 'Prefer to call? Phone:',
   },
+  de: {
+    title: 'Reservierungen',
+    lead: 'Reservieren Sie einen Tisch im American Dream Club. Das Reservierungsfenster öffnet sich automatisch — falls nicht, nutzen Sie die Schaltfläche unten.',
+    cta: 'Tisch reservieren',
+    phone: 'Lieber telefonisch? Rufen Sie an:',
+  },
 }
 
 export async function renderReservation(locale: Locale) {

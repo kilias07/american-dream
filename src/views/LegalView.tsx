@@ -19,14 +19,17 @@ const DESCRIPTIONS: Record<string, Record<Locale, string>> = {
   regulamin: {
     pl: 'Regulamin American Dream Club w Poznaniu — zasady wstępu dla osób powyżej 21. roku życia, rezerwacji stolików, płatności oraz zachowania na terenie klubu i restauracji.',
     en: 'The American Dream Club rules in Poznań — entry conditions for guests over 21, table booking, payments and conduct within the club and restaurant.',
+    de: 'Hausordnung des American Dream Club in Posen — Einlassregeln für Personen ab 21 Jahren, Tischreservierung, Zahlungen sowie Verhalten im Club und Restaurant.',
   },
   privacy: {
     pl: 'Polityka prywatności American Dream Club — jakie dane zbieramy przy rezerwacji i kontakcie, w jakim celu je przetwarzamy, jak długo je przechowujemy i jakie masz prawa.',
     en: 'The American Dream Club privacy policy — what data we collect when you book or contact us, why we process it, how long we keep it and what rights you have.',
+    de: 'Datenschutzerklärung des American Dream Club — welche Daten wir bei Reservierung und Kontakt erheben, zu welchem Zweck wir sie verarbeiten, wie lange wir sie speichern und welche Rechte Sie haben.',
   },
   'dane-firmy': {
     pl: 'Dane firmy American Dream Club w Poznaniu — pełna nazwa, adres siedziby przy Dominikańskiej 9, numery NIP i REGON oraz dane kontaktowe do spraw formalnych.',
     en: 'Company details for American Dream Club in Poznań — full legal name, registered address at Dominikańska 9, tax numbers and contact details for formal matters.',
+    de: 'Firmendaten des American Dream Club in Posen — vollständiger Name, Sitz in der Dominikańska 9, Steuernummern NIP und REGON sowie Kontaktdaten für formale Angelegenheiten.',
   },
 }
 

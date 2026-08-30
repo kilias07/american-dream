@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import type { Reservation } from '@/payload-types'
 import { sendSms } from './sms'
+import type { Locale } from '@/config/locales'
 
 // Notification composition for the reservation system (spec §5/§6). Staff get an
 // e-mail on every new reservation; clients get SMS + e-mail on confirmation and
@@ -15,10 +16,10 @@ type ResLocale = 'pl' | 'en'
 const t = (locale: ResLocale | null | undefined, pl: string, en: string) =>
   locale === 'en' ? en : pl
 
-const OPTION_LABEL: Record<string, { pl: string; en: string }> = {
-  opening: { pl: 'Otwarcie wieczoru (stolik)', en: 'Evening opening (table)' },
-  concert: { pl: 'Koncert (bilet)', en: 'Concert (ticket)' },
-  club: { pl: 'Wieczór klubowy (stolik)', en: 'Club night (table)' },
+const OPTION_LABEL: Record<string, Record<Locale, string>> = {
+  opening: { pl: 'Otwarcie wieczoru (stolik)', en: 'Evening opening (table)', de: 'Abendbeginn (Tisch)' },
+  concert: { pl: 'Koncert (bilet)', en: 'Concert (ticket)', de: 'Konzert (Ticket)' },
+  club: { pl: 'Wieczór klubowy (stolik)', en: 'Club night (table)', de: 'Clubabend (Tisch)' },
 }
 
 function formatDate(date: string | null | undefined, locale: ResLocale): string {

@@ -11,6 +11,7 @@ const SITE_NAME = 'American Dream Club'
 const TAGLINE: Record<string, string> = {
   pl: 'Zapraszamy po relaks, dobry nastrój i pozytywne wibracje!',
   en: 'Come for relaxation, good mood and positive vibes!',
+  de: 'Kommen Sie für Entspannung, gute Laune und positive Stimmung!',
 }
 
 async function getSocials(): Promise<string[]> {
