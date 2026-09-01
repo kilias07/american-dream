@@ -17,6 +17,9 @@ const GA_MEASUREMENT_ID =
 // Usercentrics CMP (v3) — zgoda na cookies. Publiczny identyfikator konfiguracji,
 // widoczny w kodzie strony; nie jest tajemnicą.
 const UC_SETTINGS_ID = process.env.NEXT_PUBLIC_UC_SETTINGS_ID ?? 'N_bm8Ovsq8KE90'
+// Meta (Facebook) Pixel — identyfikator zestawu danych klienta. Jak przy GA,
+// można wyłączyć per środowisko, ustawiając zmienną na pusty ciąg.
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? '1400935517460006'
 
 // Google Consent Mode v2 — stan domyślny. MUSI wykonać się synchronicznie, przed
 // jakimkolwiek tagiem Google i przed loaderem CMP, inaczej Analytics zdąży wysłać
@@ -42,6 +45,58 @@ s.id='usercentrics-cmp';s.async=true;
 s.src='https://web.cmp.usercentrics.eu/ui/loader.js';
 s.setAttribute('data-settings-id','${settingsId}');
 document.head.appendChild(s);})();` : ''}`
+/**
+ * Meta Pixel, held behind consent.
+ *
+ * The pixel ignores Google Consent Mode — the mechanism that keeps Analytics
+ * quiet here — so it carries its own gate. `consent: 'revoke'` runs *before*
+ * `init`, which means the library loads but sets no cookies and sends nothing;
+ * `PageView` is queued rather than fired. Nothing reaches Meta until the
+ * visitor agrees.
+ *
+ * The release signal is the marketing-storage grant that Usercentrics already
+ * issues for Analytics, read out of `dataLayer` rather than by wrapping
+ * `dataLayer.push` — gtag.js replaces that function when it loads, and a
+ * wrapper installed either side of it can be dropped. Polling the array is
+ * read-only and survives whatever else touches it.
+ *
+ * The `<noscript>` fallback image from Meta's snippet is deliberately left out:
+ * it fires on page load with no way to check consent first, which is precisely
+ * what this gate exists to prevent.
+ */
+const META_PIXEL_BOOTSTRAP = (pixelId: string) => `
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('consent','revoke');
+fbq('init','${pixelId}');
+fbq('track','PageView');
+(function(){
+ var granted=false;
+ function marketingGranted(){
+  var dl=window.dataLayer||[];
+  for(var i=dl.length-1;i>=0;i--){
+   var a=dl[i];
+   if(a&&a[0]==='consent'&&a[1]==='update'&&a[2]&&a[2].ad_storage)
+    return a[2].ad_storage==='granted';
+  }
+  return false;
+ }
+ function check(){
+  if(granted)return true;
+  if(!marketingGranted())return false;
+  granted=true;fbq('consent','grant');return true;
+ }
+ if(check())return;
+ // Give the banner a couple of minutes of the visit to be answered, then stop
+ // — a timer running for the whole session would be waste, not caution.
+ var tries=0,id=setInterval(function(){ if(check()||++tries>400) clearInterval(id) },300);
+})();`
+
 const SITE_NAME = 'American Dream Club'
 const SITE_DESCRIPTION =
   'American Dream Club — restauracja i klub jazzowy w sercu Poznania. Koncerty na żywo, autorska kuchnia, bar i cigar room.'
@@ -170,6 +225,11 @@ gtag('js', new Date());
 gtag('config', '${GA_MEASUREMENT_ID}');`}
             </Script>
           </>
+        ) : null}
+        {META_PIXEL_ID ? (
+          <Script id="meta-pixel" strategy="afterInteractive">
+            {META_PIXEL_BOOTSTRAP(META_PIXEL_ID)}
+          </Script>
         ) : null}
       </body>
     </html>
