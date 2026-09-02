@@ -34,7 +34,9 @@ export const MusiciansGrid: Block = {
       relationTo: 'musicians',
       hasMany: true,
       admin: {
-        description: 'Optional — leave empty to show all by order',
+        description:
+          'ZOSTAW PUSTE, żeby pokazać wszystkich muzyków. Wybranie choćby jednego '
+          + 'ogranicza sekcję WYŁĄCZNIE do wybranych — reszta znika ze strony.',
       },
     },
   ],
