@@ -32,7 +32,16 @@ export async function SpecialEventsBlock({
 
   const { docs } = await payload.find({
     collection: 'events',
-    where: { eventType: { equals: 'special' }, published: { not_equals: false } },
+    where: {
+      eventType: { equals: 'special' },
+      published: { not_equals: false },
+      // The heading promises *upcoming* specials. Without this bound the block
+      // sorted the whole history ascending and took the first few — so it showed
+      // the oldest special events in the database and a date that had passed
+      // never left the page. Same rule as the programme carousel, so an event
+      // cannot be listed by one and not the other.
+      date: { greater_than_equal: new Date().toISOString() },
+    },
     sort: 'date',
     limit: block.limit || 6,
     locale: locale as Locale,
